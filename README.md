@@ -4,6 +4,8 @@ Proxmox VE Client API Java
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-api-javascript.svg)](LICENSE.md) ![GitHub release](https://img.shields.io/github/release/Corsinvest/cv4pve-api-javascript.svg)
 
+[![npm](https://img.shields.io/npm/dw/@corsinvest/cv4pve-api-javascript?logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
+
 [Proxmox VE Api](https://pve.proxmox.com/pve-docs/api-viewer/)
 
 ```text
