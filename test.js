@@ -3,11 +3,11 @@ const pve = require('./src');
 console.log(pve);
 
 async function foo() {
-    var client = new pve.PveClient('10.92.90.101', 8006);
+    const client = new pve.PveClient('10.92.90.101', 8006);
     //client.logEnabled = true;
     //client.apiToken = '';
 
-    var login = await client.login('root', process.env.PVE_PASSWORD, 'pam');
+    const login = await client.login('root', process.env.PVE_PASSWORD, 'pam');
     if (login) {
         console.log((await client.get('/version')).response);
         console.log((await client.version.version()).response);

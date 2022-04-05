@@ -6,5 +6,5 @@ However, includes several third-party Open-Source libraries, which are licensed 
 
 ## Libraries directly included
 
-[json.org](https://github.com/stleary/JSON-java)
-License: JSON
+[debug](https://github.com/debug-js/debug)
+License: MIT
