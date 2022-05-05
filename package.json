@@ -1,6 +1,6 @@
 {
   "name": "@corsinvest/cv4pve-api-javascript",
-  "version": "1.1.0",
+  "version": "7.2.0",
   "description": "Proxmox VE Client API Javascript",
   "main": "./src/index.js",
   "dependencies": {
@@ -22,7 +22,7 @@
     "url": "git+https://github.com/Corsinvest/cv4pve-api-javascript.git"
   },
   "author": "Daniele Corsini <daniele.corsini@corsinvest.it>",
-  "license": "GPLv3 or CEL",
+  "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/Corsinvest/cv4pve-api-javascript/issues"
   },
