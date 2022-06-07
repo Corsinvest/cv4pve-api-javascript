@@ -410,7 +410,7 @@ class PveClientBase {
    * @param {string} task
    * @returns {Promise<Result>}
    */
-  async readTaskStatus(task) { return this.get('/nodes/' + this.#getNodeFromTask(node) + '/tasks/' + task + '/status'); }
+  async readTaskStatus(task) { return this.get('/nodes/' + this.#getNodeFromTask(task) + '/tasks/' + task + '/status'); }
 }
 
 //////////////////////////////////////
