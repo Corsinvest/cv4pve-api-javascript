@@ -393,7 +393,7 @@ class PveClientBase {
    * @param {string} task Task identifier
    * @returns {Promise<bool>}
    */
-  async taskIsRunning(task) { return await this.readTaskStatus(task).Response.data.status == "running"; }
+  async taskIsRunning(task) { return await this.readTaskStatus(task).response.data.status == "running"; }
 
   /**
    * Get exists status task.
@@ -410,7 +410,7 @@ class PveClientBase {
    * @param {string} task
    * @returns {Promise<Result>}
    */
-  async readTaskStatus(task) { return this.get('/nodes/' + this.#getNodeFromTask(node) + '/tasks/' + task + '/status'); }
+  async readTaskStatus(task) { return this.get('/nodes/' + this.#getNodeFromTask(task) + '/tasks/' + task + '/status'); }
 }
 
 //////////////////////////////////////
