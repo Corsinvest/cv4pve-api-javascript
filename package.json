@@ -11,7 +11,8 @@
     "Proxmox VE",
     "Api",
     "Proxmox",
-    "Corsinvest"
+    "Corsinvest",
+    "pve"
   ],
   "devDependencies": {},
   "scripts": {
