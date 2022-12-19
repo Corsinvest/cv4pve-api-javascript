@@ -1,5 +1,4 @@
 /*
- * SPDX-FileCopyrightText: 2022 Daniele Corsini <daniele.corsini@corsinvest.it>
  * SPDX-FileCopyrightText: Copyright Corsinvest Srl
  * SPDX-License-Identifier: GPL-3.0-only
  */
@@ -451,46 +450,46 @@ class PveClient extends PveClientBase {
 
   #cluster;
   /**
-  * Get Cluster
-  * @returns {PVECluster}
-  */
+   * Get Cluster
+   * @returns {PVECluster}
+   */
   get cluster() { return this.#cluster == null ? (this.#cluster = new PVECluster(this.#client)) : this.#cluster; }
   #nodes;
   /**
-  * Get Nodes
-  * @returns {PVENodes}
-  */
+   * Get Nodes
+   * @returns {PVENodes}
+   */
   get nodes() { return this.#nodes == null ? (this.#nodes = new PVENodes(this.#client)) : this.#nodes; }
   #storage;
   /**
-  * Get Storage
-  * @returns {PVEStorage}
-  */
+   * Get Storage
+   * @returns {PVEStorage}
+   */
   get storage() { return this.#storage == null ? (this.#storage = new PVEStorage(this.#client)) : this.#storage; }
   #access;
   /**
-  * Get Access
-  * @returns {PVEAccess}
-  */
+   * Get Access
+   * @returns {PVEAccess}
+   */
   get access() { return this.#access == null ? (this.#access = new PVEAccess(this.#client)) : this.#access; }
   #pools;
   /**
-  * Get Pools
-  * @returns {PVEPools}
-  */
+   * Get Pools
+   * @returns {PVEPools}
+   */
   get pools() { return this.#pools == null ? (this.#pools = new PVEPools(this.#client)) : this.#pools; }
   #version;
   /**
-  * Get Version
-  * @returns {PVEVersion}
-  */
+   * Get Version
+   * @returns {PVEVersion}
+   */
   get version() { return this.#version == null ? (this.#version = new PVEVersion(this.#client)) : this.#version; }
 
 
 }
 /**
-* Class PVECluster
-*/
+ * Class PVECluster
+ */
 class PVECluster {
 
   /** @type {PveClient} */
@@ -503,105 +502,105 @@ class PVECluster {
 
   #replication;
   /**
-  * Get ClusterReplication
-  * @returns {PVEClusterReplication}
-  */
+   * Get ClusterReplication
+   * @returns {PVEClusterReplication}
+   */
   get replication() { return this.#replication == null ? (this.#replication = new PVEClusterReplication(this.#client)) : this.#replication; }
   #metrics;
   /**
-  * Get ClusterMetrics
-  * @returns {PVEClusterMetrics}
-  */
+   * Get ClusterMetrics
+   * @returns {PVEClusterMetrics}
+   */
   get metrics() { return this.#metrics == null ? (this.#metrics = new PVEClusterMetrics(this.#client)) : this.#metrics; }
   #config;
   /**
-  * Get ClusterConfig
-  * @returns {PVEClusterConfig}
-  */
+   * Get ClusterConfig
+   * @returns {PVEClusterConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVEClusterConfig(this.#client)) : this.#config; }
   #firewall;
   /**
-  * Get ClusterFirewall
-  * @returns {PVEClusterFirewall}
-  */
+   * Get ClusterFirewall
+   * @returns {PVEClusterFirewall}
+   */
   get firewall() { return this.#firewall == null ? (this.#firewall = new PVEClusterFirewall(this.#client)) : this.#firewall; }
   #backup;
   /**
-  * Get ClusterBackup
-  * @returns {PVEClusterBackup}
-  */
+   * Get ClusterBackup
+   * @returns {PVEClusterBackup}
+   */
   get backup() { return this.#backup == null ? (this.#backup = new PVEClusterBackup(this.#client)) : this.#backup; }
   #backupInfo;
   /**
-  * Get ClusterBackupInfo
-  * @returns {PVEClusterBackupInfo}
-  */
+   * Get ClusterBackupInfo
+   * @returns {PVEClusterBackupInfo}
+   */
   get backupInfo() { return this.#backupInfo == null ? (this.#backupInfo = new PVEClusterBackupInfo(this.#client)) : this.#backupInfo; }
   #ha;
   /**
-  * Get ClusterHa
-  * @returns {PVEClusterHa}
-  */
+   * Get ClusterHa
+   * @returns {PVEClusterHa}
+   */
   get ha() { return this.#ha == null ? (this.#ha = new PVEClusterHa(this.#client)) : this.#ha; }
   #acme;
   /**
-  * Get ClusterAcme
-  * @returns {PVEClusterAcme}
-  */
+   * Get ClusterAcme
+   * @returns {PVEClusterAcme}
+   */
   get acme() { return this.#acme == null ? (this.#acme = new PVEClusterAcme(this.#client)) : this.#acme; }
   #ceph;
   /**
-  * Get ClusterCeph
-  * @returns {PVEClusterCeph}
-  */
+   * Get ClusterCeph
+   * @returns {PVEClusterCeph}
+   */
   get ceph() { return this.#ceph == null ? (this.#ceph = new PVEClusterCeph(this.#client)) : this.#ceph; }
   #jobs;
   /**
-  * Get ClusterJobs
-  * @returns {PVEClusterJobs}
-  */
+   * Get ClusterJobs
+   * @returns {PVEClusterJobs}
+   */
   get jobs() { return this.#jobs == null ? (this.#jobs = new PVEClusterJobs(this.#client)) : this.#jobs; }
   #sdn;
   /**
-  * Get ClusterSdn
-  * @returns {PVEClusterSdn}
-  */
+   * Get ClusterSdn
+   * @returns {PVEClusterSdn}
+   */
   get sdn() { return this.#sdn == null ? (this.#sdn = new PVEClusterSdn(this.#client)) : this.#sdn; }
   #log;
   /**
-  * Get ClusterLog
-  * @returns {PVEClusterLog}
-  */
+   * Get ClusterLog
+   * @returns {PVEClusterLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVEClusterLog(this.#client)) : this.#log; }
   #resources;
   /**
-  * Get ClusterResources
-  * @returns {PVEClusterResources}
-  */
+   * Get ClusterResources
+   * @returns {PVEClusterResources}
+   */
   get resources() { return this.#resources == null ? (this.#resources = new PVEClusterResources(this.#client)) : this.#resources; }
   #tasks;
   /**
-  * Get ClusterTasks
-  * @returns {PVEClusterTasks}
-  */
+   * Get ClusterTasks
+   * @returns {PVEClusterTasks}
+   */
   get tasks() { return this.#tasks == null ? (this.#tasks = new PVEClusterTasks(this.#client)) : this.#tasks; }
   #options;
   /**
-  * Get ClusterOptions
-  * @returns {PVEClusterOptions}
-  */
+   * Get ClusterOptions
+   * @returns {PVEClusterOptions}
+   */
   get options() { return this.#options == null ? (this.#options = new PVEClusterOptions(this.#client)) : this.#options; }
   #status;
   /**
-  * Get ClusterStatus
-  * @returns {PVEClusterStatus}
-  */
+   * Get ClusterStatus
+   * @returns {PVEClusterStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEClusterStatus(this.#client)) : this.#status; }
   #nextid;
   /**
-  * Get ClusterNextid
-  * @returns {PVEClusterNextid}
-  */
+   * Get ClusterNextid
+   * @returns {PVEClusterNextid}
+   */
   get nextid() { return this.#nextid == null ? (this.#nextid = new PVEClusterNextid(this.#client)) : this.#nextid; }
 
 
@@ -615,8 +614,8 @@ class PVECluster {
 
 }
 /**
-* Class PVEClusterReplication
-*/
+ * Class PVEClusterReplication
+ */
 class PVEClusterReplication {
 
   /** @type {PveClient} */
@@ -629,10 +628,10 @@ class PVEClusterReplication {
 
 
   /**
-  * Get ItemReplicationClusterId
-  * @param id
-  * @returns {PVEItemReplicationClusterId}
-  */
+   * Get ItemReplicationClusterId
+   * @param id
+   * @returns {PVEItemReplicationClusterId}
+   */
   get(id) { return new PVEItemReplicationClusterId(this.#client, id); }
 
   /**
@@ -674,8 +673,8 @@ class PVEClusterReplication {
 
 }
 /**
-* Class PVEItemReplicationClusterId
-*/
+ * Class PVEItemReplicationClusterId
+ */
 class PVEItemReplicationClusterId {
   #id;
   /** @type {PveClient} */
@@ -738,8 +737,8 @@ class PVEItemReplicationClusterId {
 }
 
 /**
-* Class PVEClusterMetrics
-*/
+ * Class PVEClusterMetrics
+ */
 class PVEClusterMetrics {
 
   /** @type {PveClient} */
@@ -752,9 +751,9 @@ class PVEClusterMetrics {
 
   #server;
   /**
-  * Get MetricsClusterServer
-  * @returns {PVEMetricsClusterServer}
-  */
+   * Get MetricsClusterServer
+   * @returns {PVEMetricsClusterServer}
+   */
   get server() { return this.#server == null ? (this.#server = new PVEMetricsClusterServer(this.#client)) : this.#server; }
 
 
@@ -768,8 +767,8 @@ class PVEClusterMetrics {
 
 }
 /**
-* Class PVEMetricsClusterServer
-*/
+ * Class PVEMetricsClusterServer
+ */
 class PVEMetricsClusterServer {
 
   /** @type {PveClient} */
@@ -782,10 +781,10 @@ class PVEMetricsClusterServer {
 
 
   /**
-  * Get ItemServerMetricsClusterId
-  * @param id
-  * @returns {PVEItemServerMetricsClusterId}
-  */
+   * Get ItemServerMetricsClusterId
+   * @param id
+   * @returns {PVEItemServerMetricsClusterId}
+   */
   get(id) { return new PVEItemServerMetricsClusterId(this.#client, id); }
 
   /**
@@ -798,8 +797,8 @@ class PVEMetricsClusterServer {
 
 }
 /**
-* Class PVEItemServerMetricsClusterId
-*/
+ * Class PVEItemServerMetricsClusterId
+ */
 class PVEItemServerMetricsClusterId {
   #id;
   /** @type {PveClient} */
@@ -915,8 +914,8 @@ class PVEItemServerMetricsClusterId {
 }
 
 /**
-* Class PVEClusterConfig
-*/
+ * Class PVEClusterConfig
+ */
 class PVEClusterConfig {
 
   /** @type {PveClient} */
@@ -929,33 +928,33 @@ class PVEClusterConfig {
 
   #apiversion;
   /**
-  * Get ConfigClusterApiversion
-  * @returns {PVEConfigClusterApiversion}
-  */
+   * Get ConfigClusterApiversion
+   * @returns {PVEConfigClusterApiversion}
+   */
   get apiversion() { return this.#apiversion == null ? (this.#apiversion = new PVEConfigClusterApiversion(this.#client)) : this.#apiversion; }
   #nodes;
   /**
-  * Get ConfigClusterNodes
-  * @returns {PVEConfigClusterNodes}
-  */
+   * Get ConfigClusterNodes
+   * @returns {PVEConfigClusterNodes}
+   */
   get nodes() { return this.#nodes == null ? (this.#nodes = new PVEConfigClusterNodes(this.#client)) : this.#nodes; }
   #join;
   /**
-  * Get ConfigClusterJoin
-  * @returns {PVEConfigClusterJoin}
-  */
+   * Get ConfigClusterJoin
+   * @returns {PVEConfigClusterJoin}
+   */
   get join() { return this.#join == null ? (this.#join = new PVEConfigClusterJoin(this.#client)) : this.#join; }
   #totem;
   /**
-  * Get ConfigClusterTotem
-  * @returns {PVEConfigClusterTotem}
-  */
+   * Get ConfigClusterTotem
+   * @returns {PVEConfigClusterTotem}
+   */
   get totem() { return this.#totem == null ? (this.#totem = new PVEConfigClusterTotem(this.#client)) : this.#totem; }
   #qdevice;
   /**
-  * Get ConfigClusterQdevice
-  * @returns {PVEConfigClusterQdevice}
-  */
+   * Get ConfigClusterQdevice
+   * @returns {PVEConfigClusterQdevice}
+   */
   get qdevice() { return this.#qdevice == null ? (this.#qdevice = new PVEConfigClusterQdevice(this.#client)) : this.#qdevice; }
 
 
@@ -986,8 +985,8 @@ class PVEClusterConfig {
 
 }
 /**
-* Class PVEConfigClusterApiversion
-*/
+ * Class PVEConfigClusterApiversion
+ */
 class PVEConfigClusterApiversion {
 
   /** @type {PveClient} */
@@ -1011,8 +1010,8 @@ class PVEConfigClusterApiversion {
 }
 
 /**
-* Class PVEConfigClusterNodes
-*/
+ * Class PVEConfigClusterNodes
+ */
 class PVEConfigClusterNodes {
 
   /** @type {PveClient} */
@@ -1025,10 +1024,10 @@ class PVEConfigClusterNodes {
 
 
   /**
-  * Get ItemNodesConfigClusterNode
-  * @param node
-  * @returns {PVEItemNodesConfigClusterNode}
-  */
+   * Get ItemNodesConfigClusterNode
+   * @param node
+   * @returns {PVEItemNodesConfigClusterNode}
+   */
   get(node) { return new PVEItemNodesConfigClusterNode(this.#client, node); }
 
   /**
@@ -1041,8 +1040,8 @@ class PVEConfigClusterNodes {
 
 }
 /**
-* Class PVEItemNodesConfigClusterNode
-*/
+ * Class PVEItemNodesConfigClusterNode
+ */
 class PVEItemNodesConfigClusterNode {
   #node;
   /** @type {PveClient} */
@@ -1087,8 +1086,8 @@ class PVEItemNodesConfigClusterNode {
 }
 
 /**
-* Class PVEConfigClusterJoin
-*/
+ * Class PVEConfigClusterJoin
+ */
 class PVEConfigClusterJoin {
 
   /** @type {PveClient} */
@@ -1137,8 +1136,8 @@ class PVEConfigClusterJoin {
 }
 
 /**
-* Class PVEConfigClusterTotem
-*/
+ * Class PVEConfigClusterTotem
+ */
 class PVEConfigClusterTotem {
 
   /** @type {PveClient} */
@@ -1162,8 +1161,8 @@ class PVEConfigClusterTotem {
 }
 
 /**
-* Class PVEConfigClusterQdevice
-*/
+ * Class PVEConfigClusterQdevice
+ */
 class PVEConfigClusterQdevice {
 
   /** @type {PveClient} */
@@ -1187,8 +1186,8 @@ class PVEConfigClusterQdevice {
 }
 
 /**
-* Class PVEClusterFirewall
-*/
+ * Class PVEClusterFirewall
+ */
 class PVEClusterFirewall {
 
   /** @type {PveClient} */
@@ -1201,45 +1200,45 @@ class PVEClusterFirewall {
 
   #groups;
   /**
-  * Get FirewallClusterGroups
-  * @returns {PVEFirewallClusterGroups}
-  */
+   * Get FirewallClusterGroups
+   * @returns {PVEFirewallClusterGroups}
+   */
   get groups() { return this.#groups == null ? (this.#groups = new PVEFirewallClusterGroups(this.#client)) : this.#groups; }
   #rules;
   /**
-  * Get FirewallClusterRules
-  * @returns {PVEFirewallClusterRules}
-  */
+   * Get FirewallClusterRules
+   * @returns {PVEFirewallClusterRules}
+   */
   get rules() { return this.#rules == null ? (this.#rules = new PVEFirewallClusterRules(this.#client)) : this.#rules; }
   #ipset;
   /**
-  * Get FirewallClusterIpset
-  * @returns {PVEFirewallClusterIpset}
-  */
+   * Get FirewallClusterIpset
+   * @returns {PVEFirewallClusterIpset}
+   */
   get ipset() { return this.#ipset == null ? (this.#ipset = new PVEFirewallClusterIpset(this.#client)) : this.#ipset; }
   #aliases;
   /**
-  * Get FirewallClusterAliases
-  * @returns {PVEFirewallClusterAliases}
-  */
+   * Get FirewallClusterAliases
+   * @returns {PVEFirewallClusterAliases}
+   */
   get aliases() { return this.#aliases == null ? (this.#aliases = new PVEFirewallClusterAliases(this.#client)) : this.#aliases; }
   #options;
   /**
-  * Get FirewallClusterOptions
-  * @returns {PVEFirewallClusterOptions}
-  */
+   * Get FirewallClusterOptions
+   * @returns {PVEFirewallClusterOptions}
+   */
   get options() { return this.#options == null ? (this.#options = new PVEFirewallClusterOptions(this.#client)) : this.#options; }
   #macros;
   /**
-  * Get FirewallClusterMacros
-  * @returns {PVEFirewallClusterMacros}
-  */
+   * Get FirewallClusterMacros
+   * @returns {PVEFirewallClusterMacros}
+   */
   get macros() { return this.#macros == null ? (this.#macros = new PVEFirewallClusterMacros(this.#client)) : this.#macros; }
   #refs;
   /**
-  * Get FirewallClusterRefs
-  * @returns {PVEFirewallClusterRefs}
-  */
+   * Get FirewallClusterRefs
+   * @returns {PVEFirewallClusterRefs}
+   */
   get refs() { return this.#refs == null ? (this.#refs = new PVEFirewallClusterRefs(this.#client)) : this.#refs; }
 
 
@@ -1253,8 +1252,8 @@ class PVEClusterFirewall {
 
 }
 /**
-* Class PVEFirewallClusterGroups
-*/
+ * Class PVEFirewallClusterGroups
+ */
 class PVEFirewallClusterGroups {
 
   /** @type {PveClient} */
@@ -1267,10 +1266,10 @@ class PVEFirewallClusterGroups {
 
 
   /**
-  * Get ItemGroupsFirewallClusterGroup
-  * @param group
-  * @returns {PVEItemGroupsFirewallClusterGroup}
-  */
+   * Get ItemGroupsFirewallClusterGroup
+   * @param group
+   * @returns {PVEItemGroupsFirewallClusterGroup}
+   */
   get(group) { return new PVEItemGroupsFirewallClusterGroup(this.#client, group); }
 
   /**
@@ -1300,8 +1299,8 @@ class PVEFirewallClusterGroups {
 
 }
 /**
-* Class PVEItemGroupsFirewallClusterGroup
-*/
+ * Class PVEItemGroupsFirewallClusterGroup
+ */
 class PVEItemGroupsFirewallClusterGroup {
   #group;
   /** @type {PveClient} */
@@ -1314,10 +1313,10 @@ class PVEItemGroupsFirewallClusterGroup {
 
 
   /**
-  * Get ItemGroupGroupsFirewallClusterPos
-  * @param pos
-  * @returns {PVEItemGroupGroupsFirewallClusterPos}
-  */
+   * Get ItemGroupGroupsFirewallClusterPos
+   * @param pos
+   * @returns {PVEItemGroupGroupsFirewallClusterPos}
+   */
   get(pos) { return new PVEItemGroupGroupsFirewallClusterPos(this.#client, this.#group, pos); }
 
   /**
@@ -1378,8 +1377,8 @@ class PVEItemGroupsFirewallClusterGroup {
 
 }
 /**
-* Class PVEItemGroupGroupsFirewallClusterPos
-*/
+ * Class PVEItemGroupGroupsFirewallClusterPos
+ */
 class PVEItemGroupGroupsFirewallClusterPos {
   #group;
   #pos;
@@ -1457,8 +1456,8 @@ class PVEItemGroupGroupsFirewallClusterPos {
 }
 
 /**
-* Class PVEFirewallClusterRules
-*/
+ * Class PVEFirewallClusterRules
+ */
 class PVEFirewallClusterRules {
 
   /** @type {PveClient} */
@@ -1471,10 +1470,10 @@ class PVEFirewallClusterRules {
 
 
   /**
-  * Get ItemRulesFirewallClusterPos
-  * @param pos
-  * @returns {PVEItemRulesFirewallClusterPos}
-  */
+   * Get ItemRulesFirewallClusterPos
+   * @param pos
+   * @returns {PVEItemRulesFirewallClusterPos}
+   */
   get(pos) { return new PVEItemRulesFirewallClusterPos(this.#client, pos); }
 
   /**
@@ -1528,8 +1527,8 @@ class PVEFirewallClusterRules {
 
 }
 /**
-* Class PVEItemRulesFirewallClusterPos
-*/
+ * Class PVEItemRulesFirewallClusterPos
+ */
 class PVEItemRulesFirewallClusterPos {
   #pos;
   /** @type {PveClient} */
@@ -1605,8 +1604,8 @@ class PVEItemRulesFirewallClusterPos {
 }
 
 /**
-* Class PVEFirewallClusterIpset
-*/
+ * Class PVEFirewallClusterIpset
+ */
 class PVEFirewallClusterIpset {
 
   /** @type {PveClient} */
@@ -1619,10 +1618,10 @@ class PVEFirewallClusterIpset {
 
 
   /**
-  * Get ItemIpsetFirewallClusterName
-  * @param name
-  * @returns {PVEItemIpsetFirewallClusterName}
-  */
+   * Get ItemIpsetFirewallClusterName
+   * @param name
+   * @returns {PVEItemIpsetFirewallClusterName}
+   */
   get(name) { return new PVEItemIpsetFirewallClusterName(this.#client, name); }
 
   /**
@@ -1652,8 +1651,8 @@ class PVEFirewallClusterIpset {
 
 }
 /**
-* Class PVEItemIpsetFirewallClusterName
-*/
+ * Class PVEItemIpsetFirewallClusterName
+ */
 class PVEItemIpsetFirewallClusterName {
   #name;
   /** @type {PveClient} */
@@ -1666,18 +1665,20 @@ class PVEItemIpsetFirewallClusterName {
 
 
   /**
-  * Get ItemNameIpsetFirewallClusterCidr
-  * @param cidr
-  * @returns {PVEItemNameIpsetFirewallClusterCidr}
-  */
+   * Get ItemNameIpsetFirewallClusterCidr
+   * @param cidr
+   * @returns {PVEItemNameIpsetFirewallClusterCidr}
+   */
   get(cidr) { return new PVEItemNameIpsetFirewallClusterCidr(this.#client, this.#name, cidr); }
 
   /**
   * Delete IPSet
+  * @param {bool} force Delete all members of the IPSet, if there are any.
   * @returns {Result}
   */
-  async deleteIpset() {
-    return await this.#client.delete(`/cluster/firewall/ipset/${this.#name}`);
+  async deleteIpset(force) {
+    const parameters = { 'force': force };
+    return await this.#client.delete(`/cluster/firewall/ipset/${this.#name}`, parameters);
   }
   /**
   * List IPSet content
@@ -1704,8 +1705,8 @@ class PVEItemIpsetFirewallClusterName {
 
 }
 /**
-* Class PVEItemNameIpsetFirewallClusterCidr
-*/
+ * Class PVEItemNameIpsetFirewallClusterCidr
+ */
 class PVEItemNameIpsetFirewallClusterCidr {
   #name;
   #cidr;
@@ -1755,8 +1756,8 @@ class PVEItemNameIpsetFirewallClusterCidr {
 }
 
 /**
-* Class PVEFirewallClusterAliases
-*/
+ * Class PVEFirewallClusterAliases
+ */
 class PVEFirewallClusterAliases {
 
   /** @type {PveClient} */
@@ -1769,10 +1770,10 @@ class PVEFirewallClusterAliases {
 
 
   /**
-  * Get ItemAliasesFirewallClusterName
-  * @param name
-  * @returns {PVEItemAliasesFirewallClusterName}
-  */
+   * Get ItemAliasesFirewallClusterName
+   * @param name
+   * @returns {PVEItemAliasesFirewallClusterName}
+   */
   get(name) { return new PVEItemAliasesFirewallClusterName(this.#client, name); }
 
   /**
@@ -1800,8 +1801,8 @@ class PVEFirewallClusterAliases {
 
 }
 /**
-* Class PVEItemAliasesFirewallClusterName
-*/
+ * Class PVEItemAliasesFirewallClusterName
+ */
 class PVEItemAliasesFirewallClusterName {
   #name;
   /** @type {PveClient} */
@@ -1851,8 +1852,8 @@ class PVEItemAliasesFirewallClusterName {
 }
 
 /**
-* Class PVEFirewallClusterOptions
-*/
+ * Class PVEFirewallClusterOptions
+ */
 class PVEFirewallClusterOptions {
 
   /** @type {PveClient} */
@@ -1901,8 +1902,8 @@ class PVEFirewallClusterOptions {
 }
 
 /**
-* Class PVEFirewallClusterMacros
-*/
+ * Class PVEFirewallClusterMacros
+ */
 class PVEFirewallClusterMacros {
 
   /** @type {PveClient} */
@@ -1926,8 +1927,8 @@ class PVEFirewallClusterMacros {
 }
 
 /**
-* Class PVEFirewallClusterRefs
-*/
+ * Class PVEFirewallClusterRefs
+ */
 class PVEFirewallClusterRefs {
 
   /** @type {PveClient} */
@@ -1954,8 +1955,8 @@ class PVEFirewallClusterRefs {
 }
 
 /**
-* Class PVEClusterBackup
-*/
+ * Class PVEClusterBackup
+ */
 class PVEClusterBackup {
 
   /** @type {PveClient} */
@@ -1968,10 +1969,10 @@ class PVEClusterBackup {
 
 
   /**
-  * Get ItemBackupClusterId
-  * @param id
-  * @returns {PVEItemBackupClusterId}
-  */
+   * Get ItemBackupClusterId
+   * @param id
+   * @returns {PVEItemBackupClusterId}
+   */
   get(id) { return new PVEItemBackupClusterId(this.#client, id); }
 
   /**
@@ -2003,13 +2004,15 @@ class PVEClusterBackup {
   * @param {string} mode Backup mode.
   *   Enum: snapshot,suspend,stop
   * @param {string} node Only run if executed on this node.
-  * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future.
+  * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
+  * @param {string} performance Other performance-related settings.
   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
   * @param {string} pool Backup all known guest systems included in the specified pool.
   * @param {bool} protected_ If true, mark backup(s) as protected.
   * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
   * @param {bool} quiet Be quiet.
   * @param {bool} remove Prune older backups according to 'prune-backups'.
+  * @param {bool} repeat_missed If true, the job will be run as soon as possible if it was missed while the scheduler was not running.
   * @param {string} schedule Backup schedule. The format is a subset of `systemd` calendar events.
   * @param {string} script Use specified hook script.
   * @param {string} starttime Job Start time.
@@ -2022,7 +2025,7 @@ class PVEClusterBackup {
   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, N&amp;gt;0 uses N as thread count.
   * @returns {Result}
   */
-  async createJob(all, bwlimit, comment, compress, dow, dumpdir, enabled, exclude, exclude_path, id, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, pigz, pool, protected_, prune_backups, quiet, remove, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
+  async createJob(all, bwlimit, comment, compress, dow, dumpdir, enabled, exclude, exclude_path, id, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, performance, pigz, pool, protected_, prune_backups, quiet, remove, repeat_missed, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
     const parameters = {
       'all': all,
       'bwlimit': bwlimit,
@@ -2042,12 +2045,14 @@ class PVEClusterBackup {
       'mode': mode,
       'node': node,
       'notes-template': notes_template,
+      'performance': performance,
       'pigz': pigz,
       'pool': pool,
       'protected': protected_,
       'prune-backups': prune_backups,
       'quiet': quiet,
       'remove': remove,
+      'repeat-missed': repeat_missed,
       'schedule': schedule,
       'script': script,
       'starttime': starttime,
@@ -2064,8 +2069,8 @@ class PVEClusterBackup {
 
 }
 /**
-* Class PVEItemBackupClusterId
-*/
+ * Class PVEItemBackupClusterId
+ */
 class PVEItemBackupClusterId {
   #id;
   /** @type {PveClient} */
@@ -2078,9 +2083,9 @@ class PVEItemBackupClusterId {
 
   #includedVolumes;
   /**
-  * Get IdBackupClusterIncludedVolumes
-  * @returns {PVEIdBackupClusterIncludedVolumes}
-  */
+   * Get IdBackupClusterIncludedVolumes
+   * @returns {PVEIdBackupClusterIncludedVolumes}
+   */
   get includedVolumes() { return this.#includedVolumes == null ? (this.#includedVolumes = new PVEIdBackupClusterIncludedVolumes(this.#client, this.#id)) : this.#includedVolumes; }
 
 
@@ -2120,13 +2125,15 @@ class PVEItemBackupClusterId {
   * @param {string} mode Backup mode.
   *   Enum: snapshot,suspend,stop
   * @param {string} node Only run if executed on this node.
-  * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future.
+  * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
+  * @param {string} performance Other performance-related settings.
   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
   * @param {string} pool Backup all known guest systems included in the specified pool.
   * @param {bool} protected_ If true, mark backup(s) as protected.
   * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
   * @param {bool} quiet Be quiet.
   * @param {bool} remove Prune older backups according to 'prune-backups'.
+  * @param {bool} repeat_missed If true, the job will be run as soon as possible if it was missed while the scheduler was not running.
   * @param {string} schedule Backup schedule. The format is a subset of `systemd` calendar events.
   * @param {string} script Use specified hook script.
   * @param {string} starttime Job Start time.
@@ -2139,7 +2146,7 @@ class PVEItemBackupClusterId {
   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, N&amp;gt;0 uses N as thread count.
   * @returns {Result}
   */
-  async updateJob(all, bwlimit, comment, compress, delete_, dow, dumpdir, enabled, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, pigz, pool, protected_, prune_backups, quiet, remove, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
+  async updateJob(all, bwlimit, comment, compress, delete_, dow, dumpdir, enabled, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, performance, pigz, pool, protected_, prune_backups, quiet, remove, repeat_missed, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
     const parameters = {
       'all': all,
       'bwlimit': bwlimit,
@@ -2159,12 +2166,14 @@ class PVEItemBackupClusterId {
       'mode': mode,
       'node': node,
       'notes-template': notes_template,
+      'performance': performance,
       'pigz': pigz,
       'pool': pool,
       'protected': protected_,
       'prune-backups': prune_backups,
       'quiet': quiet,
       'remove': remove,
+      'repeat-missed': repeat_missed,
       'schedule': schedule,
       'script': script,
       'starttime': starttime,
@@ -2181,8 +2190,8 @@ class PVEItemBackupClusterId {
 
 }
 /**
-* Class PVEIdBackupClusterIncludedVolumes
-*/
+ * Class PVEIdBackupClusterIncludedVolumes
+ */
 class PVEIdBackupClusterIncludedVolumes {
   #id;
   /** @type {PveClient} */
@@ -2206,8 +2215,8 @@ class PVEIdBackupClusterIncludedVolumes {
 }
 
 /**
-* Class PVEClusterBackupInfo
-*/
+ * Class PVEClusterBackupInfo
+ */
 class PVEClusterBackupInfo {
 
   /** @type {PveClient} */
@@ -2220,9 +2229,9 @@ class PVEClusterBackupInfo {
 
   #notBackedUp;
   /**
-  * Get BackupInfoClusterNotBackedUp
-  * @returns {PVEBackupInfoClusterNotBackedUp}
-  */
+   * Get BackupInfoClusterNotBackedUp
+   * @returns {PVEBackupInfoClusterNotBackedUp}
+   */
   get notBackedUp() { return this.#notBackedUp == null ? (this.#notBackedUp = new PVEBackupInfoClusterNotBackedUp(this.#client)) : this.#notBackedUp; }
 
 
@@ -2236,8 +2245,8 @@ class PVEClusterBackupInfo {
 
 }
 /**
-* Class PVEBackupInfoClusterNotBackedUp
-*/
+ * Class PVEBackupInfoClusterNotBackedUp
+ */
 class PVEBackupInfoClusterNotBackedUp {
 
   /** @type {PveClient} */
@@ -2261,8 +2270,8 @@ class PVEBackupInfoClusterNotBackedUp {
 }
 
 /**
-* Class PVEClusterHa
-*/
+ * Class PVEClusterHa
+ */
 class PVEClusterHa {
 
   /** @type {PveClient} */
@@ -2275,21 +2284,21 @@ class PVEClusterHa {
 
   #resources;
   /**
-  * Get HaClusterResources
-  * @returns {PVEHaClusterResources}
-  */
+   * Get HaClusterResources
+   * @returns {PVEHaClusterResources}
+   */
   get resources() { return this.#resources == null ? (this.#resources = new PVEHaClusterResources(this.#client)) : this.#resources; }
   #groups;
   /**
-  * Get HaClusterGroups
-  * @returns {PVEHaClusterGroups}
-  */
+   * Get HaClusterGroups
+   * @returns {PVEHaClusterGroups}
+   */
   get groups() { return this.#groups == null ? (this.#groups = new PVEHaClusterGroups(this.#client)) : this.#groups; }
   #status;
   /**
-  * Get HaClusterStatus
-  * @returns {PVEHaClusterStatus}
-  */
+   * Get HaClusterStatus
+   * @returns {PVEHaClusterStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEHaClusterStatus(this.#client)) : this.#status; }
 
 
@@ -2303,8 +2312,8 @@ class PVEClusterHa {
 
 }
 /**
-* Class PVEHaClusterResources
-*/
+ * Class PVEHaClusterResources
+ */
 class PVEHaClusterResources {
 
   /** @type {PveClient} */
@@ -2317,10 +2326,10 @@ class PVEHaClusterResources {
 
 
   /**
-  * Get ItemResourcesHaClusterSid
-  * @param sid
-  * @returns {PVEItemResourcesHaClusterSid}
-  */
+   * Get ItemResourcesHaClusterSid
+   * @param sid
+   * @returns {PVEItemResourcesHaClusterSid}
+   */
   get(sid) { return new PVEItemResourcesHaClusterSid(this.#client, sid); }
 
   /**
@@ -2361,8 +2370,8 @@ class PVEHaClusterResources {
 
 }
 /**
-* Class PVEItemResourcesHaClusterSid
-*/
+ * Class PVEItemResourcesHaClusterSid
+ */
 class PVEItemResourcesHaClusterSid {
   #sid;
   /** @type {PveClient} */
@@ -2375,15 +2384,15 @@ class PVEItemResourcesHaClusterSid {
 
   #migrate;
   /**
-  * Get SidResourcesHaClusterMigrate
-  * @returns {PVESidResourcesHaClusterMigrate}
-  */
+   * Get SidResourcesHaClusterMigrate
+   * @returns {PVESidResourcesHaClusterMigrate}
+   */
   get migrate() { return this.#migrate == null ? (this.#migrate = new PVESidResourcesHaClusterMigrate(this.#client, this.#sid)) : this.#migrate; }
   #relocate;
   /**
-  * Get SidResourcesHaClusterRelocate
-  * @returns {PVESidResourcesHaClusterRelocate}
-  */
+   * Get SidResourcesHaClusterRelocate
+   * @returns {PVESidResourcesHaClusterRelocate}
+   */
   get relocate() { return this.#relocate == null ? (this.#relocate = new PVESidResourcesHaClusterRelocate(this.#client, this.#sid)) : this.#relocate; }
 
 
@@ -2428,8 +2437,8 @@ class PVEItemResourcesHaClusterSid {
 
 }
 /**
-* Class PVESidResourcesHaClusterMigrate
-*/
+ * Class PVESidResourcesHaClusterMigrate
+ */
 class PVESidResourcesHaClusterMigrate {
   #sid;
   /** @type {PveClient} */
@@ -2455,8 +2464,8 @@ class PVESidResourcesHaClusterMigrate {
 }
 
 /**
-* Class PVESidResourcesHaClusterRelocate
-*/
+ * Class PVESidResourcesHaClusterRelocate
+ */
 class PVESidResourcesHaClusterRelocate {
   #sid;
   /** @type {PveClient} */
@@ -2482,8 +2491,8 @@ class PVESidResourcesHaClusterRelocate {
 }
 
 /**
-* Class PVEHaClusterGroups
-*/
+ * Class PVEHaClusterGroups
+ */
 class PVEHaClusterGroups {
 
   /** @type {PveClient} */
@@ -2496,10 +2505,10 @@ class PVEHaClusterGroups {
 
 
   /**
-  * Get ItemGroupsHaClusterGroup
-  * @param group
-  * @returns {PVEItemGroupsHaClusterGroup}
-  */
+   * Get ItemGroupsHaClusterGroup
+   * @param group
+   * @returns {PVEItemGroupsHaClusterGroup}
+   */
   get(group) { return new PVEItemGroupsHaClusterGroup(this.#client, group); }
 
   /**
@@ -2534,8 +2543,8 @@ class PVEHaClusterGroups {
 
 }
 /**
-* Class PVEItemGroupsHaClusterGroup
-*/
+ * Class PVEItemGroupsHaClusterGroup
+ */
 class PVEItemGroupsHaClusterGroup {
   #group;
   /** @type {PveClient} */
@@ -2587,8 +2596,8 @@ class PVEItemGroupsHaClusterGroup {
 }
 
 /**
-* Class PVEHaClusterStatus
-*/
+ * Class PVEHaClusterStatus
+ */
 class PVEHaClusterStatus {
 
   /** @type {PveClient} */
@@ -2601,15 +2610,15 @@ class PVEHaClusterStatus {
 
   #current;
   /**
-  * Get StatusHaClusterCurrent
-  * @returns {PVEStatusHaClusterCurrent}
-  */
+   * Get StatusHaClusterCurrent
+   * @returns {PVEStatusHaClusterCurrent}
+   */
   get current() { return this.#current == null ? (this.#current = new PVEStatusHaClusterCurrent(this.#client)) : this.#current; }
   #managerStatus;
   /**
-  * Get StatusHaClusterManagerStatus
-  * @returns {PVEStatusHaClusterManagerStatus}
-  */
+   * Get StatusHaClusterManagerStatus
+   * @returns {PVEStatusHaClusterManagerStatus}
+   */
   get managerStatus() { return this.#managerStatus == null ? (this.#managerStatus = new PVEStatusHaClusterManagerStatus(this.#client)) : this.#managerStatus; }
 
 
@@ -2623,8 +2632,8 @@ class PVEHaClusterStatus {
 
 }
 /**
-* Class PVEStatusHaClusterCurrent
-*/
+ * Class PVEStatusHaClusterCurrent
+ */
 class PVEStatusHaClusterCurrent {
 
   /** @type {PveClient} */
@@ -2648,8 +2657,8 @@ class PVEStatusHaClusterCurrent {
 }
 
 /**
-* Class PVEStatusHaClusterManagerStatus
-*/
+ * Class PVEStatusHaClusterManagerStatus
+ */
 class PVEStatusHaClusterManagerStatus {
 
   /** @type {PveClient} */
@@ -2673,8 +2682,8 @@ class PVEStatusHaClusterManagerStatus {
 }
 
 /**
-* Class PVEClusterAcme
-*/
+ * Class PVEClusterAcme
+ */
 class PVEClusterAcme {
 
   /** @type {PveClient} */
@@ -2687,33 +2696,33 @@ class PVEClusterAcme {
 
   #plugins;
   /**
-  * Get AcmeClusterPlugins
-  * @returns {PVEAcmeClusterPlugins}
-  */
+   * Get AcmeClusterPlugins
+   * @returns {PVEAcmeClusterPlugins}
+   */
   get plugins() { return this.#plugins == null ? (this.#plugins = new PVEAcmeClusterPlugins(this.#client)) : this.#plugins; }
   #account;
   /**
-  * Get AcmeClusterAccount
-  * @returns {PVEAcmeClusterAccount}
-  */
+   * Get AcmeClusterAccount
+   * @returns {PVEAcmeClusterAccount}
+   */
   get account() { return this.#account == null ? (this.#account = new PVEAcmeClusterAccount(this.#client)) : this.#account; }
   #tos;
   /**
-  * Get AcmeClusterTos
-  * @returns {PVEAcmeClusterTos}
-  */
+   * Get AcmeClusterTos
+   * @returns {PVEAcmeClusterTos}
+   */
   get tos() { return this.#tos == null ? (this.#tos = new PVEAcmeClusterTos(this.#client)) : this.#tos; }
   #directories;
   /**
-  * Get AcmeClusterDirectories
-  * @returns {PVEAcmeClusterDirectories}
-  */
+   * Get AcmeClusterDirectories
+   * @returns {PVEAcmeClusterDirectories}
+   */
   get directories() { return this.#directories == null ? (this.#directories = new PVEAcmeClusterDirectories(this.#client)) : this.#directories; }
   #challengeSchema;
   /**
-  * Get AcmeClusterChallengeSchema
-  * @returns {PVEAcmeClusterChallengeSchema}
-  */
+   * Get AcmeClusterChallengeSchema
+   * @returns {PVEAcmeClusterChallengeSchema}
+   */
   get challengeSchema() { return this.#challengeSchema == null ? (this.#challengeSchema = new PVEAcmeClusterChallengeSchema(this.#client)) : this.#challengeSchema; }
 
 
@@ -2727,8 +2736,8 @@ class PVEClusterAcme {
 
 }
 /**
-* Class PVEAcmeClusterPlugins
-*/
+ * Class PVEAcmeClusterPlugins
+ */
 class PVEAcmeClusterPlugins {
 
   /** @type {PveClient} */
@@ -2741,10 +2750,10 @@ class PVEAcmeClusterPlugins {
 
 
   /**
-  * Get ItemPluginsAcmeClusterId
-  * @param id
-  * @returns {PVEItemPluginsAcmeClusterId}
-  */
+   * Get ItemPluginsAcmeClusterId
+   * @param id
+   * @returns {PVEItemPluginsAcmeClusterId}
+   */
   get(id) { return new PVEItemPluginsAcmeClusterId(this.#client, id); }
 
   /**
@@ -2785,8 +2794,8 @@ class PVEAcmeClusterPlugins {
 
 }
 /**
-* Class PVEItemPluginsAcmeClusterId
-*/
+ * Class PVEItemPluginsAcmeClusterId
+ */
 class PVEItemPluginsAcmeClusterId {
   #id;
   /** @type {PveClient} */
@@ -2841,8 +2850,8 @@ class PVEItemPluginsAcmeClusterId {
 }
 
 /**
-* Class PVEAcmeClusterAccount
-*/
+ * Class PVEAcmeClusterAccount
+ */
 class PVEAcmeClusterAccount {
 
   /** @type {PveClient} */
@@ -2855,10 +2864,10 @@ class PVEAcmeClusterAccount {
 
 
   /**
-  * Get ItemAccountAcmeClusterName
-  * @param name
-  * @returns {PVEItemAccountAcmeClusterName}
-  */
+   * Get ItemAccountAcmeClusterName
+   * @param name
+   * @returns {PVEItemAccountAcmeClusterName}
+   */
   get(name) { return new PVEItemAccountAcmeClusterName(this.#client, name); }
 
   /**
@@ -2888,8 +2897,8 @@ class PVEAcmeClusterAccount {
 
 }
 /**
-* Class PVEItemAccountAcmeClusterName
-*/
+ * Class PVEItemAccountAcmeClusterName
+ */
 class PVEItemAccountAcmeClusterName {
   #name;
   /** @type {PveClient} */
@@ -2929,8 +2938,8 @@ class PVEItemAccountAcmeClusterName {
 }
 
 /**
-* Class PVEAcmeClusterTos
-*/
+ * Class PVEAcmeClusterTos
+ */
 class PVEAcmeClusterTos {
 
   /** @type {PveClient} */
@@ -2956,8 +2965,8 @@ class PVEAcmeClusterTos {
 }
 
 /**
-* Class PVEAcmeClusterDirectories
-*/
+ * Class PVEAcmeClusterDirectories
+ */
 class PVEAcmeClusterDirectories {
 
   /** @type {PveClient} */
@@ -2981,8 +2990,8 @@ class PVEAcmeClusterDirectories {
 }
 
 /**
-* Class PVEAcmeClusterChallengeSchema
-*/
+ * Class PVEAcmeClusterChallengeSchema
+ */
 class PVEAcmeClusterChallengeSchema {
 
   /** @type {PveClient} */
@@ -3006,8 +3015,8 @@ class PVEAcmeClusterChallengeSchema {
 }
 
 /**
-* Class PVEClusterCeph
-*/
+ * Class PVEClusterCeph
+ */
 class PVEClusterCeph {
 
   /** @type {PveClient} */
@@ -3020,21 +3029,21 @@ class PVEClusterCeph {
 
   #metadata;
   /**
-  * Get CephClusterMetadata
-  * @returns {PVECephClusterMetadata}
-  */
+   * Get CephClusterMetadata
+   * @returns {PVECephClusterMetadata}
+   */
   get metadata() { return this.#metadata == null ? (this.#metadata = new PVECephClusterMetadata(this.#client)) : this.#metadata; }
   #status;
   /**
-  * Get CephClusterStatus
-  * @returns {PVECephClusterStatus}
-  */
+   * Get CephClusterStatus
+   * @returns {PVECephClusterStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVECephClusterStatus(this.#client)) : this.#status; }
   #flags;
   /**
-  * Get CephClusterFlags
-  * @returns {PVECephClusterFlags}
-  */
+   * Get CephClusterFlags
+   * @returns {PVECephClusterFlags}
+   */
   get flags() { return this.#flags == null ? (this.#flags = new PVECephClusterFlags(this.#client)) : this.#flags; }
 
 
@@ -3048,8 +3057,8 @@ class PVEClusterCeph {
 
 }
 /**
-* Class PVECephClusterMetadata
-*/
+ * Class PVECephClusterMetadata
+ */
 class PVECephClusterMetadata {
 
   /** @type {PveClient} */
@@ -3076,8 +3085,8 @@ class PVECephClusterMetadata {
 }
 
 /**
-* Class PVECephClusterStatus
-*/
+ * Class PVECephClusterStatus
+ */
 class PVECephClusterStatus {
 
   /** @type {PveClient} */
@@ -3101,8 +3110,8 @@ class PVECephClusterStatus {
 }
 
 /**
-* Class PVECephClusterFlags
-*/
+ * Class PVECephClusterFlags
+ */
 class PVECephClusterFlags {
 
   /** @type {PveClient} */
@@ -3115,10 +3124,10 @@ class PVECephClusterFlags {
 
 
   /**
-  * Get ItemFlagsCephClusterFlag
-  * @param flag
-  * @returns {PVEItemFlagsCephClusterFlag}
-  */
+   * Get ItemFlagsCephClusterFlag
+   * @param flag
+   * @returns {PVEItemFlagsCephClusterFlag}
+   */
   get(flag) { return new PVEItemFlagsCephClusterFlag(this.#client, flag); }
 
   /**
@@ -3162,8 +3171,8 @@ class PVECephClusterFlags {
 
 }
 /**
-* Class PVEItemFlagsCephClusterFlag
-*/
+ * Class PVEItemFlagsCephClusterFlag
+ */
 class PVEItemFlagsCephClusterFlag {
   #flag;
   /** @type {PveClient} */
@@ -3196,8 +3205,8 @@ class PVEItemFlagsCephClusterFlag {
 }
 
 /**
-* Class PVEClusterJobs
-*/
+ * Class PVEClusterJobs
+ */
 class PVEClusterJobs {
 
   /** @type {PveClient} */
@@ -3210,9 +3219,9 @@ class PVEClusterJobs {
 
   #scheduleAnalyze;
   /**
-  * Get JobsClusterScheduleAnalyze
-  * @returns {PVEJobsClusterScheduleAnalyze}
-  */
+   * Get JobsClusterScheduleAnalyze
+   * @returns {PVEJobsClusterScheduleAnalyze}
+   */
   get scheduleAnalyze() { return this.#scheduleAnalyze == null ? (this.#scheduleAnalyze = new PVEJobsClusterScheduleAnalyze(this.#client)) : this.#scheduleAnalyze; }
 
 
@@ -3226,8 +3235,8 @@ class PVEClusterJobs {
 
 }
 /**
-* Class PVEJobsClusterScheduleAnalyze
-*/
+ * Class PVEJobsClusterScheduleAnalyze
+ */
 class PVEJobsClusterScheduleAnalyze {
 
   /** @type {PveClient} */
@@ -3259,8 +3268,8 @@ class PVEJobsClusterScheduleAnalyze {
 }
 
 /**
-* Class PVEClusterSdn
-*/
+ * Class PVEClusterSdn
+ */
 class PVEClusterSdn {
 
   /** @type {PveClient} */
@@ -3273,33 +3282,33 @@ class PVEClusterSdn {
 
   #vnets;
   /**
-  * Get SdnClusterVnets
-  * @returns {PVESdnClusterVnets}
-  */
+   * Get SdnClusterVnets
+   * @returns {PVESdnClusterVnets}
+   */
   get vnets() { return this.#vnets == null ? (this.#vnets = new PVESdnClusterVnets(this.#client)) : this.#vnets; }
   #zones;
   /**
-  * Get SdnClusterZones
-  * @returns {PVESdnClusterZones}
-  */
+   * Get SdnClusterZones
+   * @returns {PVESdnClusterZones}
+   */
   get zones() { return this.#zones == null ? (this.#zones = new PVESdnClusterZones(this.#client)) : this.#zones; }
   #controllers;
   /**
-  * Get SdnClusterControllers
-  * @returns {PVESdnClusterControllers}
-  */
+   * Get SdnClusterControllers
+   * @returns {PVESdnClusterControllers}
+   */
   get controllers() { return this.#controllers == null ? (this.#controllers = new PVESdnClusterControllers(this.#client)) : this.#controllers; }
   #ipams;
   /**
-  * Get SdnClusterIpams
-  * @returns {PVESdnClusterIpams}
-  */
+   * Get SdnClusterIpams
+   * @returns {PVESdnClusterIpams}
+   */
   get ipams() { return this.#ipams == null ? (this.#ipams = new PVESdnClusterIpams(this.#client)) : this.#ipams; }
   #dns;
   /**
-  * Get SdnClusterDns
-  * @returns {PVESdnClusterDns}
-  */
+   * Get SdnClusterDns
+   * @returns {PVESdnClusterDns}
+   */
   get dns() { return this.#dns == null ? (this.#dns = new PVESdnClusterDns(this.#client)) : this.#dns; }
 
 
@@ -3320,8 +3329,8 @@ class PVEClusterSdn {
 
 }
 /**
-* Class PVESdnClusterVnets
-*/
+ * Class PVESdnClusterVnets
+ */
 class PVESdnClusterVnets {
 
   /** @type {PveClient} */
@@ -3334,10 +3343,10 @@ class PVESdnClusterVnets {
 
 
   /**
-  * Get ItemVnetsSdnClusterVnet
-  * @param vnet
-  * @returns {PVEItemVnetsSdnClusterVnet}
-  */
+   * Get ItemVnetsSdnClusterVnet
+   * @param vnet
+   * @returns {PVEItemVnetsSdnClusterVnet}
+   */
   get(vnet) { return new PVEItemVnetsSdnClusterVnet(this.#client, vnet); }
 
   /**
@@ -3378,8 +3387,8 @@ class PVESdnClusterVnets {
 
 }
 /**
-* Class PVEItemVnetsSdnClusterVnet
-*/
+ * Class PVEItemVnetsSdnClusterVnet
+ */
 class PVEItemVnetsSdnClusterVnet {
   #vnet;
   /** @type {PveClient} */
@@ -3392,9 +3401,9 @@ class PVEItemVnetsSdnClusterVnet {
 
   #subnets;
   /**
-  * Get VnetVnetsSdnClusterSubnets
-  * @returns {PVEVnetVnetsSdnClusterSubnets}
-  */
+   * Get VnetVnetsSdnClusterSubnets
+   * @returns {PVEVnetVnetsSdnClusterSubnets}
+   */
   get subnets() { return this.#subnets == null ? (this.#subnets = new PVEVnetVnetsSdnClusterSubnets(this.#client, this.#vnet)) : this.#subnets; }
 
 
@@ -3442,8 +3451,8 @@ class PVEItemVnetsSdnClusterVnet {
 
 }
 /**
-* Class PVEVnetVnetsSdnClusterSubnets
-*/
+ * Class PVEVnetVnetsSdnClusterSubnets
+ */
 class PVEVnetVnetsSdnClusterSubnets {
   #vnet;
   /** @type {PveClient} */
@@ -3456,10 +3465,10 @@ class PVEVnetVnetsSdnClusterSubnets {
 
 
   /**
-  * Get ItemSubnetsVnetVnetsSdnClusterSubnet
-  * @param subnet
-  * @returns {PVEItemSubnetsVnetVnetsSdnClusterSubnet}
-  */
+   * Get ItemSubnetsVnetVnetsSdnClusterSubnet
+   * @param subnet
+   * @returns {PVEItemSubnetsVnetVnetsSdnClusterSubnet}
+   */
   get(subnet) { return new PVEItemSubnetsVnetVnetsSdnClusterSubnet(this.#client, this.#vnet, subnet); }
 
   /**
@@ -3498,8 +3507,8 @@ class PVEVnetVnetsSdnClusterSubnets {
 
 }
 /**
-* Class PVEItemSubnetsVnetVnetsSdnClusterSubnet
-*/
+ * Class PVEItemSubnetsVnetVnetsSdnClusterSubnet
+ */
 class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
   #vnet;
   #subnet;
@@ -3557,8 +3566,8 @@ class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
 }
 
 /**
-* Class PVESdnClusterZones
-*/
+ * Class PVESdnClusterZones
+ */
 class PVESdnClusterZones {
 
   /** @type {PveClient} */
@@ -3571,10 +3580,10 @@ class PVESdnClusterZones {
 
 
   /**
-  * Get ItemZonesSdnClusterZone
-  * @param zone
-  * @returns {PVEItemZonesSdnClusterZone}
-  */
+   * Get ItemZonesSdnClusterZone
+   * @param zone
+   * @returns {PVEItemZonesSdnClusterZone}
+   */
   get(zone) { return new PVEItemZonesSdnClusterZone(this.#client, zone); }
 
   /**
@@ -3653,8 +3662,8 @@ class PVESdnClusterZones {
 
 }
 /**
-* Class PVEItemZonesSdnClusterZone
-*/
+ * Class PVEItemZonesSdnClusterZone
+ */
 class PVEItemZonesSdnClusterZone {
   #zone;
   /** @type {PveClient} */
@@ -3747,8 +3756,8 @@ class PVEItemZonesSdnClusterZone {
 }
 
 /**
-* Class PVESdnClusterControllers
-*/
+ * Class PVESdnClusterControllers
+ */
 class PVESdnClusterControllers {
 
   /** @type {PveClient} */
@@ -3761,10 +3770,10 @@ class PVESdnClusterControllers {
 
 
   /**
-  * Get ItemControllersSdnClusterController
-  * @param controller
-  * @returns {PVEItemControllersSdnClusterController}
-  */
+   * Get ItemControllersSdnClusterController
+   * @param controller
+   * @returns {PVEItemControllersSdnClusterController}
+   */
   get(controller) { return new PVEItemControllersSdnClusterController(this.#client, controller); }
 
   /**
@@ -3814,8 +3823,8 @@ class PVESdnClusterControllers {
 
 }
 /**
-* Class PVEItemControllersSdnClusterController
-*/
+ * Class PVEItemControllersSdnClusterController
+ */
 class PVEItemControllersSdnClusterController {
   #controller;
   /** @type {PveClient} */
@@ -3879,8 +3888,8 @@ class PVEItemControllersSdnClusterController {
 }
 
 /**
-* Class PVESdnClusterIpams
-*/
+ * Class PVESdnClusterIpams
+ */
 class PVESdnClusterIpams {
 
   /** @type {PveClient} */
@@ -3893,10 +3902,10 @@ class PVESdnClusterIpams {
 
 
   /**
-  * Get ItemIpamsSdnClusterIpam
-  * @param ipam
-  * @returns {PVEItemIpamsSdnClusterIpam}
-  */
+   * Get ItemIpamsSdnClusterIpam
+   * @param ipam
+   * @returns {PVEItemIpamsSdnClusterIpam}
+   */
   get(ipam) { return new PVEItemIpamsSdnClusterIpam(this.#client, ipam); }
 
   /**
@@ -3932,8 +3941,8 @@ class PVESdnClusterIpams {
 
 }
 /**
-* Class PVEItemIpamsSdnClusterIpam
-*/
+ * Class PVEItemIpamsSdnClusterIpam
+ */
 class PVEItemIpamsSdnClusterIpam {
   #ipam;
   /** @type {PveClient} */
@@ -3983,8 +3992,8 @@ class PVEItemIpamsSdnClusterIpam {
 }
 
 /**
-* Class PVESdnClusterDns
-*/
+ * Class PVESdnClusterDns
+ */
 class PVESdnClusterDns {
 
   /** @type {PveClient} */
@@ -3997,10 +4006,10 @@ class PVESdnClusterDns {
 
 
   /**
-  * Get ItemDnsSdnClusterDns
-  * @param dns
-  * @returns {PVEItemDnsSdnClusterDns}
-  */
+   * Get ItemDnsSdnClusterDns
+   * @param dns
+   * @returns {PVEItemDnsSdnClusterDns}
+   */
   get(dns) { return new PVEItemDnsSdnClusterDns(this.#client, dns); }
 
   /**
@@ -4040,8 +4049,8 @@ class PVESdnClusterDns {
 
 }
 /**
-* Class PVEItemDnsSdnClusterDns
-*/
+ * Class PVEItemDnsSdnClusterDns
+ */
 class PVEItemDnsSdnClusterDns {
   #dns;
   /** @type {PveClient} */
@@ -4093,8 +4102,8 @@ class PVEItemDnsSdnClusterDns {
 }
 
 /**
-* Class PVEClusterLog
-*/
+ * Class PVEClusterLog
+ */
 class PVEClusterLog {
 
   /** @type {PveClient} */
@@ -4120,8 +4129,8 @@ class PVEClusterLog {
 }
 
 /**
-* Class PVEClusterResources
-*/
+ * Class PVEClusterResources
+ */
 class PVEClusterResources {
 
   /** @type {PveClient} */
@@ -4148,8 +4157,8 @@ class PVEClusterResources {
 }
 
 /**
-* Class PVEClusterTasks
-*/
+ * Class PVEClusterTasks
+ */
 class PVEClusterTasks {
 
   /** @type {PveClient} */
@@ -4173,8 +4182,8 @@ class PVEClusterTasks {
 }
 
 /**
-* Class PVEClusterOptions
-*/
+ * Class PVEClusterOptions
+ */
 class PVEClusterOptions {
 
   /** @type {PveClient} */
@@ -4188,7 +4197,7 @@ class PVEClusterOptions {
 
 
   /**
-  * Get datacenter options.
+  * Get datacenter options. Without 'Sys.Audit' on '/' not all options are returned.
   * @returns {Result}
   */
   async getOptions() {
@@ -4199,6 +4208,7 @@ class PVEClusterOptions {
   * @param {string} bwlimit Set bandwidth/io limits various operations.
   * @param {string} console Select the default Console viewer. You can either use the builtin java applet (VNC; deprecated and maps to html5), an external virt-viewer comtatible application (SPICE), an HTML5 based vnc viewer (noVNC), or an HTML5 based console client (xtermjs). If the selected viewer is not available (e.g. SPICE not activated for the VM), the fallback is noVNC.
   *   Enum: applet,vv,html5,xtermjs
+  * @param {string} crs Cluster resource scheduling settings.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} description Datacenter description. Shown in the web-interface datacenter notes panel. This is saved as comment inside the configuration file.
   * @param {string} email_from Specify email address to send notification from (default is root@$hostname)
@@ -4215,14 +4225,18 @@ class PVEClusterOptions {
   * @param {string} migration For cluster wide migration settings.
   * @param {bool} migration_unsecure Migration is secure using SSH tunnel by default. For secure private networks you can disable it to speed up migration. Deprecated, use the 'migration' property instead!
   * @param {string} next_id Control the range for the free VMID auto-selection pool.
+  * @param {string} registered_tags A list of tags that require a `Sys.Modify` on '/' to set and delete. Tags set here that are also in 'user-tag-access' also require `Sys.Modify`.
+  * @param {string} tag_style Tag style options.
   * @param {string} u2f u2f
+  * @param {string} user_tag_access Privilege options for user-settable tags
   * @param {string} webauthn webauthn configuration
   * @returns {Result}
   */
-  async setOptions(bwlimit, console, delete_, description, email_from, fencing, ha, http_proxy, keyboard, language, mac_prefix, max_workers, migration, migration_unsecure, next_id, u2f, webauthn) {
+  async setOptions(bwlimit, console, crs, delete_, description, email_from, fencing, ha, http_proxy, keyboard, language, mac_prefix, max_workers, migration, migration_unsecure, next_id, registered_tags, tag_style, u2f, user_tag_access, webauthn) {
     const parameters = {
       'bwlimit': bwlimit,
       'console': console,
+      'crs': crs,
       'delete': delete_,
       'description': description,
       'email_from': email_from,
@@ -4236,7 +4250,10 @@ class PVEClusterOptions {
       'migration': migration,
       'migration_unsecure': migration_unsecure,
       'next-id': next_id,
+      'registered-tags': registered_tags,
+      'tag-style': tag_style,
       'u2f': u2f,
+      'user-tag-access': user_tag_access,
       'webauthn': webauthn
     };
     return await this.#client.set(`/cluster/options`, parameters);
@@ -4245,8 +4262,8 @@ class PVEClusterOptions {
 }
 
 /**
-* Class PVEClusterStatus
-*/
+ * Class PVEClusterStatus
+ */
 class PVEClusterStatus {
 
   /** @type {PveClient} */
@@ -4270,8 +4287,8 @@ class PVEClusterStatus {
 }
 
 /**
-* Class PVEClusterNextid
-*/
+ * Class PVEClusterNextid
+ */
 class PVEClusterNextid {
 
   /** @type {PveClient} */
@@ -4297,8 +4314,8 @@ class PVEClusterNextid {
 }
 
 /**
-* Class PVENodes
-*/
+ * Class PVENodes
+ */
 class PVENodes {
 
   /** @type {PveClient} */
@@ -4311,10 +4328,10 @@ class PVENodes {
 
 
   /**
-  * Get ItemNodesNode
-  * @param node
-  * @returns {PVEItemNodesNode}
-  */
+   * Get ItemNodesNode
+   * @param node
+   * @returns {PVEItemNodesNode}
+   */
   get(node) { return new PVEItemNodesNode(this.#client, node); }
 
   /**
@@ -4327,8 +4344,8 @@ class PVENodes {
 
 }
 /**
-* Class PVEItemNodesNode
-*/
+ * Class PVEItemNodesNode
+ */
 class PVEItemNodesNode {
   #node;
   /** @type {PveClient} */
@@ -4341,249 +4358,249 @@ class PVEItemNodesNode {
 
   #qemu;
   /**
-  * Get NodeNodesQemu
-  * @returns {PVENodeNodesQemu}
-  */
+   * Get NodeNodesQemu
+   * @returns {PVENodeNodesQemu}
+   */
   get qemu() { return this.#qemu == null ? (this.#qemu = new PVENodeNodesQemu(this.#client, this.#node)) : this.#qemu; }
   #lxc;
   /**
-  * Get NodeNodesLxc
-  * @returns {PVENodeNodesLxc}
-  */
+   * Get NodeNodesLxc
+   * @returns {PVENodeNodesLxc}
+   */
   get lxc() { return this.#lxc == null ? (this.#lxc = new PVENodeNodesLxc(this.#client, this.#node)) : this.#lxc; }
   #ceph;
   /**
-  * Get NodeNodesCeph
-  * @returns {PVENodeNodesCeph}
-  */
+   * Get NodeNodesCeph
+   * @returns {PVENodeNodesCeph}
+   */
   get ceph() { return this.#ceph == null ? (this.#ceph = new PVENodeNodesCeph(this.#client, this.#node)) : this.#ceph; }
   #vzdump;
   /**
-  * Get NodeNodesVzdump
-  * @returns {PVENodeNodesVzdump}
-  */
+   * Get NodeNodesVzdump
+   * @returns {PVENodeNodesVzdump}
+   */
   get vzdump() { return this.#vzdump == null ? (this.#vzdump = new PVENodeNodesVzdump(this.#client, this.#node)) : this.#vzdump; }
   #services;
   /**
-  * Get NodeNodesServices
-  * @returns {PVENodeNodesServices}
-  */
+   * Get NodeNodesServices
+   * @returns {PVENodeNodesServices}
+   */
   get services() { return this.#services == null ? (this.#services = new PVENodeNodesServices(this.#client, this.#node)) : this.#services; }
   #subscription;
   /**
-  * Get NodeNodesSubscription
-  * @returns {PVENodeNodesSubscription}
-  */
+   * Get NodeNodesSubscription
+   * @returns {PVENodeNodesSubscription}
+   */
   get subscription() { return this.#subscription == null ? (this.#subscription = new PVENodeNodesSubscription(this.#client, this.#node)) : this.#subscription; }
   #network;
   /**
-  * Get NodeNodesNetwork
-  * @returns {PVENodeNodesNetwork}
-  */
+   * Get NodeNodesNetwork
+   * @returns {PVENodeNodesNetwork}
+   */
   get network() { return this.#network == null ? (this.#network = new PVENodeNodesNetwork(this.#client, this.#node)) : this.#network; }
   #tasks;
   /**
-  * Get NodeNodesTasks
-  * @returns {PVENodeNodesTasks}
-  */
+   * Get NodeNodesTasks
+   * @returns {PVENodeNodesTasks}
+   */
   get tasks() { return this.#tasks == null ? (this.#tasks = new PVENodeNodesTasks(this.#client, this.#node)) : this.#tasks; }
   #scan;
   /**
-  * Get NodeNodesScan
-  * @returns {PVENodeNodesScan}
-  */
+   * Get NodeNodesScan
+   * @returns {PVENodeNodesScan}
+   */
   get scan() { return this.#scan == null ? (this.#scan = new PVENodeNodesScan(this.#client, this.#node)) : this.#scan; }
   #hardware;
   /**
-  * Get NodeNodesHardware
-  * @returns {PVENodeNodesHardware}
-  */
+   * Get NodeNodesHardware
+   * @returns {PVENodeNodesHardware}
+   */
   get hardware() { return this.#hardware == null ? (this.#hardware = new PVENodeNodesHardware(this.#client, this.#node)) : this.#hardware; }
   #capabilities;
   /**
-  * Get NodeNodesCapabilities
-  * @returns {PVENodeNodesCapabilities}
-  */
+   * Get NodeNodesCapabilities
+   * @returns {PVENodeNodesCapabilities}
+   */
   get capabilities() { return this.#capabilities == null ? (this.#capabilities = new PVENodeNodesCapabilities(this.#client, this.#node)) : this.#capabilities; }
   #storage;
   /**
-  * Get NodeNodesStorage
-  * @returns {PVENodeNodesStorage}
-  */
+   * Get NodeNodesStorage
+   * @returns {PVENodeNodesStorage}
+   */
   get storage() { return this.#storage == null ? (this.#storage = new PVENodeNodesStorage(this.#client, this.#node)) : this.#storage; }
   #disks;
   /**
-  * Get NodeNodesDisks
-  * @returns {PVENodeNodesDisks}
-  */
+   * Get NodeNodesDisks
+   * @returns {PVENodeNodesDisks}
+   */
   get disks() { return this.#disks == null ? (this.#disks = new PVENodeNodesDisks(this.#client, this.#node)) : this.#disks; }
   #apt;
   /**
-  * Get NodeNodesApt
-  * @returns {PVENodeNodesApt}
-  */
+   * Get NodeNodesApt
+   * @returns {PVENodeNodesApt}
+   */
   get apt() { return this.#apt == null ? (this.#apt = new PVENodeNodesApt(this.#client, this.#node)) : this.#apt; }
   #firewall;
   /**
-  * Get NodeNodesFirewall
-  * @returns {PVENodeNodesFirewall}
-  */
+   * Get NodeNodesFirewall
+   * @returns {PVENodeNodesFirewall}
+   */
   get firewall() { return this.#firewall == null ? (this.#firewall = new PVENodeNodesFirewall(this.#client, this.#node)) : this.#firewall; }
   #replication;
   /**
-  * Get NodeNodesReplication
-  * @returns {PVENodeNodesReplication}
-  */
+   * Get NodeNodesReplication
+   * @returns {PVENodeNodesReplication}
+   */
   get replication() { return this.#replication == null ? (this.#replication = new PVENodeNodesReplication(this.#client, this.#node)) : this.#replication; }
   #certificates;
   /**
-  * Get NodeNodesCertificates
-  * @returns {PVENodeNodesCertificates}
-  */
+   * Get NodeNodesCertificates
+   * @returns {PVENodeNodesCertificates}
+   */
   get certificates() { return this.#certificates == null ? (this.#certificates = new PVENodeNodesCertificates(this.#client, this.#node)) : this.#certificates; }
   #config;
   /**
-  * Get NodeNodesConfig
-  * @returns {PVENodeNodesConfig}
-  */
+   * Get NodeNodesConfig
+   * @returns {PVENodeNodesConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVENodeNodesConfig(this.#client, this.#node)) : this.#config; }
   #sdn;
   /**
-  * Get NodeNodesSdn
-  * @returns {PVENodeNodesSdn}
-  */
+   * Get NodeNodesSdn
+   * @returns {PVENodeNodesSdn}
+   */
   get sdn() { return this.#sdn == null ? (this.#sdn = new PVENodeNodesSdn(this.#client, this.#node)) : this.#sdn; }
   #version;
   /**
-  * Get NodeNodesVersion
-  * @returns {PVENodeNodesVersion}
-  */
+   * Get NodeNodesVersion
+   * @returns {PVENodeNodesVersion}
+   */
   get version() { return this.#version == null ? (this.#version = new PVENodeNodesVersion(this.#client, this.#node)) : this.#version; }
   #status;
   /**
-  * Get NodeNodesStatus
-  * @returns {PVENodeNodesStatus}
-  */
+   * Get NodeNodesStatus
+   * @returns {PVENodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVENodeNodesStatus(this.#client, this.#node)) : this.#status; }
   #netstat;
   /**
-  * Get NodeNodesNetstat
-  * @returns {PVENodeNodesNetstat}
-  */
+   * Get NodeNodesNetstat
+   * @returns {PVENodeNodesNetstat}
+   */
   get netstat() { return this.#netstat == null ? (this.#netstat = new PVENodeNodesNetstat(this.#client, this.#node)) : this.#netstat; }
   #execute;
   /**
-  * Get NodeNodesExecute
-  * @returns {PVENodeNodesExecute}
-  */
+   * Get NodeNodesExecute
+   * @returns {PVENodeNodesExecute}
+   */
   get execute() { return this.#execute == null ? (this.#execute = new PVENodeNodesExecute(this.#client, this.#node)) : this.#execute; }
   #wakeonlan;
   /**
-  * Get NodeNodesWakeonlan
-  * @returns {PVENodeNodesWakeonlan}
-  */
+   * Get NodeNodesWakeonlan
+   * @returns {PVENodeNodesWakeonlan}
+   */
   get wakeonlan() { return this.#wakeonlan == null ? (this.#wakeonlan = new PVENodeNodesWakeonlan(this.#client, this.#node)) : this.#wakeonlan; }
   #rrd;
   /**
-  * Get NodeNodesRrd
-  * @returns {PVENodeNodesRrd}
-  */
+   * Get NodeNodesRrd
+   * @returns {PVENodeNodesRrd}
+   */
   get rrd() { return this.#rrd == null ? (this.#rrd = new PVENodeNodesRrd(this.#client, this.#node)) : this.#rrd; }
   #rrddata;
   /**
-  * Get NodeNodesRrddata
-  * @returns {PVENodeNodesRrddata}
-  */
+   * Get NodeNodesRrddata
+   * @returns {PVENodeNodesRrddata}
+   */
   get rrddata() { return this.#rrddata == null ? (this.#rrddata = new PVENodeNodesRrddata(this.#client, this.#node)) : this.#rrddata; }
   #syslog;
   /**
-  * Get NodeNodesSyslog
-  * @returns {PVENodeNodesSyslog}
-  */
+   * Get NodeNodesSyslog
+   * @returns {PVENodeNodesSyslog}
+   */
   get syslog() { return this.#syslog == null ? (this.#syslog = new PVENodeNodesSyslog(this.#client, this.#node)) : this.#syslog; }
   #journal;
   /**
-  * Get NodeNodesJournal
-  * @returns {PVENodeNodesJournal}
-  */
+   * Get NodeNodesJournal
+   * @returns {PVENodeNodesJournal}
+   */
   get journal() { return this.#journal == null ? (this.#journal = new PVENodeNodesJournal(this.#client, this.#node)) : this.#journal; }
   #vncshell;
   /**
-  * Get NodeNodesVncshell
-  * @returns {PVENodeNodesVncshell}
-  */
+   * Get NodeNodesVncshell
+   * @returns {PVENodeNodesVncshell}
+   */
   get vncshell() { return this.#vncshell == null ? (this.#vncshell = new PVENodeNodesVncshell(this.#client, this.#node)) : this.#vncshell; }
   #termproxy;
   /**
-  * Get NodeNodesTermproxy
-  * @returns {PVENodeNodesTermproxy}
-  */
+   * Get NodeNodesTermproxy
+   * @returns {PVENodeNodesTermproxy}
+   */
   get termproxy() { return this.#termproxy == null ? (this.#termproxy = new PVENodeNodesTermproxy(this.#client, this.#node)) : this.#termproxy; }
   #vncwebsocket;
   /**
-  * Get NodeNodesVncwebsocket
-  * @returns {PVENodeNodesVncwebsocket}
-  */
+   * Get NodeNodesVncwebsocket
+   * @returns {PVENodeNodesVncwebsocket}
+   */
   get vncwebsocket() { return this.#vncwebsocket == null ? (this.#vncwebsocket = new PVENodeNodesVncwebsocket(this.#client, this.#node)) : this.#vncwebsocket; }
   #spiceshell;
   /**
-  * Get NodeNodesSpiceshell
-  * @returns {PVENodeNodesSpiceshell}
-  */
+   * Get NodeNodesSpiceshell
+   * @returns {PVENodeNodesSpiceshell}
+   */
   get spiceshell() { return this.#spiceshell == null ? (this.#spiceshell = new PVENodeNodesSpiceshell(this.#client, this.#node)) : this.#spiceshell; }
   #dns;
   /**
-  * Get NodeNodesDns
-  * @returns {PVENodeNodesDns}
-  */
+   * Get NodeNodesDns
+   * @returns {PVENodeNodesDns}
+   */
   get dns() { return this.#dns == null ? (this.#dns = new PVENodeNodesDns(this.#client, this.#node)) : this.#dns; }
   #time;
   /**
-  * Get NodeNodesTime
-  * @returns {PVENodeNodesTime}
-  */
+   * Get NodeNodesTime
+   * @returns {PVENodeNodesTime}
+   */
   get time() { return this.#time == null ? (this.#time = new PVENodeNodesTime(this.#client, this.#node)) : this.#time; }
   #aplinfo;
   /**
-  * Get NodeNodesAplinfo
-  * @returns {PVENodeNodesAplinfo}
-  */
+   * Get NodeNodesAplinfo
+   * @returns {PVENodeNodesAplinfo}
+   */
   get aplinfo() { return this.#aplinfo == null ? (this.#aplinfo = new PVENodeNodesAplinfo(this.#client, this.#node)) : this.#aplinfo; }
   #queryUrlMetadata;
   /**
-  * Get NodeNodesQueryUrlMetadata
-  * @returns {PVENodeNodesQueryUrlMetadata}
-  */
+   * Get NodeNodesQueryUrlMetadata
+   * @returns {PVENodeNodesQueryUrlMetadata}
+   */
   get queryUrlMetadata() { return this.#queryUrlMetadata == null ? (this.#queryUrlMetadata = new PVENodeNodesQueryUrlMetadata(this.#client, this.#node)) : this.#queryUrlMetadata; }
   #report;
   /**
-  * Get NodeNodesReport
-  * @returns {PVENodeNodesReport}
-  */
+   * Get NodeNodesReport
+   * @returns {PVENodeNodesReport}
+   */
   get report() { return this.#report == null ? (this.#report = new PVENodeNodesReport(this.#client, this.#node)) : this.#report; }
   #startall;
   /**
-  * Get NodeNodesStartall
-  * @returns {PVENodeNodesStartall}
-  */
+   * Get NodeNodesStartall
+   * @returns {PVENodeNodesStartall}
+   */
   get startall() { return this.#startall == null ? (this.#startall = new PVENodeNodesStartall(this.#client, this.#node)) : this.#startall; }
   #stopall;
   /**
-  * Get NodeNodesStopall
-  * @returns {PVENodeNodesStopall}
-  */
+   * Get NodeNodesStopall
+   * @returns {PVENodeNodesStopall}
+   */
   get stopall() { return this.#stopall == null ? (this.#stopall = new PVENodeNodesStopall(this.#client, this.#node)) : this.#stopall; }
   #migrateall;
   /**
-  * Get NodeNodesMigrateall
-  * @returns {PVENodeNodesMigrateall}
-  */
+   * Get NodeNodesMigrateall
+   * @returns {PVENodeNodesMigrateall}
+   */
   get migrateall() { return this.#migrateall == null ? (this.#migrateall = new PVENodeNodesMigrateall(this.#client, this.#node)) : this.#migrateall; }
   #hosts;
   /**
-  * Get NodeNodesHosts
-  * @returns {PVENodeNodesHosts}
-  */
+   * Get NodeNodesHosts
+   * @returns {PVENodeNodesHosts}
+   */
   get hosts() { return this.#hosts == null ? (this.#hosts = new PVENodeNodesHosts(this.#client, this.#node)) : this.#hosts; }
 
 
@@ -4597,8 +4614,8 @@ class PVEItemNodesNode {
 
 }
 /**
-* Class PVENodeNodesQemu
-*/
+ * Class PVENodeNodesQemu
+ */
 class PVENodeNodesQemu {
   #node;
   /** @type {PveClient} */
@@ -4611,10 +4628,10 @@ class PVENodeNodesQemu {
 
 
   /**
-  * Get ItemQemuNodeNodesVmid
-  * @param vmid
-  * @returns {PVEItemQemuNodeNodesVmid}
-  */
+   * Get ItemQemuNodeNodesVmid
+   * @param vmid
+   * @returns {PVEItemQemuNodeNodesVmid}
+   */
   get(vmid) { return new PVEItemQemuNodeNodesVmid(this.#client, this.#node, vmid); }
 
   /**
@@ -4630,6 +4647,7 @@ class PVENodeNodesQemu {
   * Create or restore a virtual machine.
   * @param {int} vmid The (unique) ID of the VM.
   * @param {bool} acpi Enable/disable ACPI.
+  * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
   * @param {string} agent Enable/disable communication with the Qemu Guest Agent and its properties.
   * @param {string} arch Virtual processor architecture. Defaults to the host.
   *   Enum: x86_64,aarch64
@@ -4659,7 +4677,7 @@ class PVENodeNodesQemu {
   * @param {bool} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
   * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
   * @param {array} hostpciN Map host PCI devices into guest.
-  * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory' and 'usb'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`.
+  * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory', 'usb' and 'cloudinit'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`. USB hotplugging is possible for guests with machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7.
   * @param {string} hugepages Enable/disable hugepages memory.
   *   Enum: any,2,1024
   * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
@@ -4678,7 +4696,7 @@ class PVENodeNodesQemu {
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
-  * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will' 	    .' automatically use the setting from the host if neither searchdomain nor nameserver' 	    .' are set.
+  * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
   * @param {array} netN Specify network devices.
   * @param {bool} numa Enable/disable NUMA.
   * @param {array} numaN NUMA topology.
@@ -4694,7 +4712,7 @@ class PVENodeNodesQemu {
   * @param {array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {string} scsihw SCSI controller model
   *   Enum: lsi,lsi53c810,virtio-scsi-pci,virtio-scsi-single,megasas,pvscsi
-  * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will' 	    .' automatically use the setting from the host if neither searchdomain nor nameserver' 	    .' are set.
+  * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
   * @param {array} serialN Create a serial device inside the VM (n is 0 to 3)
   * @param {int} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
   * @param {string} smbios1 Specify SMBIOS type 1 fields.
@@ -4713,7 +4731,7 @@ class PVENodeNodesQemu {
   * @param {string} tpmstate0 Configure a Disk for storing TPM state. The format is fixed to 'raw'. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and 4 MiB will be used instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {bool} unique Assign a unique random ethernet address.
   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
-  * @param {array} usbN Configure an USB device (n is 0 to 4).
+  * @param {array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
   * @param {int} vcpus Number of hotplugged vcpus.
   * @param {string} vga Configure the VGA hardware.
   * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
@@ -4722,10 +4740,11 @@ class PVENodeNodesQemu {
   * @param {string} watchdog Create a virtual hardware watchdog device.
   * @returns {Result}
   */
-  async createVm(vmid, acpi, agent, arch, archive, args, audio0, autostart, balloon, bios, boot, bootdisk, bwlimit, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, description, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, live_restore, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, pool, protection, reboot, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, smbios1, smp, sockets, spice_enhancements, sshkeys, start, startdate, startup, storage, tablet, tags, tdf, template, tpmstate0, unique, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
+  async createVm(vmid, acpi, affinity, agent, arch, archive, args, audio0, autostart, balloon, bios, boot, bootdisk, bwlimit, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, description, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, live_restore, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, pool, protection, reboot, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, smbios1, smp, sockets, spice_enhancements, sshkeys, start, startdate, startup, storage, tablet, tags, tdf, template, tpmstate0, unique, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
     const parameters = {
       'vmid': vmid,
       'acpi': acpi,
+      'affinity': affinity,
       'agent': agent,
       'arch': arch,
       'archive': archive,
@@ -4814,8 +4833,8 @@ class PVENodeNodesQemu {
 
 }
 /**
-* Class PVEItemQemuNodeNodesVmid
-*/
+ * Class PVEItemQemuNodeNodesVmid
+ */
 class PVEItemQemuNodeNodesVmid {
   #node;
   #vmid;
@@ -4830,136 +4849,154 @@ class PVEItemQemuNodeNodesVmid {
 
   #firewall;
   /**
-  * Get VmidQemuNodeNodesFirewall
-  * @returns {PVEVmidQemuNodeNodesFirewall}
-  */
+   * Get VmidQemuNodeNodesFirewall
+   * @returns {PVEVmidQemuNodeNodesFirewall}
+   */
   get firewall() { return this.#firewall == null ? (this.#firewall = new PVEVmidQemuNodeNodesFirewall(this.#client, this.#node, this.#vmid)) : this.#firewall; }
   #agent;
   /**
-  * Get VmidQemuNodeNodesAgent
-  * @returns {PVEVmidQemuNodeNodesAgent}
-  */
+   * Get VmidQemuNodeNodesAgent
+   * @returns {PVEVmidQemuNodeNodesAgent}
+   */
   get agent() { return this.#agent == null ? (this.#agent = new PVEVmidQemuNodeNodesAgent(this.#client, this.#node, this.#vmid)) : this.#agent; }
   #rrd;
   /**
-  * Get VmidQemuNodeNodesRrd
-  * @returns {PVEVmidQemuNodeNodesRrd}
-  */
+   * Get VmidQemuNodeNodesRrd
+   * @returns {PVEVmidQemuNodeNodesRrd}
+   */
   get rrd() { return this.#rrd == null ? (this.#rrd = new PVEVmidQemuNodeNodesRrd(this.#client, this.#node, this.#vmid)) : this.#rrd; }
   #rrddata;
   /**
-  * Get VmidQemuNodeNodesRrddata
-  * @returns {PVEVmidQemuNodeNodesRrddata}
-  */
+   * Get VmidQemuNodeNodesRrddata
+   * @returns {PVEVmidQemuNodeNodesRrddata}
+   */
   get rrddata() { return this.#rrddata == null ? (this.#rrddata = new PVEVmidQemuNodeNodesRrddata(this.#client, this.#node, this.#vmid)) : this.#rrddata; }
   #config;
   /**
-  * Get VmidQemuNodeNodesConfig
-  * @returns {PVEVmidQemuNodeNodesConfig}
-  */
+   * Get VmidQemuNodeNodesConfig
+   * @returns {PVEVmidQemuNodeNodesConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVEVmidQemuNodeNodesConfig(this.#client, this.#node, this.#vmid)) : this.#config; }
   #pending;
   /**
-  * Get VmidQemuNodeNodesPending
-  * @returns {PVEVmidQemuNodeNodesPending}
-  */
+   * Get VmidQemuNodeNodesPending
+   * @returns {PVEVmidQemuNodeNodesPending}
+   */
   get pending() { return this.#pending == null ? (this.#pending = new PVEVmidQemuNodeNodesPending(this.#client, this.#node, this.#vmid)) : this.#pending; }
+  #cloudinit;
+  /**
+   * Get VmidQemuNodeNodesCloudinit
+   * @returns {PVEVmidQemuNodeNodesCloudinit}
+   */
+  get cloudinit() { return this.#cloudinit == null ? (this.#cloudinit = new PVEVmidQemuNodeNodesCloudinit(this.#client, this.#node, this.#vmid)) : this.#cloudinit; }
   #unlink;
   /**
-  * Get VmidQemuNodeNodesUnlink
-  * @returns {PVEVmidQemuNodeNodesUnlink}
-  */
+   * Get VmidQemuNodeNodesUnlink
+   * @returns {PVEVmidQemuNodeNodesUnlink}
+   */
   get unlink() { return this.#unlink == null ? (this.#unlink = new PVEVmidQemuNodeNodesUnlink(this.#client, this.#node, this.#vmid)) : this.#unlink; }
   #vncproxy;
   /**
-  * Get VmidQemuNodeNodesVncproxy
-  * @returns {PVEVmidQemuNodeNodesVncproxy}
-  */
+   * Get VmidQemuNodeNodesVncproxy
+   * @returns {PVEVmidQemuNodeNodesVncproxy}
+   */
   get vncproxy() { return this.#vncproxy == null ? (this.#vncproxy = new PVEVmidQemuNodeNodesVncproxy(this.#client, this.#node, this.#vmid)) : this.#vncproxy; }
   #termproxy;
   /**
-  * Get VmidQemuNodeNodesTermproxy
-  * @returns {PVEVmidQemuNodeNodesTermproxy}
-  */
+   * Get VmidQemuNodeNodesTermproxy
+   * @returns {PVEVmidQemuNodeNodesTermproxy}
+   */
   get termproxy() { return this.#termproxy == null ? (this.#termproxy = new PVEVmidQemuNodeNodesTermproxy(this.#client, this.#node, this.#vmid)) : this.#termproxy; }
   #vncwebsocket;
   /**
-  * Get VmidQemuNodeNodesVncwebsocket
-  * @returns {PVEVmidQemuNodeNodesVncwebsocket}
-  */
+   * Get VmidQemuNodeNodesVncwebsocket
+   * @returns {PVEVmidQemuNodeNodesVncwebsocket}
+   */
   get vncwebsocket() { return this.#vncwebsocket == null ? (this.#vncwebsocket = new PVEVmidQemuNodeNodesVncwebsocket(this.#client, this.#node, this.#vmid)) : this.#vncwebsocket; }
   #spiceproxy;
   /**
-  * Get VmidQemuNodeNodesSpiceproxy
-  * @returns {PVEVmidQemuNodeNodesSpiceproxy}
-  */
+   * Get VmidQemuNodeNodesSpiceproxy
+   * @returns {PVEVmidQemuNodeNodesSpiceproxy}
+   */
   get spiceproxy() { return this.#spiceproxy == null ? (this.#spiceproxy = new PVEVmidQemuNodeNodesSpiceproxy(this.#client, this.#node, this.#vmid)) : this.#spiceproxy; }
   #status;
   /**
-  * Get VmidQemuNodeNodesStatus
-  * @returns {PVEVmidQemuNodeNodesStatus}
-  */
+   * Get VmidQemuNodeNodesStatus
+   * @returns {PVEVmidQemuNodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEVmidQemuNodeNodesStatus(this.#client, this.#node, this.#vmid)) : this.#status; }
   #sendkey;
   /**
-  * Get VmidQemuNodeNodesSendkey
-  * @returns {PVEVmidQemuNodeNodesSendkey}
-  */
+   * Get VmidQemuNodeNodesSendkey
+   * @returns {PVEVmidQemuNodeNodesSendkey}
+   */
   get sendkey() { return this.#sendkey == null ? (this.#sendkey = new PVEVmidQemuNodeNodesSendkey(this.#client, this.#node, this.#vmid)) : this.#sendkey; }
   #feature;
   /**
-  * Get VmidQemuNodeNodesFeature
-  * @returns {PVEVmidQemuNodeNodesFeature}
-  */
+   * Get VmidQemuNodeNodesFeature
+   * @returns {PVEVmidQemuNodeNodesFeature}
+   */
   get feature() { return this.#feature == null ? (this.#feature = new PVEVmidQemuNodeNodesFeature(this.#client, this.#node, this.#vmid)) : this.#feature; }
   #clone;
   /**
-  * Get VmidQemuNodeNodesClone
-  * @returns {PVEVmidQemuNodeNodesClone}
-  */
+   * Get VmidQemuNodeNodesClone
+   * @returns {PVEVmidQemuNodeNodesClone}
+   */
   get clone() { return this.#clone == null ? (this.#clone = new PVEVmidQemuNodeNodesClone(this.#client, this.#node, this.#vmid)) : this.#clone; }
   #moveDisk;
   /**
-  * Get VmidQemuNodeNodesMoveDisk
-  * @returns {PVEVmidQemuNodeNodesMoveDisk}
-  */
+   * Get VmidQemuNodeNodesMoveDisk
+   * @returns {PVEVmidQemuNodeNodesMoveDisk}
+   */
   get moveDisk() { return this.#moveDisk == null ? (this.#moveDisk = new PVEVmidQemuNodeNodesMoveDisk(this.#client, this.#node, this.#vmid)) : this.#moveDisk; }
   #migrate;
   /**
-  * Get VmidQemuNodeNodesMigrate
-  * @returns {PVEVmidQemuNodeNodesMigrate}
-  */
+   * Get VmidQemuNodeNodesMigrate
+   * @returns {PVEVmidQemuNodeNodesMigrate}
+   */
   get migrate() { return this.#migrate == null ? (this.#migrate = new PVEVmidQemuNodeNodesMigrate(this.#client, this.#node, this.#vmid)) : this.#migrate; }
+  #remoteMigrate;
+  /**
+   * Get VmidQemuNodeNodesRemoteMigrate
+   * @returns {PVEVmidQemuNodeNodesRemoteMigrate}
+   */
+  get remoteMigrate() { return this.#remoteMigrate == null ? (this.#remoteMigrate = new PVEVmidQemuNodeNodesRemoteMigrate(this.#client, this.#node, this.#vmid)) : this.#remoteMigrate; }
   #monitor;
   /**
-  * Get VmidQemuNodeNodesMonitor
-  * @returns {PVEVmidQemuNodeNodesMonitor}
-  */
+   * Get VmidQemuNodeNodesMonitor
+   * @returns {PVEVmidQemuNodeNodesMonitor}
+   */
   get monitor() { return this.#monitor == null ? (this.#monitor = new PVEVmidQemuNodeNodesMonitor(this.#client, this.#node, this.#vmid)) : this.#monitor; }
   #resize;
   /**
-  * Get VmidQemuNodeNodesResize
-  * @returns {PVEVmidQemuNodeNodesResize}
-  */
+   * Get VmidQemuNodeNodesResize
+   * @returns {PVEVmidQemuNodeNodesResize}
+   */
   get resize() { return this.#resize == null ? (this.#resize = new PVEVmidQemuNodeNodesResize(this.#client, this.#node, this.#vmid)) : this.#resize; }
   #snapshot;
   /**
-  * Get VmidQemuNodeNodesSnapshot
-  * @returns {PVEVmidQemuNodeNodesSnapshot}
-  */
+   * Get VmidQemuNodeNodesSnapshot
+   * @returns {PVEVmidQemuNodeNodesSnapshot}
+   */
   get snapshot() { return this.#snapshot == null ? (this.#snapshot = new PVEVmidQemuNodeNodesSnapshot(this.#client, this.#node, this.#vmid)) : this.#snapshot; }
   #template;
   /**
-  * Get VmidQemuNodeNodesTemplate
-  * @returns {PVEVmidQemuNodeNodesTemplate}
-  */
+   * Get VmidQemuNodeNodesTemplate
+   * @returns {PVEVmidQemuNodeNodesTemplate}
+   */
   get template() { return this.#template == null ? (this.#template = new PVEVmidQemuNodeNodesTemplate(this.#client, this.#node, this.#vmid)) : this.#template; }
-  #cloudinit;
+  #mtunnel;
   /**
-  * Get VmidQemuNodeNodesCloudinit
-  * @returns {PVEVmidQemuNodeNodesCloudinit}
-  */
-  get cloudinit() { return this.#cloudinit == null ? (this.#cloudinit = new PVEVmidQemuNodeNodesCloudinit(this.#client, this.#node, this.#vmid)) : this.#cloudinit; }
+   * Get VmidQemuNodeNodesMtunnel
+   * @returns {PVEVmidQemuNodeNodesMtunnel}
+   */
+  get mtunnel() { return this.#mtunnel == null ? (this.#mtunnel = new PVEVmidQemuNodeNodesMtunnel(this.#client, this.#node, this.#vmid)) : this.#mtunnel; }
+  #mtunnelwebsocket;
+  /**
+   * Get VmidQemuNodeNodesMtunnelwebsocket
+   * @returns {PVEVmidQemuNodeNodesMtunnelwebsocket}
+   */
+  get mtunnelwebsocket() { return this.#mtunnelwebsocket == null ? (this.#mtunnelwebsocket = new PVEVmidQemuNodeNodesMtunnelwebsocket(this.#client, this.#node, this.#vmid)) : this.#mtunnelwebsocket; }
 
 
   /**
@@ -4987,8 +5024,8 @@ class PVEItemQemuNodeNodesVmid {
 
 }
 /**
-* Class PVEVmidQemuNodeNodesFirewall
-*/
+ * Class PVEVmidQemuNodeNodesFirewall
+ */
 class PVEVmidQemuNodeNodesFirewall {
   #node;
   #vmid;
@@ -5003,39 +5040,39 @@ class PVEVmidQemuNodeNodesFirewall {
 
   #rules;
   /**
-  * Get FirewallVmidQemuNodeNodesRules
-  * @returns {PVEFirewallVmidQemuNodeNodesRules}
-  */
+   * Get FirewallVmidQemuNodeNodesRules
+   * @returns {PVEFirewallVmidQemuNodeNodesRules}
+   */
   get rules() { return this.#rules == null ? (this.#rules = new PVEFirewallVmidQemuNodeNodesRules(this.#client, this.#node, this.#vmid)) : this.#rules; }
   #aliases;
   /**
-  * Get FirewallVmidQemuNodeNodesAliases
-  * @returns {PVEFirewallVmidQemuNodeNodesAliases}
-  */
+   * Get FirewallVmidQemuNodeNodesAliases
+   * @returns {PVEFirewallVmidQemuNodeNodesAliases}
+   */
   get aliases() { return this.#aliases == null ? (this.#aliases = new PVEFirewallVmidQemuNodeNodesAliases(this.#client, this.#node, this.#vmid)) : this.#aliases; }
   #ipset;
   /**
-  * Get FirewallVmidQemuNodeNodesIpset
-  * @returns {PVEFirewallVmidQemuNodeNodesIpset}
-  */
+   * Get FirewallVmidQemuNodeNodesIpset
+   * @returns {PVEFirewallVmidQemuNodeNodesIpset}
+   */
   get ipset() { return this.#ipset == null ? (this.#ipset = new PVEFirewallVmidQemuNodeNodesIpset(this.#client, this.#node, this.#vmid)) : this.#ipset; }
   #options;
   /**
-  * Get FirewallVmidQemuNodeNodesOptions
-  * @returns {PVEFirewallVmidQemuNodeNodesOptions}
-  */
+   * Get FirewallVmidQemuNodeNodesOptions
+   * @returns {PVEFirewallVmidQemuNodeNodesOptions}
+   */
   get options() { return this.#options == null ? (this.#options = new PVEFirewallVmidQemuNodeNodesOptions(this.#client, this.#node, this.#vmid)) : this.#options; }
   #log;
   /**
-  * Get FirewallVmidQemuNodeNodesLog
-  * @returns {PVEFirewallVmidQemuNodeNodesLog}
-  */
+   * Get FirewallVmidQemuNodeNodesLog
+   * @returns {PVEFirewallVmidQemuNodeNodesLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVEFirewallVmidQemuNodeNodesLog(this.#client, this.#node, this.#vmid)) : this.#log; }
   #refs;
   /**
-  * Get FirewallVmidQemuNodeNodesRefs
-  * @returns {PVEFirewallVmidQemuNodeNodesRefs}
-  */
+   * Get FirewallVmidQemuNodeNodesRefs
+   * @returns {PVEFirewallVmidQemuNodeNodesRefs}
+   */
   get refs() { return this.#refs == null ? (this.#refs = new PVEFirewallVmidQemuNodeNodesRefs(this.#client, this.#node, this.#vmid)) : this.#refs; }
 
 
@@ -5049,8 +5086,8 @@ class PVEVmidQemuNodeNodesFirewall {
 
 }
 /**
-* Class PVEFirewallVmidQemuNodeNodesRules
-*/
+ * Class PVEFirewallVmidQemuNodeNodesRules
+ */
 class PVEFirewallVmidQemuNodeNodesRules {
   #node;
   #vmid;
@@ -5065,10 +5102,10 @@ class PVEFirewallVmidQemuNodeNodesRules {
 
 
   /**
-  * Get ItemRulesFirewallVmidQemuNodeNodesPos
-  * @param pos
-  * @returns {PVEItemRulesFirewallVmidQemuNodeNodesPos}
-  */
+   * Get ItemRulesFirewallVmidQemuNodeNodesPos
+   * @param pos
+   * @returns {PVEItemRulesFirewallVmidQemuNodeNodesPos}
+   */
   get(pos) { return new PVEItemRulesFirewallVmidQemuNodeNodesPos(this.#client, this.#node, this.#vmid, pos); }
 
   /**
@@ -5122,8 +5159,8 @@ class PVEFirewallVmidQemuNodeNodesRules {
 
 }
 /**
-* Class PVEItemRulesFirewallVmidQemuNodeNodesPos
-*/
+ * Class PVEItemRulesFirewallVmidQemuNodeNodesPos
+ */
 class PVEItemRulesFirewallVmidQemuNodeNodesPos {
   #node;
   #vmid;
@@ -5203,8 +5240,8 @@ class PVEItemRulesFirewallVmidQemuNodeNodesPos {
 }
 
 /**
-* Class PVEFirewallVmidQemuNodeNodesAliases
-*/
+ * Class PVEFirewallVmidQemuNodeNodesAliases
+ */
 class PVEFirewallVmidQemuNodeNodesAliases {
   #node;
   #vmid;
@@ -5219,10 +5256,10 @@ class PVEFirewallVmidQemuNodeNodesAliases {
 
 
   /**
-  * Get ItemAliasesFirewallVmidQemuNodeNodesName
-  * @param name
-  * @returns {PVEItemAliasesFirewallVmidQemuNodeNodesName}
-  */
+   * Get ItemAliasesFirewallVmidQemuNodeNodesName
+   * @param name
+   * @returns {PVEItemAliasesFirewallVmidQemuNodeNodesName}
+   */
   get(name) { return new PVEItemAliasesFirewallVmidQemuNodeNodesName(this.#client, this.#node, this.#vmid, name); }
 
   /**
@@ -5250,8 +5287,8 @@ class PVEFirewallVmidQemuNodeNodesAliases {
 
 }
 /**
-* Class PVEItemAliasesFirewallVmidQemuNodeNodesName
-*/
+ * Class PVEItemAliasesFirewallVmidQemuNodeNodesName
+ */
 class PVEItemAliasesFirewallVmidQemuNodeNodesName {
   #node;
   #vmid;
@@ -5305,8 +5342,8 @@ class PVEItemAliasesFirewallVmidQemuNodeNodesName {
 }
 
 /**
-* Class PVEFirewallVmidQemuNodeNodesIpset
-*/
+ * Class PVEFirewallVmidQemuNodeNodesIpset
+ */
 class PVEFirewallVmidQemuNodeNodesIpset {
   #node;
   #vmid;
@@ -5321,10 +5358,10 @@ class PVEFirewallVmidQemuNodeNodesIpset {
 
 
   /**
-  * Get ItemIpsetFirewallVmidQemuNodeNodesName
-  * @param name
-  * @returns {PVEItemIpsetFirewallVmidQemuNodeNodesName}
-  */
+   * Get ItemIpsetFirewallVmidQemuNodeNodesName
+   * @param name
+   * @returns {PVEItemIpsetFirewallVmidQemuNodeNodesName}
+   */
   get(name) { return new PVEItemIpsetFirewallVmidQemuNodeNodesName(this.#client, this.#node, this.#vmid, name); }
 
   /**
@@ -5354,8 +5391,8 @@ class PVEFirewallVmidQemuNodeNodesIpset {
 
 }
 /**
-* Class PVEItemIpsetFirewallVmidQemuNodeNodesName
-*/
+ * Class PVEItemIpsetFirewallVmidQemuNodeNodesName
+ */
 class PVEItemIpsetFirewallVmidQemuNodeNodesName {
   #node;
   #vmid;
@@ -5372,18 +5409,20 @@ class PVEItemIpsetFirewallVmidQemuNodeNodesName {
 
 
   /**
-  * Get ItemNameIpsetFirewallVmidQemuNodeNodesCidr
-  * @param cidr
-  * @returns {PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr}
-  */
+   * Get ItemNameIpsetFirewallVmidQemuNodeNodesCidr
+   * @param cidr
+   * @returns {PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr}
+   */
   get(cidr) { return new PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr(this.#client, this.#node, this.#vmid, this.#name, cidr); }
 
   /**
   * Delete IPSet
+  * @param {bool} force Delete all members of the IPSet, if there are any.
   * @returns {Result}
   */
-  async deleteIpset() {
-    return await this.#client.delete(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}`);
+  async deleteIpset(force) {
+    const parameters = { 'force': force };
+    return await this.#client.delete(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}`, parameters);
   }
   /**
   * List IPSet content
@@ -5410,8 +5449,8 @@ class PVEItemIpsetFirewallVmidQemuNodeNodesName {
 
 }
 /**
-* Class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr
-*/
+ * Class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr
+ */
 class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
   #node;
   #vmid;
@@ -5465,8 +5504,8 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
 }
 
 /**
-* Class PVEFirewallVmidQemuNodeNodesOptions
-*/
+ * Class PVEFirewallVmidQemuNodeNodesOptions
+ */
 class PVEFirewallVmidQemuNodeNodesOptions {
   #node;
   #vmid;
@@ -5529,8 +5568,8 @@ class PVEFirewallVmidQemuNodeNodesOptions {
 }
 
 /**
-* Class PVEFirewallVmidQemuNodeNodesLog
-*/
+ * Class PVEFirewallVmidQemuNodeNodesLog
+ */
 class PVEFirewallVmidQemuNodeNodesLog {
   #node;
   #vmid;
@@ -5562,8 +5601,8 @@ class PVEFirewallVmidQemuNodeNodesLog {
 }
 
 /**
-* Class PVEFirewallVmidQemuNodeNodesRefs
-*/
+ * Class PVEFirewallVmidQemuNodeNodesRefs
+ */
 class PVEFirewallVmidQemuNodeNodesRefs {
   #node;
   #vmid;
@@ -5592,8 +5631,8 @@ class PVEFirewallVmidQemuNodeNodesRefs {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesAgent
-*/
+ * Class PVEVmidQemuNodeNodesAgent
+ */
 class PVEVmidQemuNodeNodesAgent {
   #node;
   #vmid;
@@ -5608,153 +5647,153 @@ class PVEVmidQemuNodeNodesAgent {
 
   #fsfreezeFreeze;
   /**
-  * Get AgentVmidQemuNodeNodesFsfreezeFreeze
-  * @returns {PVEAgentVmidQemuNodeNodesFsfreezeFreeze}
-  */
+   * Get AgentVmidQemuNodeNodesFsfreezeFreeze
+   * @returns {PVEAgentVmidQemuNodeNodesFsfreezeFreeze}
+   */
   get fsfreezeFreeze() { return this.#fsfreezeFreeze == null ? (this.#fsfreezeFreeze = new PVEAgentVmidQemuNodeNodesFsfreezeFreeze(this.#client, this.#node, this.#vmid)) : this.#fsfreezeFreeze; }
   #fsfreezeStatus;
   /**
-  * Get AgentVmidQemuNodeNodesFsfreezeStatus
-  * @returns {PVEAgentVmidQemuNodeNodesFsfreezeStatus}
-  */
+   * Get AgentVmidQemuNodeNodesFsfreezeStatus
+   * @returns {PVEAgentVmidQemuNodeNodesFsfreezeStatus}
+   */
   get fsfreezeStatus() { return this.#fsfreezeStatus == null ? (this.#fsfreezeStatus = new PVEAgentVmidQemuNodeNodesFsfreezeStatus(this.#client, this.#node, this.#vmid)) : this.#fsfreezeStatus; }
   #fsfreezeThaw;
   /**
-  * Get AgentVmidQemuNodeNodesFsfreezeThaw
-  * @returns {PVEAgentVmidQemuNodeNodesFsfreezeThaw}
-  */
+   * Get AgentVmidQemuNodeNodesFsfreezeThaw
+   * @returns {PVEAgentVmidQemuNodeNodesFsfreezeThaw}
+   */
   get fsfreezeThaw() { return this.#fsfreezeThaw == null ? (this.#fsfreezeThaw = new PVEAgentVmidQemuNodeNodesFsfreezeThaw(this.#client, this.#node, this.#vmid)) : this.#fsfreezeThaw; }
   #fstrim;
   /**
-  * Get AgentVmidQemuNodeNodesFstrim
-  * @returns {PVEAgentVmidQemuNodeNodesFstrim}
-  */
+   * Get AgentVmidQemuNodeNodesFstrim
+   * @returns {PVEAgentVmidQemuNodeNodesFstrim}
+   */
   get fstrim() { return this.#fstrim == null ? (this.#fstrim = new PVEAgentVmidQemuNodeNodesFstrim(this.#client, this.#node, this.#vmid)) : this.#fstrim; }
   #getFsinfo;
   /**
-  * Get AgentVmidQemuNodeNodesGetFsinfo
-  * @returns {PVEAgentVmidQemuNodeNodesGetFsinfo}
-  */
+   * Get AgentVmidQemuNodeNodesGetFsinfo
+   * @returns {PVEAgentVmidQemuNodeNodesGetFsinfo}
+   */
   get getFsinfo() { return this.#getFsinfo == null ? (this.#getFsinfo = new PVEAgentVmidQemuNodeNodesGetFsinfo(this.#client, this.#node, this.#vmid)) : this.#getFsinfo; }
   #getHostName;
   /**
-  * Get AgentVmidQemuNodeNodesGetHostName
-  * @returns {PVEAgentVmidQemuNodeNodesGetHostName}
-  */
+   * Get AgentVmidQemuNodeNodesGetHostName
+   * @returns {PVEAgentVmidQemuNodeNodesGetHostName}
+   */
   get getHostName() { return this.#getHostName == null ? (this.#getHostName = new PVEAgentVmidQemuNodeNodesGetHostName(this.#client, this.#node, this.#vmid)) : this.#getHostName; }
   #getMemoryBlockInfo;
   /**
-  * Get AgentVmidQemuNodeNodesGetMemoryBlockInfo
-  * @returns {PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo}
-  */
+   * Get AgentVmidQemuNodeNodesGetMemoryBlockInfo
+   * @returns {PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo}
+   */
   get getMemoryBlockInfo() { return this.#getMemoryBlockInfo == null ? (this.#getMemoryBlockInfo = new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(this.#client, this.#node, this.#vmid)) : this.#getMemoryBlockInfo; }
   #getMemoryBlocks;
   /**
-  * Get AgentVmidQemuNodeNodesGetMemoryBlocks
-  * @returns {PVEAgentVmidQemuNodeNodesGetMemoryBlocks}
-  */
+   * Get AgentVmidQemuNodeNodesGetMemoryBlocks
+   * @returns {PVEAgentVmidQemuNodeNodesGetMemoryBlocks}
+   */
   get getMemoryBlocks() { return this.#getMemoryBlocks == null ? (this.#getMemoryBlocks = new PVEAgentVmidQemuNodeNodesGetMemoryBlocks(this.#client, this.#node, this.#vmid)) : this.#getMemoryBlocks; }
   #getOsinfo;
   /**
-  * Get AgentVmidQemuNodeNodesGetOsinfo
-  * @returns {PVEAgentVmidQemuNodeNodesGetOsinfo}
-  */
+   * Get AgentVmidQemuNodeNodesGetOsinfo
+   * @returns {PVEAgentVmidQemuNodeNodesGetOsinfo}
+   */
   get getOsinfo() { return this.#getOsinfo == null ? (this.#getOsinfo = new PVEAgentVmidQemuNodeNodesGetOsinfo(this.#client, this.#node, this.#vmid)) : this.#getOsinfo; }
   #getTime;
   /**
-  * Get AgentVmidQemuNodeNodesGetTime
-  * @returns {PVEAgentVmidQemuNodeNodesGetTime}
-  */
+   * Get AgentVmidQemuNodeNodesGetTime
+   * @returns {PVEAgentVmidQemuNodeNodesGetTime}
+   */
   get getTime() { return this.#getTime == null ? (this.#getTime = new PVEAgentVmidQemuNodeNodesGetTime(this.#client, this.#node, this.#vmid)) : this.#getTime; }
   #getTimezone;
   /**
-  * Get AgentVmidQemuNodeNodesGetTimezone
-  * @returns {PVEAgentVmidQemuNodeNodesGetTimezone}
-  */
+   * Get AgentVmidQemuNodeNodesGetTimezone
+   * @returns {PVEAgentVmidQemuNodeNodesGetTimezone}
+   */
   get getTimezone() { return this.#getTimezone == null ? (this.#getTimezone = new PVEAgentVmidQemuNodeNodesGetTimezone(this.#client, this.#node, this.#vmid)) : this.#getTimezone; }
   #getUsers;
   /**
-  * Get AgentVmidQemuNodeNodesGetUsers
-  * @returns {PVEAgentVmidQemuNodeNodesGetUsers}
-  */
+   * Get AgentVmidQemuNodeNodesGetUsers
+   * @returns {PVEAgentVmidQemuNodeNodesGetUsers}
+   */
   get getUsers() { return this.#getUsers == null ? (this.#getUsers = new PVEAgentVmidQemuNodeNodesGetUsers(this.#client, this.#node, this.#vmid)) : this.#getUsers; }
   #getVcpus;
   /**
-  * Get AgentVmidQemuNodeNodesGetVcpus
-  * @returns {PVEAgentVmidQemuNodeNodesGetVcpus}
-  */
+   * Get AgentVmidQemuNodeNodesGetVcpus
+   * @returns {PVEAgentVmidQemuNodeNodesGetVcpus}
+   */
   get getVcpus() { return this.#getVcpus == null ? (this.#getVcpus = new PVEAgentVmidQemuNodeNodesGetVcpus(this.#client, this.#node, this.#vmid)) : this.#getVcpus; }
   #info;
   /**
-  * Get AgentVmidQemuNodeNodesInfo
-  * @returns {PVEAgentVmidQemuNodeNodesInfo}
-  */
+   * Get AgentVmidQemuNodeNodesInfo
+   * @returns {PVEAgentVmidQemuNodeNodesInfo}
+   */
   get info() { return this.#info == null ? (this.#info = new PVEAgentVmidQemuNodeNodesInfo(this.#client, this.#node, this.#vmid)) : this.#info; }
   #networkGetInterfaces;
   /**
-  * Get AgentVmidQemuNodeNodesNetworkGetInterfaces
-  * @returns {PVEAgentVmidQemuNodeNodesNetworkGetInterfaces}
-  */
+   * Get AgentVmidQemuNodeNodesNetworkGetInterfaces
+   * @returns {PVEAgentVmidQemuNodeNodesNetworkGetInterfaces}
+   */
   get networkGetInterfaces() { return this.#networkGetInterfaces == null ? (this.#networkGetInterfaces = new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(this.#client, this.#node, this.#vmid)) : this.#networkGetInterfaces; }
   #ping;
   /**
-  * Get AgentVmidQemuNodeNodesPing
-  * @returns {PVEAgentVmidQemuNodeNodesPing}
-  */
+   * Get AgentVmidQemuNodeNodesPing
+   * @returns {PVEAgentVmidQemuNodeNodesPing}
+   */
   get ping() { return this.#ping == null ? (this.#ping = new PVEAgentVmidQemuNodeNodesPing(this.#client, this.#node, this.#vmid)) : this.#ping; }
   #shutdown;
   /**
-  * Get AgentVmidQemuNodeNodesShutdown
-  * @returns {PVEAgentVmidQemuNodeNodesShutdown}
-  */
+   * Get AgentVmidQemuNodeNodesShutdown
+   * @returns {PVEAgentVmidQemuNodeNodesShutdown}
+   */
   get shutdown() { return this.#shutdown == null ? (this.#shutdown = new PVEAgentVmidQemuNodeNodesShutdown(this.#client, this.#node, this.#vmid)) : this.#shutdown; }
   #suspendDisk;
   /**
-  * Get AgentVmidQemuNodeNodesSuspendDisk
-  * @returns {PVEAgentVmidQemuNodeNodesSuspendDisk}
-  */
+   * Get AgentVmidQemuNodeNodesSuspendDisk
+   * @returns {PVEAgentVmidQemuNodeNodesSuspendDisk}
+   */
   get suspendDisk() { return this.#suspendDisk == null ? (this.#suspendDisk = new PVEAgentVmidQemuNodeNodesSuspendDisk(this.#client, this.#node, this.#vmid)) : this.#suspendDisk; }
   #suspendHybrid;
   /**
-  * Get AgentVmidQemuNodeNodesSuspendHybrid
-  * @returns {PVEAgentVmidQemuNodeNodesSuspendHybrid}
-  */
+   * Get AgentVmidQemuNodeNodesSuspendHybrid
+   * @returns {PVEAgentVmidQemuNodeNodesSuspendHybrid}
+   */
   get suspendHybrid() { return this.#suspendHybrid == null ? (this.#suspendHybrid = new PVEAgentVmidQemuNodeNodesSuspendHybrid(this.#client, this.#node, this.#vmid)) : this.#suspendHybrid; }
   #suspendRam;
   /**
-  * Get AgentVmidQemuNodeNodesSuspendRam
-  * @returns {PVEAgentVmidQemuNodeNodesSuspendRam}
-  */
+   * Get AgentVmidQemuNodeNodesSuspendRam
+   * @returns {PVEAgentVmidQemuNodeNodesSuspendRam}
+   */
   get suspendRam() { return this.#suspendRam == null ? (this.#suspendRam = new PVEAgentVmidQemuNodeNodesSuspendRam(this.#client, this.#node, this.#vmid)) : this.#suspendRam; }
   #setUserPassword;
   /**
-  * Get AgentVmidQemuNodeNodesSetUserPassword
-  * @returns {PVEAgentVmidQemuNodeNodesSetUserPassword}
-  */
+   * Get AgentVmidQemuNodeNodesSetUserPassword
+   * @returns {PVEAgentVmidQemuNodeNodesSetUserPassword}
+   */
   get setUserPassword() { return this.#setUserPassword == null ? (this.#setUserPassword = new PVEAgentVmidQemuNodeNodesSetUserPassword(this.#client, this.#node, this.#vmid)) : this.#setUserPassword; }
   #exec;
   /**
-  * Get AgentVmidQemuNodeNodesExec
-  * @returns {PVEAgentVmidQemuNodeNodesExec}
-  */
+   * Get AgentVmidQemuNodeNodesExec
+   * @returns {PVEAgentVmidQemuNodeNodesExec}
+   */
   get exec() { return this.#exec == null ? (this.#exec = new PVEAgentVmidQemuNodeNodesExec(this.#client, this.#node, this.#vmid)) : this.#exec; }
   #execStatus;
   /**
-  * Get AgentVmidQemuNodeNodesExecStatus
-  * @returns {PVEAgentVmidQemuNodeNodesExecStatus}
-  */
+   * Get AgentVmidQemuNodeNodesExecStatus
+   * @returns {PVEAgentVmidQemuNodeNodesExecStatus}
+   */
   get execStatus() { return this.#execStatus == null ? (this.#execStatus = new PVEAgentVmidQemuNodeNodesExecStatus(this.#client, this.#node, this.#vmid)) : this.#execStatus; }
   #fileRead;
   /**
-  * Get AgentVmidQemuNodeNodesFileRead
-  * @returns {PVEAgentVmidQemuNodeNodesFileRead}
-  */
+   * Get AgentVmidQemuNodeNodesFileRead
+   * @returns {PVEAgentVmidQemuNodeNodesFileRead}
+   */
   get fileRead() { return this.#fileRead == null ? (this.#fileRead = new PVEAgentVmidQemuNodeNodesFileRead(this.#client, this.#node, this.#vmid)) : this.#fileRead; }
   #fileWrite;
   /**
-  * Get AgentVmidQemuNodeNodesFileWrite
-  * @returns {PVEAgentVmidQemuNodeNodesFileWrite}
-  */
+   * Get AgentVmidQemuNodeNodesFileWrite
+   * @returns {PVEAgentVmidQemuNodeNodesFileWrite}
+   */
   get fileWrite() { return this.#fileWrite == null ? (this.#fileWrite = new PVEAgentVmidQemuNodeNodesFileWrite(this.#client, this.#node, this.#vmid)) : this.#fileWrite; }
 
 
@@ -5778,8 +5817,8 @@ class PVEVmidQemuNodeNodesAgent {
 
 }
 /**
-* Class PVEAgentVmidQemuNodeNodesFsfreezeFreeze
-*/
+ * Class PVEAgentVmidQemuNodeNodesFsfreezeFreeze
+ */
 class PVEAgentVmidQemuNodeNodesFsfreezeFreeze {
   #node;
   #vmid;
@@ -5805,8 +5844,8 @@ class PVEAgentVmidQemuNodeNodesFsfreezeFreeze {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesFsfreezeStatus
-*/
+ * Class PVEAgentVmidQemuNodeNodesFsfreezeStatus
+ */
 class PVEAgentVmidQemuNodeNodesFsfreezeStatus {
   #node;
   #vmid;
@@ -5832,8 +5871,8 @@ class PVEAgentVmidQemuNodeNodesFsfreezeStatus {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesFsfreezeThaw
-*/
+ * Class PVEAgentVmidQemuNodeNodesFsfreezeThaw
+ */
 class PVEAgentVmidQemuNodeNodesFsfreezeThaw {
   #node;
   #vmid;
@@ -5859,8 +5898,8 @@ class PVEAgentVmidQemuNodeNodesFsfreezeThaw {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesFstrim
-*/
+ * Class PVEAgentVmidQemuNodeNodesFstrim
+ */
 class PVEAgentVmidQemuNodeNodesFstrim {
   #node;
   #vmid;
@@ -5886,8 +5925,8 @@ class PVEAgentVmidQemuNodeNodesFstrim {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetFsinfo
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetFsinfo
+ */
 class PVEAgentVmidQemuNodeNodesGetFsinfo {
   #node;
   #vmid;
@@ -5913,8 +5952,8 @@ class PVEAgentVmidQemuNodeNodesGetFsinfo {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetHostName
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetHostName
+ */
 class PVEAgentVmidQemuNodeNodesGetHostName {
   #node;
   #vmid;
@@ -5940,8 +5979,8 @@ class PVEAgentVmidQemuNodeNodesGetHostName {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo
+ */
 class PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo {
   #node;
   #vmid;
@@ -5967,8 +6006,8 @@ class PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetMemoryBlocks
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetMemoryBlocks
+ */
 class PVEAgentVmidQemuNodeNodesGetMemoryBlocks {
   #node;
   #vmid;
@@ -5994,8 +6033,8 @@ class PVEAgentVmidQemuNodeNodesGetMemoryBlocks {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetOsinfo
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetOsinfo
+ */
 class PVEAgentVmidQemuNodeNodesGetOsinfo {
   #node;
   #vmid;
@@ -6021,8 +6060,8 @@ class PVEAgentVmidQemuNodeNodesGetOsinfo {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetTime
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetTime
+ */
 class PVEAgentVmidQemuNodeNodesGetTime {
   #node;
   #vmid;
@@ -6048,8 +6087,8 @@ class PVEAgentVmidQemuNodeNodesGetTime {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetTimezone
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetTimezone
+ */
 class PVEAgentVmidQemuNodeNodesGetTimezone {
   #node;
   #vmid;
@@ -6075,8 +6114,8 @@ class PVEAgentVmidQemuNodeNodesGetTimezone {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetUsers
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetUsers
+ */
 class PVEAgentVmidQemuNodeNodesGetUsers {
   #node;
   #vmid;
@@ -6102,8 +6141,8 @@ class PVEAgentVmidQemuNodeNodesGetUsers {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesGetVcpus
-*/
+ * Class PVEAgentVmidQemuNodeNodesGetVcpus
+ */
 class PVEAgentVmidQemuNodeNodesGetVcpus {
   #node;
   #vmid;
@@ -6129,8 +6168,8 @@ class PVEAgentVmidQemuNodeNodesGetVcpus {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesInfo
-*/
+ * Class PVEAgentVmidQemuNodeNodesInfo
+ */
 class PVEAgentVmidQemuNodeNodesInfo {
   #node;
   #vmid;
@@ -6156,8 +6195,8 @@ class PVEAgentVmidQemuNodeNodesInfo {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesNetworkGetInterfaces
-*/
+ * Class PVEAgentVmidQemuNodeNodesNetworkGetInterfaces
+ */
 class PVEAgentVmidQemuNodeNodesNetworkGetInterfaces {
   #node;
   #vmid;
@@ -6183,8 +6222,8 @@ class PVEAgentVmidQemuNodeNodesNetworkGetInterfaces {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesPing
-*/
+ * Class PVEAgentVmidQemuNodeNodesPing
+ */
 class PVEAgentVmidQemuNodeNodesPing {
   #node;
   #vmid;
@@ -6210,8 +6249,8 @@ class PVEAgentVmidQemuNodeNodesPing {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesShutdown
-*/
+ * Class PVEAgentVmidQemuNodeNodesShutdown
+ */
 class PVEAgentVmidQemuNodeNodesShutdown {
   #node;
   #vmid;
@@ -6237,8 +6276,8 @@ class PVEAgentVmidQemuNodeNodesShutdown {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesSuspendDisk
-*/
+ * Class PVEAgentVmidQemuNodeNodesSuspendDisk
+ */
 class PVEAgentVmidQemuNodeNodesSuspendDisk {
   #node;
   #vmid;
@@ -6264,8 +6303,8 @@ class PVEAgentVmidQemuNodeNodesSuspendDisk {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesSuspendHybrid
-*/
+ * Class PVEAgentVmidQemuNodeNodesSuspendHybrid
+ */
 class PVEAgentVmidQemuNodeNodesSuspendHybrid {
   #node;
   #vmid;
@@ -6291,8 +6330,8 @@ class PVEAgentVmidQemuNodeNodesSuspendHybrid {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesSuspendRam
-*/
+ * Class PVEAgentVmidQemuNodeNodesSuspendRam
+ */
 class PVEAgentVmidQemuNodeNodesSuspendRam {
   #node;
   #vmid;
@@ -6318,8 +6357,8 @@ class PVEAgentVmidQemuNodeNodesSuspendRam {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesSetUserPassword
-*/
+ * Class PVEAgentVmidQemuNodeNodesSetUserPassword
+ */
 class PVEAgentVmidQemuNodeNodesSetUserPassword {
   #node;
   #vmid;
@@ -6353,8 +6392,8 @@ class PVEAgentVmidQemuNodeNodesSetUserPassword {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesExec
-*/
+ * Class PVEAgentVmidQemuNodeNodesExec
+ */
 class PVEAgentVmidQemuNodeNodesExec {
   #node;
   #vmid;
@@ -6386,8 +6425,8 @@ class PVEAgentVmidQemuNodeNodesExec {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesExecStatus
-*/
+ * Class PVEAgentVmidQemuNodeNodesExecStatus
+ */
 class PVEAgentVmidQemuNodeNodesExecStatus {
   #node;
   #vmid;
@@ -6415,8 +6454,8 @@ class PVEAgentVmidQemuNodeNodesExecStatus {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesFileRead
-*/
+ * Class PVEAgentVmidQemuNodeNodesFileRead
+ */
 class PVEAgentVmidQemuNodeNodesFileRead {
   #node;
   #vmid;
@@ -6444,8 +6483,8 @@ class PVEAgentVmidQemuNodeNodesFileRead {
 }
 
 /**
-* Class PVEAgentVmidQemuNodeNodesFileWrite
-*/
+ * Class PVEAgentVmidQemuNodeNodesFileWrite
+ */
 class PVEAgentVmidQemuNodeNodesFileWrite {
   #node;
   #vmid;
@@ -6479,8 +6518,8 @@ class PVEAgentVmidQemuNodeNodesFileWrite {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesRrd
-*/
+ * Class PVEVmidQemuNodeNodesRrd
+ */
 class PVEVmidQemuNodeNodesRrd {
   #node;
   #vmid;
@@ -6516,8 +6555,8 @@ class PVEVmidQemuNodeNodesRrd {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesRrddata
-*/
+ * Class PVEVmidQemuNodeNodesRrddata
+ */
 class PVEVmidQemuNodeNodesRrddata {
   #node;
   #vmid;
@@ -6551,8 +6590,8 @@ class PVEVmidQemuNodeNodesRrddata {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesConfig
-*/
+ * Class PVEVmidQemuNodeNodesConfig
+ */
 class PVEVmidQemuNodeNodesConfig {
   #node;
   #vmid;
@@ -6583,6 +6622,7 @@ class PVEVmidQemuNodeNodesConfig {
   /**
   * Set virtual machine options (asynchrounous API).
   * @param {bool} acpi Enable/disable ACPI.
+  * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
   * @param {string} agent Enable/disable communication with the Qemu Guest Agent and its properties.
   * @param {string} arch Virtual processor architecture. Defaults to the host.
   *   Enum: x86_64,aarch64
@@ -6613,7 +6653,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {bool} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
   * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
   * @param {array} hostpciN Map host PCI devices into guest.
-  * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory' and 'usb'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`.
+  * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory', 'usb' and 'cloudinit'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`. USB hotplugging is possible for guests with machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7.
   * @param {string} hugepages Enable/disable hugepages memory.
   *   Enum: any,2,1024
   * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
@@ -6631,7 +6671,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
-  * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will' 	    .' automatically use the setting from the host if neither searchdomain nor nameserver' 	    .' are set.
+  * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
   * @param {array} netN Specify network devices.
   * @param {bool} numa Enable/disable NUMA.
   * @param {array} numaN NUMA topology.
@@ -6647,7 +6687,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {string} scsihw SCSI controller model
   *   Enum: lsi,lsi53c810,virtio-scsi-pci,virtio-scsi-single,megasas,pvscsi
-  * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will' 	    .' automatically use the setting from the host if neither searchdomain nor nameserver' 	    .' are set.
+  * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
   * @param {array} serialN Create a serial device inside the VM (n is 0 to 3)
   * @param {int} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
   * @param {bool} skiplock Ignore locks - only root is allowed to use this option.
@@ -6664,7 +6704,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {bool} template Enable/disable Template.
   * @param {string} tpmstate0 Configure a Disk for storing TPM state. The format is fixed to 'raw'. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and 4 MiB will be used instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
-  * @param {array} usbN Configure an USB device (n is 0 to 4).
+  * @param {array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
   * @param {int} vcpus Number of hotplugged vcpus.
   * @param {string} vga Configure the VGA hardware.
   * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
@@ -6673,9 +6713,10 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} watchdog Create a virtual hardware watchdog device.
   * @returns {Result}
   */
-  async updateVmAsync(acpi, agent, arch, args, audio0, autostart, background_delay, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
+  async updateVmAsync(acpi, affinity, agent, arch, args, audio0, autostart, background_delay, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
     const parameters = {
       'acpi': acpi,
+      'affinity': affinity,
       'agent': agent,
       'arch': arch,
       'args': args,
@@ -6762,6 +6803,7 @@ class PVEVmidQemuNodeNodesConfig {
   /**
   * Set virtual machine options (synchrounous API) - You should consider using the POST method instead for any actions involving hotplug or storage allocation.
   * @param {bool} acpi Enable/disable ACPI.
+  * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
   * @param {string} agent Enable/disable communication with the Qemu Guest Agent and its properties.
   * @param {string} arch Virtual processor architecture. Defaults to the host.
   *   Enum: x86_64,aarch64
@@ -6791,7 +6833,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {bool} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
   * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
   * @param {array} hostpciN Map host PCI devices into guest.
-  * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory' and 'usb'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`.
+  * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory', 'usb' and 'cloudinit'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`. USB hotplugging is possible for guests with machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7.
   * @param {string} hugepages Enable/disable hugepages memory.
   *   Enum: any,2,1024
   * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
@@ -6809,7 +6851,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
-  * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will' 	    .' automatically use the setting from the host if neither searchdomain nor nameserver' 	    .' are set.
+  * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
   * @param {array} netN Specify network devices.
   * @param {bool} numa Enable/disable NUMA.
   * @param {array} numaN NUMA topology.
@@ -6825,7 +6867,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {string} scsihw SCSI controller model
   *   Enum: lsi,lsi53c810,virtio-scsi-pci,virtio-scsi-single,megasas,pvscsi
-  * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will' 	    .' automatically use the setting from the host if neither searchdomain nor nameserver' 	    .' are set.
+  * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
   * @param {array} serialN Create a serial device inside the VM (n is 0 to 3)
   * @param {int} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
   * @param {bool} skiplock Ignore locks - only root is allowed to use this option.
@@ -6842,7 +6884,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {bool} template Enable/disable Template.
   * @param {string} tpmstate0 Configure a Disk for storing TPM state. The format is fixed to 'raw'. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and 4 MiB will be used instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
-  * @param {array} usbN Configure an USB device (n is 0 to 4).
+  * @param {array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
   * @param {int} vcpus Number of hotplugged vcpus.
   * @param {string} vga Configure the VGA hardware.
   * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
@@ -6851,9 +6893,10 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} watchdog Create a virtual hardware watchdog device.
   * @returns {Result}
   */
-  async updateVm(acpi, agent, arch, args, audio0, autostart, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
+  async updateVm(acpi, affinity, agent, arch, args, audio0, autostart, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
     const parameters = {
       'acpi': acpi,
+      'affinity': affinity,
       'agent': agent,
       'arch': arch,
       'args': args,
@@ -6940,8 +6983,8 @@ class PVEVmidQemuNodeNodesConfig {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesPending
-*/
+ * Class PVEVmidQemuNodeNodesPending
+ */
 class PVEVmidQemuNodeNodesPending {
   #node;
   #vmid;
@@ -6967,8 +7010,77 @@ class PVEVmidQemuNodeNodesPending {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesUnlink
-*/
+ * Class PVEVmidQemuNodeNodesCloudinit
+ */
+class PVEVmidQemuNodeNodesCloudinit {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+  #dump;
+  /**
+   * Get CloudinitVmidQemuNodeNodesDump
+   * @returns {PVECloudinitVmidQemuNodeNodesDump}
+   */
+  get dump() { return this.#dump == null ? (this.#dump = new PVECloudinitVmidQemuNodeNodesDump(this.#client, this.#node, this.#vmid)) : this.#dump; }
+
+
+  /**
+  * Get the cloudinit configuration with both current and pending values.
+  * @returns {Result}
+  */
+  async cloudinitPending() {
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit`);
+  }
+  /**
+  * Regenerate and change cloudinit config drive.
+  * @returns {Result}
+  */
+  async cloudinitUpdate() {
+    return await this.#client.set(`/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit`);
+  }
+
+}
+/**
+ * Class PVECloudinitVmidQemuNodeNodesDump
+ */
+class PVECloudinitVmidQemuNodeNodesDump {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Get automatically generated cloudinit config.
+  * @param {string} type Config type.
+  *   Enum: user,network,meta
+  * @returns {Result}
+  */
+  async cloudinitGeneratedConfigDump(type) {
+    const parameters = { 'type': type };
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit/dump`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEVmidQemuNodeNodesUnlink
+ */
 class PVEVmidQemuNodeNodesUnlink {
   #node;
   #vmid;
@@ -7000,8 +7112,8 @@ class PVEVmidQemuNodeNodesUnlink {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesVncproxy
-*/
+ * Class PVEVmidQemuNodeNodesVncproxy
+ */
 class PVEVmidQemuNodeNodesVncproxy {
   #node;
   #vmid;
@@ -7033,8 +7145,8 @@ class PVEVmidQemuNodeNodesVncproxy {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesTermproxy
-*/
+ * Class PVEVmidQemuNodeNodesTermproxy
+ */
 class PVEVmidQemuNodeNodesTermproxy {
   #node;
   #vmid;
@@ -7063,8 +7175,8 @@ class PVEVmidQemuNodeNodesTermproxy {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesVncwebsocket
-*/
+ * Class PVEVmidQemuNodeNodesVncwebsocket
+ */
 class PVEVmidQemuNodeNodesVncwebsocket {
   #node;
   #vmid;
@@ -7096,8 +7208,8 @@ class PVEVmidQemuNodeNodesVncwebsocket {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesSpiceproxy
-*/
+ * Class PVEVmidQemuNodeNodesSpiceproxy
+ */
 class PVEVmidQemuNodeNodesSpiceproxy {
   #node;
   #vmid;
@@ -7125,8 +7237,8 @@ class PVEVmidQemuNodeNodesSpiceproxy {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesStatus
-*/
+ * Class PVEVmidQemuNodeNodesStatus
+ */
 class PVEVmidQemuNodeNodesStatus {
   #node;
   #vmid;
@@ -7141,51 +7253,51 @@ class PVEVmidQemuNodeNodesStatus {
 
   #current;
   /**
-  * Get StatusVmidQemuNodeNodesCurrent
-  * @returns {PVEStatusVmidQemuNodeNodesCurrent}
-  */
+   * Get StatusVmidQemuNodeNodesCurrent
+   * @returns {PVEStatusVmidQemuNodeNodesCurrent}
+   */
   get current() { return this.#current == null ? (this.#current = new PVEStatusVmidQemuNodeNodesCurrent(this.#client, this.#node, this.#vmid)) : this.#current; }
   #start;
   /**
-  * Get StatusVmidQemuNodeNodesStart
-  * @returns {PVEStatusVmidQemuNodeNodesStart}
-  */
+   * Get StatusVmidQemuNodeNodesStart
+   * @returns {PVEStatusVmidQemuNodeNodesStart}
+   */
   get start() { return this.#start == null ? (this.#start = new PVEStatusVmidQemuNodeNodesStart(this.#client, this.#node, this.#vmid)) : this.#start; }
   #stop;
   /**
-  * Get StatusVmidQemuNodeNodesStop
-  * @returns {PVEStatusVmidQemuNodeNodesStop}
-  */
+   * Get StatusVmidQemuNodeNodesStop
+   * @returns {PVEStatusVmidQemuNodeNodesStop}
+   */
   get stop() { return this.#stop == null ? (this.#stop = new PVEStatusVmidQemuNodeNodesStop(this.#client, this.#node, this.#vmid)) : this.#stop; }
   #reset;
   /**
-  * Get StatusVmidQemuNodeNodesReset
-  * @returns {PVEStatusVmidQemuNodeNodesReset}
-  */
+   * Get StatusVmidQemuNodeNodesReset
+   * @returns {PVEStatusVmidQemuNodeNodesReset}
+   */
   get reset() { return this.#reset == null ? (this.#reset = new PVEStatusVmidQemuNodeNodesReset(this.#client, this.#node, this.#vmid)) : this.#reset; }
   #shutdown;
   /**
-  * Get StatusVmidQemuNodeNodesShutdown
-  * @returns {PVEStatusVmidQemuNodeNodesShutdown}
-  */
+   * Get StatusVmidQemuNodeNodesShutdown
+   * @returns {PVEStatusVmidQemuNodeNodesShutdown}
+   */
   get shutdown() { return this.#shutdown == null ? (this.#shutdown = new PVEStatusVmidQemuNodeNodesShutdown(this.#client, this.#node, this.#vmid)) : this.#shutdown; }
   #reboot;
   /**
-  * Get StatusVmidQemuNodeNodesReboot
-  * @returns {PVEStatusVmidQemuNodeNodesReboot}
-  */
+   * Get StatusVmidQemuNodeNodesReboot
+   * @returns {PVEStatusVmidQemuNodeNodesReboot}
+   */
   get reboot() { return this.#reboot == null ? (this.#reboot = new PVEStatusVmidQemuNodeNodesReboot(this.#client, this.#node, this.#vmid)) : this.#reboot; }
   #suspend;
   /**
-  * Get StatusVmidQemuNodeNodesSuspend
-  * @returns {PVEStatusVmidQemuNodeNodesSuspend}
-  */
+   * Get StatusVmidQemuNodeNodesSuspend
+   * @returns {PVEStatusVmidQemuNodeNodesSuspend}
+   */
   get suspend() { return this.#suspend == null ? (this.#suspend = new PVEStatusVmidQemuNodeNodesSuspend(this.#client, this.#node, this.#vmid)) : this.#suspend; }
   #resume;
   /**
-  * Get StatusVmidQemuNodeNodesResume
-  * @returns {PVEStatusVmidQemuNodeNodesResume}
-  */
+   * Get StatusVmidQemuNodeNodesResume
+   * @returns {PVEStatusVmidQemuNodeNodesResume}
+   */
   get resume() { return this.#resume == null ? (this.#resume = new PVEStatusVmidQemuNodeNodesResume(this.#client, this.#node, this.#vmid)) : this.#resume; }
 
 
@@ -7199,8 +7311,8 @@ class PVEVmidQemuNodeNodesStatus {
 
 }
 /**
-* Class PVEStatusVmidQemuNodeNodesCurrent
-*/
+ * Class PVEStatusVmidQemuNodeNodesCurrent
+ */
 class PVEStatusVmidQemuNodeNodesCurrent {
   #node;
   #vmid;
@@ -7226,8 +7338,8 @@ class PVEStatusVmidQemuNodeNodesCurrent {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesStart
-*/
+ * Class PVEStatusVmidQemuNodeNodesStart
+ */
 class PVEStatusVmidQemuNodeNodesStart {
   #node;
   #vmid;
@@ -7274,8 +7386,8 @@ class PVEStatusVmidQemuNodeNodesStart {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesStop
-*/
+ * Class PVEStatusVmidQemuNodeNodesStop
+ */
 class PVEStatusVmidQemuNodeNodesStop {
   #node;
   #vmid;
@@ -7311,8 +7423,8 @@ class PVEStatusVmidQemuNodeNodesStop {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesReset
-*/
+ * Class PVEStatusVmidQemuNodeNodesReset
+ */
 class PVEStatusVmidQemuNodeNodesReset {
   #node;
   #vmid;
@@ -7340,8 +7452,8 @@ class PVEStatusVmidQemuNodeNodesReset {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesShutdown
-*/
+ * Class PVEStatusVmidQemuNodeNodesShutdown
+ */
 class PVEStatusVmidQemuNodeNodesShutdown {
   #node;
   #vmid;
@@ -7377,8 +7489,8 @@ class PVEStatusVmidQemuNodeNodesShutdown {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesReboot
-*/
+ * Class PVEStatusVmidQemuNodeNodesReboot
+ */
 class PVEStatusVmidQemuNodeNodesReboot {
   #node;
   #vmid;
@@ -7406,8 +7518,8 @@ class PVEStatusVmidQemuNodeNodesReboot {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesSuspend
-*/
+ * Class PVEStatusVmidQemuNodeNodesSuspend
+ */
 class PVEStatusVmidQemuNodeNodesSuspend {
   #node;
   #vmid;
@@ -7441,8 +7553,8 @@ class PVEStatusVmidQemuNodeNodesSuspend {
 }
 
 /**
-* Class PVEStatusVmidQemuNodeNodesResume
-*/
+ * Class PVEStatusVmidQemuNodeNodesResume
+ */
 class PVEStatusVmidQemuNodeNodesResume {
   #node;
   #vmid;
@@ -7474,8 +7586,8 @@ class PVEStatusVmidQemuNodeNodesResume {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesSendkey
-*/
+ * Class PVEVmidQemuNodeNodesSendkey
+ */
 class PVEVmidQemuNodeNodesSendkey {
   #node;
   #vmid;
@@ -7507,8 +7619,8 @@ class PVEVmidQemuNodeNodesSendkey {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesFeature
-*/
+ * Class PVEVmidQemuNodeNodesFeature
+ */
 class PVEVmidQemuNodeNodesFeature {
   #node;
   #vmid;
@@ -7541,8 +7653,8 @@ class PVEVmidQemuNodeNodesFeature {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesClone
-*/
+ * Class PVEVmidQemuNodeNodesClone
+ */
 class PVEVmidQemuNodeNodesClone {
   #node;
   #vmid;
@@ -7591,8 +7703,8 @@ class PVEVmidQemuNodeNodesClone {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesMoveDisk
-*/
+ * Class PVEVmidQemuNodeNodesMoveDisk
+ */
 class PVEVmidQemuNodeNodesMoveDisk {
   #node;
   #vmid;
@@ -7641,8 +7753,8 @@ class PVEVmidQemuNodeNodesMoveDisk {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesMigrate
-*/
+ * Class PVEVmidQemuNodeNodesMigrate
+ */
 class PVEVmidQemuNodeNodesMigrate {
   #node;
   #vmid;
@@ -7696,8 +7808,51 @@ class PVEVmidQemuNodeNodesMigrate {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesMonitor
-*/
+ * Class PVEVmidQemuNodeNodesRemoteMigrate
+ */
+class PVEVmidQemuNodeNodesRemoteMigrate {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Migrate virtual machine to a remote cluster. Creates a new migration task. EXPERIMENTAL feature!
+  * @param {string} target_bridge Mapping from source to target bridges. Providing only a single bridge ID maps all source bridges to that bridge. Providing the special value '1' will map each source bridge to itself.
+  * @param {string} target_endpoint Remote target endpoint
+  * @param {string} target_storage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
+  * @param {int} bwlimit Override I/O bandwidth limit (in KiB/s).
+  * @param {bool} delete_ Delete the original VM and related data after successful migration. By default the original VM is kept on the source cluster in a stopped state.
+  * @param {bool} online Use online/live migration if VM is running. Ignored if VM is stopped.
+  * @param {int} target_vmid The (unique) ID of the VM.
+  * @returns {Result}
+  */
+  async remoteMigrateVm(target_bridge, target_endpoint, target_storage, bwlimit, delete_, online, target_vmid) {
+    const parameters = {
+      'target-bridge': target_bridge,
+      'target-endpoint': target_endpoint,
+      'target-storage': target_storage,
+      'bwlimit': bwlimit,
+      'delete': delete_,
+      'online': online,
+      'target-vmid': target_vmid
+    };
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/remote_migrate`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEVmidQemuNodeNodesMonitor
+ */
 class PVEVmidQemuNodeNodesMonitor {
   #node;
   #vmid;
@@ -7725,8 +7880,8 @@ class PVEVmidQemuNodeNodesMonitor {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesResize
-*/
+ * Class PVEVmidQemuNodeNodesResize
+ */
 class PVEVmidQemuNodeNodesResize {
   #node;
   #vmid;
@@ -7763,8 +7918,8 @@ class PVEVmidQemuNodeNodesResize {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesSnapshot
-*/
+ * Class PVEVmidQemuNodeNodesSnapshot
+ */
 class PVEVmidQemuNodeNodesSnapshot {
   #node;
   #vmid;
@@ -7779,10 +7934,10 @@ class PVEVmidQemuNodeNodesSnapshot {
 
 
   /**
-  * Get ItemSnapshotVmidQemuNodeNodesSnapname
-  * @param snapname
-  * @returns {PVEItemSnapshotVmidQemuNodeNodesSnapname}
-  */
+   * Get ItemSnapshotVmidQemuNodeNodesSnapname
+   * @param snapname
+   * @returns {PVEItemSnapshotVmidQemuNodeNodesSnapname}
+   */
   get(snapname) { return new PVEItemSnapshotVmidQemuNodeNodesSnapname(this.#client, this.#node, this.#vmid, snapname); }
 
   /**
@@ -7810,8 +7965,8 @@ class PVEVmidQemuNodeNodesSnapshot {
 
 }
 /**
-* Class PVEItemSnapshotVmidQemuNodeNodesSnapname
-*/
+ * Class PVEItemSnapshotVmidQemuNodeNodesSnapname
+ */
 class PVEItemSnapshotVmidQemuNodeNodesSnapname {
   #node;
   #vmid;
@@ -7828,15 +7983,15 @@ class PVEItemSnapshotVmidQemuNodeNodesSnapname {
 
   #config;
   /**
-  * Get SnapnameSnapshotVmidQemuNodeNodesConfig
-  * @returns {PVESnapnameSnapshotVmidQemuNodeNodesConfig}
-  */
+   * Get SnapnameSnapshotVmidQemuNodeNodesConfig
+   * @returns {PVESnapnameSnapshotVmidQemuNodeNodesConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVESnapnameSnapshotVmidQemuNodeNodesConfig(this.#client, this.#node, this.#vmid, this.#snapname)) : this.#config; }
   #rollback;
   /**
-  * Get SnapnameSnapshotVmidQemuNodeNodesRollback
-  * @returns {PVESnapnameSnapshotVmidQemuNodeNodesRollback}
-  */
+   * Get SnapnameSnapshotVmidQemuNodeNodesRollback
+   * @returns {PVESnapnameSnapshotVmidQemuNodeNodesRollback}
+   */
   get rollback() { return this.#rollback == null ? (this.#rollback = new PVESnapnameSnapshotVmidQemuNodeNodesRollback(this.#client, this.#node, this.#vmid, this.#snapname)) : this.#rollback; }
 
 
@@ -7859,8 +8014,8 @@ class PVEItemSnapshotVmidQemuNodeNodesSnapname {
 
 }
 /**
-* Class PVESnapnameSnapshotVmidQemuNodeNodesConfig
-*/
+ * Class PVESnapnameSnapshotVmidQemuNodeNodesConfig
+ */
 class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
   #node;
   #vmid;
@@ -7897,8 +8052,8 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
 }
 
 /**
-* Class PVESnapnameSnapshotVmidQemuNodeNodesRollback
-*/
+ * Class PVESnapnameSnapshotVmidQemuNodeNodesRollback
+ */
 class PVESnapnameSnapshotVmidQemuNodeNodesRollback {
   #node;
   #vmid;
@@ -7917,17 +8072,19 @@ class PVESnapnameSnapshotVmidQemuNodeNodesRollback {
 
   /**
   * Rollback VM state to specified snapshot.
+  * @param {bool} start Whether the VM should get started after rolling back successfully
   * @returns {Result}
   */
-  async rollback() {
-    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname}/rollback`);
+  async rollback(start) {
+    const parameters = { 'start': start };
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname}/rollback`, parameters);
   }
 
 }
 
 /**
-* Class PVEVmidQemuNodeNodesTemplate
-*/
+ * Class PVEVmidQemuNodeNodesTemplate
+ */
 class PVEVmidQemuNodeNodesTemplate {
   #node;
   #vmid;
@@ -7956,34 +8113,9 @@ class PVEVmidQemuNodeNodesTemplate {
 }
 
 /**
-* Class PVEVmidQemuNodeNodesCloudinit
-*/
-class PVEVmidQemuNodeNodesCloudinit {
-  #node;
-  #vmid;
-  /** @type {PveClient} */
-  #client;
-
-  constructor(client, node, vmid) {
-    this.#client = client;
-    this.#node = node;
-    this.#vmid = vmid;
-  }
-
-  #dump;
-  /**
-  * Get CloudinitVmidQemuNodeNodesDump
-  * @returns {PVECloudinitVmidQemuNodeNodesDump}
-  */
-  get dump() { return this.#dump == null ? (this.#dump = new PVECloudinitVmidQemuNodeNodesDump(this.#client, this.#node, this.#vmid)) : this.#dump; }
-
-
-
-}
-/**
-* Class PVECloudinitVmidQemuNodeNodesDump
-*/
-class PVECloudinitVmidQemuNodeNodesDump {
+ * Class PVEVmidQemuNodeNodesMtunnel
+ */
+class PVEVmidQemuNodeNodesMtunnel {
   #node;
   #vmid;
   /** @type {PveClient} */
@@ -7998,21 +8130,57 @@ class PVECloudinitVmidQemuNodeNodesDump {
 
 
   /**
-  * Get automatically generated cloudinit config.
-  * @param {string} type Config type.
-  *   Enum: user,network,meta
+  * Migration tunnel endpoint - only for internal use by VM migration.
+  * @param {string} bridges List of network bridges to check availability. Will be checked again for actually used bridges during migration.
+  * @param {string} storages List of storages to check permission and availability. Will be checked again for all actually used storages during migration.
   * @returns {Result}
   */
-  async cloudinitGeneratedConfigDump(type) {
-    const parameters = { 'type': type };
-    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit/dump`, parameters);
+  async mtunnel(bridges, storages) {
+    const parameters = {
+      'bridges': bridges,
+      'storages': storages
+    };
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/mtunnel`, parameters);
   }
 
 }
 
 /**
-* Class PVENodeNodesLxc
-*/
+ * Class PVEVmidQemuNodeNodesMtunnelwebsocket
+ */
+class PVEVmidQemuNodeNodesMtunnelwebsocket {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Migration tunnel endpoint for websocket upgrade - only for internal use by VM migration.
+  * @param {string} socket unix socket to forward to
+  * @param {string} ticket ticket return by initial 'mtunnel' API call, or retrieved via 'ticket' tunnel command
+  * @returns {Result}
+  */
+  async mtunnelwebsocket(socket, ticket) {
+    const parameters = {
+      'socket': socket,
+      'ticket': ticket
+    };
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/mtunnelwebsocket`, parameters);
+  }
+
+}
+
+/**
+ * Class PVENodeNodesLxc
+ */
 class PVENodeNodesLxc {
   #node;
   /** @type {PveClient} */
@@ -8025,10 +8193,10 @@ class PVENodeNodesLxc {
 
 
   /**
-  * Get ItemLxcNodeNodesVmid
-  * @param vmid
-  * @returns {PVEItemLxcNodeNodesVmid}
-  */
+   * Get ItemLxcNodeNodesVmid
+   * @param vmid
+   * @returns {PVEItemLxcNodeNodesVmid}
+   */
   get(vmid) { return new PVEItemLxcNodeNodesVmid(this.#client, this.#node, vmid); }
 
   /**
@@ -8050,7 +8218,7 @@ class PVENodeNodesLxc {
   * @param {bool} console Attach a console device (/dev/console) to the container.
   * @param {int} cores The number of cores assigned to the container. A container can use all available cores by default.
   * @param {float} cpulimit Limit of CPU usage.  NOTE: If the computer has 2 CPUs, it has a total of '2' CPU time. Value '0' indicates no CPU limit.
-  * @param {int} cpuunits CPU weight for a VM. Argument is used in the kernel fair scheduler. The larger the number is, the more CPU time this VM gets. Number is relative to the weights of all the other running VMs.  NOTE: You can disable fair-scheduler configuration by setting this to 0.
+  * @param {int} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
   * @param {bool} debug Try to be more verbose. For now this only enables debug log-level on start.
   * @param {string} description Description for the Container. Shown in the web-interface CT's summary. This is saved as comment inside the configuration file.
   * @param {string} features Allow containers access to advanced features.
@@ -8058,13 +8226,13 @@ class PVENodeNodesLxc {
   * @param {string} hookscript Script that will be exectued during various steps in the containers lifetime.
   * @param {string} hostname Set a host name for the container.
   * @param {bool} ignore_unpack_errors Ignore errors when extracting the template.
-  * @param {string} lock Lock/unlock the VM.
+  * @param {string} lock Lock/unlock the container.
   *   Enum: backup,create,destroyed,disk,fstrim,migrate,mounted,rollback,snapshot,snapshot-delete
-  * @param {int} memory Amount of RAM for the VM in MB.
+  * @param {int} memory Amount of RAM for the container in MB.
   * @param {array} mpN Use volume as container mount point. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume.
   * @param {string} nameserver Sets DNS server IP address for a container. Create will automatically use the setting from the host if you neither set searchdomain nor nameserver.
   * @param {array} netN Specifies network interfaces for the container.
-  * @param {bool} onboot Specifies whether a VM will be started during system bootup.
+  * @param {bool} onboot Specifies whether a container will be started during system bootup.
   * @param {string} ostype OS type. This is used to setup configuration inside the container, and corresponds to lxc setup scripts in /usr/share/lxc/config/&amp;lt;ostype&amp;gt;.common.conf. Value 'unmanaged' can be used to skip and OS specific setup.
   *   Enum: debian,devuan,ubuntu,centos,fedora,opensuse,archlinux,alpine,gentoo,nixos,unmanaged
   * @param {string} password Sets root password inside container.
@@ -8077,7 +8245,7 @@ class PVENodeNodesLxc {
   * @param {bool} start Start the CT after its creation finished successfully.
   * @param {string} startup Startup and shutdown behavior. Order is a non-negative number defining the general startup order. Shutdown in done with reverse ordering. Additionally you can set the 'up' or 'down' delay in seconds, which specifies a delay to wait before the next VM is started or stopped.
   * @param {string} storage Default Storage.
-  * @param {int} swap Amount of SWAP for the VM in MB.
+  * @param {int} swap Amount of SWAP for the container in MB.
   * @param {string} tags Tags of the Container. This is only meta information.
   * @param {bool} template Enable/disable Template.
   * @param {string} timezone Time zone to use in the container. If option isn't set, then nothing will be done. Can be set to 'host' to match the host time zone, or an arbitrary time zone option from /usr/share/zoneinfo/zone.tab
@@ -8136,8 +8304,8 @@ class PVENodeNodesLxc {
 
 }
 /**
-* Class PVEItemLxcNodeNodesVmid
-*/
+ * Class PVEItemLxcNodeNodesVmid
+ */
 class PVEItemLxcNodeNodesVmid {
   #node;
   #vmid;
@@ -8152,106 +8320,124 @@ class PVEItemLxcNodeNodesVmid {
 
   #config;
   /**
-  * Get VmidLxcNodeNodesConfig
-  * @returns {PVEVmidLxcNodeNodesConfig}
-  */
+   * Get VmidLxcNodeNodesConfig
+   * @returns {PVEVmidLxcNodeNodesConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVEVmidLxcNodeNodesConfig(this.#client, this.#node, this.#vmid)) : this.#config; }
   #status;
   /**
-  * Get VmidLxcNodeNodesStatus
-  * @returns {PVEVmidLxcNodeNodesStatus}
-  */
+   * Get VmidLxcNodeNodesStatus
+   * @returns {PVEVmidLxcNodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEVmidLxcNodeNodesStatus(this.#client, this.#node, this.#vmid)) : this.#status; }
   #snapshot;
   /**
-  * Get VmidLxcNodeNodesSnapshot
-  * @returns {PVEVmidLxcNodeNodesSnapshot}
-  */
+   * Get VmidLxcNodeNodesSnapshot
+   * @returns {PVEVmidLxcNodeNodesSnapshot}
+   */
   get snapshot() { return this.#snapshot == null ? (this.#snapshot = new PVEVmidLxcNodeNodesSnapshot(this.#client, this.#node, this.#vmid)) : this.#snapshot; }
   #firewall;
   /**
-  * Get VmidLxcNodeNodesFirewall
-  * @returns {PVEVmidLxcNodeNodesFirewall}
-  */
+   * Get VmidLxcNodeNodesFirewall
+   * @returns {PVEVmidLxcNodeNodesFirewall}
+   */
   get firewall() { return this.#firewall == null ? (this.#firewall = new PVEVmidLxcNodeNodesFirewall(this.#client, this.#node, this.#vmid)) : this.#firewall; }
   #rrd;
   /**
-  * Get VmidLxcNodeNodesRrd
-  * @returns {PVEVmidLxcNodeNodesRrd}
-  */
+   * Get VmidLxcNodeNodesRrd
+   * @returns {PVEVmidLxcNodeNodesRrd}
+   */
   get rrd() { return this.#rrd == null ? (this.#rrd = new PVEVmidLxcNodeNodesRrd(this.#client, this.#node, this.#vmid)) : this.#rrd; }
   #rrddata;
   /**
-  * Get VmidLxcNodeNodesRrddata
-  * @returns {PVEVmidLxcNodeNodesRrddata}
-  */
+   * Get VmidLxcNodeNodesRrddata
+   * @returns {PVEVmidLxcNodeNodesRrddata}
+   */
   get rrddata() { return this.#rrddata == null ? (this.#rrddata = new PVEVmidLxcNodeNodesRrddata(this.#client, this.#node, this.#vmid)) : this.#rrddata; }
   #vncproxy;
   /**
-  * Get VmidLxcNodeNodesVncproxy
-  * @returns {PVEVmidLxcNodeNodesVncproxy}
-  */
+   * Get VmidLxcNodeNodesVncproxy
+   * @returns {PVEVmidLxcNodeNodesVncproxy}
+   */
   get vncproxy() { return this.#vncproxy == null ? (this.#vncproxy = new PVEVmidLxcNodeNodesVncproxy(this.#client, this.#node, this.#vmid)) : this.#vncproxy; }
   #termproxy;
   /**
-  * Get VmidLxcNodeNodesTermproxy
-  * @returns {PVEVmidLxcNodeNodesTermproxy}
-  */
+   * Get VmidLxcNodeNodesTermproxy
+   * @returns {PVEVmidLxcNodeNodesTermproxy}
+   */
   get termproxy() { return this.#termproxy == null ? (this.#termproxy = new PVEVmidLxcNodeNodesTermproxy(this.#client, this.#node, this.#vmid)) : this.#termproxy; }
   #vncwebsocket;
   /**
-  * Get VmidLxcNodeNodesVncwebsocket
-  * @returns {PVEVmidLxcNodeNodesVncwebsocket}
-  */
+   * Get VmidLxcNodeNodesVncwebsocket
+   * @returns {PVEVmidLxcNodeNodesVncwebsocket}
+   */
   get vncwebsocket() { return this.#vncwebsocket == null ? (this.#vncwebsocket = new PVEVmidLxcNodeNodesVncwebsocket(this.#client, this.#node, this.#vmid)) : this.#vncwebsocket; }
   #spiceproxy;
   /**
-  * Get VmidLxcNodeNodesSpiceproxy
-  * @returns {PVEVmidLxcNodeNodesSpiceproxy}
-  */
+   * Get VmidLxcNodeNodesSpiceproxy
+   * @returns {PVEVmidLxcNodeNodesSpiceproxy}
+   */
   get spiceproxy() { return this.#spiceproxy == null ? (this.#spiceproxy = new PVEVmidLxcNodeNodesSpiceproxy(this.#client, this.#node, this.#vmid)) : this.#spiceproxy; }
+  #remoteMigrate;
+  /**
+   * Get VmidLxcNodeNodesRemoteMigrate
+   * @returns {PVEVmidLxcNodeNodesRemoteMigrate}
+   */
+  get remoteMigrate() { return this.#remoteMigrate == null ? (this.#remoteMigrate = new PVEVmidLxcNodeNodesRemoteMigrate(this.#client, this.#node, this.#vmid)) : this.#remoteMigrate; }
   #migrate;
   /**
-  * Get VmidLxcNodeNodesMigrate
-  * @returns {PVEVmidLxcNodeNodesMigrate}
-  */
+   * Get VmidLxcNodeNodesMigrate
+   * @returns {PVEVmidLxcNodeNodesMigrate}
+   */
   get migrate() { return this.#migrate == null ? (this.#migrate = new PVEVmidLxcNodeNodesMigrate(this.#client, this.#node, this.#vmid)) : this.#migrate; }
   #feature;
   /**
-  * Get VmidLxcNodeNodesFeature
-  * @returns {PVEVmidLxcNodeNodesFeature}
-  */
+   * Get VmidLxcNodeNodesFeature
+   * @returns {PVEVmidLxcNodeNodesFeature}
+   */
   get feature() { return this.#feature == null ? (this.#feature = new PVEVmidLxcNodeNodesFeature(this.#client, this.#node, this.#vmid)) : this.#feature; }
   #template;
   /**
-  * Get VmidLxcNodeNodesTemplate
-  * @returns {PVEVmidLxcNodeNodesTemplate}
-  */
+   * Get VmidLxcNodeNodesTemplate
+   * @returns {PVEVmidLxcNodeNodesTemplate}
+   */
   get template() { return this.#template == null ? (this.#template = new PVEVmidLxcNodeNodesTemplate(this.#client, this.#node, this.#vmid)) : this.#template; }
   #clone;
   /**
-  * Get VmidLxcNodeNodesClone
-  * @returns {PVEVmidLxcNodeNodesClone}
-  */
+   * Get VmidLxcNodeNodesClone
+   * @returns {PVEVmidLxcNodeNodesClone}
+   */
   get clone() { return this.#clone == null ? (this.#clone = new PVEVmidLxcNodeNodesClone(this.#client, this.#node, this.#vmid)) : this.#clone; }
   #resize;
   /**
-  * Get VmidLxcNodeNodesResize
-  * @returns {PVEVmidLxcNodeNodesResize}
-  */
+   * Get VmidLxcNodeNodesResize
+   * @returns {PVEVmidLxcNodeNodesResize}
+   */
   get resize() { return this.#resize == null ? (this.#resize = new PVEVmidLxcNodeNodesResize(this.#client, this.#node, this.#vmid)) : this.#resize; }
   #moveVolume;
   /**
-  * Get VmidLxcNodeNodesMoveVolume
-  * @returns {PVEVmidLxcNodeNodesMoveVolume}
-  */
+   * Get VmidLxcNodeNodesMoveVolume
+   * @returns {PVEVmidLxcNodeNodesMoveVolume}
+   */
   get moveVolume() { return this.#moveVolume == null ? (this.#moveVolume = new PVEVmidLxcNodeNodesMoveVolume(this.#client, this.#node, this.#vmid)) : this.#moveVolume; }
   #pending;
   /**
-  * Get VmidLxcNodeNodesPending
-  * @returns {PVEVmidLxcNodeNodesPending}
-  */
+   * Get VmidLxcNodeNodesPending
+   * @returns {PVEVmidLxcNodeNodesPending}
+   */
   get pending() { return this.#pending == null ? (this.#pending = new PVEVmidLxcNodeNodesPending(this.#client, this.#node, this.#vmid)) : this.#pending; }
+  #mtunnel;
+  /**
+   * Get VmidLxcNodeNodesMtunnel
+   * @returns {PVEVmidLxcNodeNodesMtunnel}
+   */
+  get mtunnel() { return this.#mtunnel == null ? (this.#mtunnel = new PVEVmidLxcNodeNodesMtunnel(this.#client, this.#node, this.#vmid)) : this.#mtunnel; }
+  #mtunnelwebsocket;
+  /**
+   * Get VmidLxcNodeNodesMtunnelwebsocket
+   * @returns {PVEVmidLxcNodeNodesMtunnelwebsocket}
+   */
+  get mtunnelwebsocket() { return this.#mtunnelwebsocket == null ? (this.#mtunnelwebsocket = new PVEVmidLxcNodeNodesMtunnelwebsocket(this.#client, this.#node, this.#vmid)) : this.#mtunnelwebsocket; }
 
 
   /**
@@ -8279,8 +8465,8 @@ class PVEItemLxcNodeNodesVmid {
 
 }
 /**
-* Class PVEVmidLxcNodeNodesConfig
-*/
+ * Class PVEVmidLxcNodeNodesConfig
+ */
 class PVEVmidLxcNodeNodesConfig {
   #node;
   #vmid;
@@ -8317,7 +8503,7 @@ class PVEVmidLxcNodeNodesConfig {
   * @param {bool} console Attach a console device (/dev/console) to the container.
   * @param {int} cores The number of cores assigned to the container. A container can use all available cores by default.
   * @param {float} cpulimit Limit of CPU usage.  NOTE: If the computer has 2 CPUs, it has a total of '2' CPU time. Value '0' indicates no CPU limit.
-  * @param {int} cpuunits CPU weight for a VM. Argument is used in the kernel fair scheduler. The larger the number is, the more CPU time this VM gets. Number is relative to the weights of all the other running VMs.  NOTE: You can disable fair-scheduler configuration by setting this to 0.
+  * @param {int} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
   * @param {bool} debug Try to be more verbose. For now this only enables debug log-level on start.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} description Description for the Container. Shown in the web-interface CT's summary. This is saved as comment inside the configuration file.
@@ -8325,13 +8511,13 @@ class PVEVmidLxcNodeNodesConfig {
   * @param {string} features Allow containers access to advanced features.
   * @param {string} hookscript Script that will be exectued during various steps in the containers lifetime.
   * @param {string} hostname Set a host name for the container.
-  * @param {string} lock Lock/unlock the VM.
+  * @param {string} lock Lock/unlock the container.
   *   Enum: backup,create,destroyed,disk,fstrim,migrate,mounted,rollback,snapshot,snapshot-delete
-  * @param {int} memory Amount of RAM for the VM in MB.
+  * @param {int} memory Amount of RAM for the container in MB.
   * @param {array} mpN Use volume as container mount point. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume.
   * @param {string} nameserver Sets DNS server IP address for a container. Create will automatically use the setting from the host if you neither set searchdomain nor nameserver.
   * @param {array} netN Specifies network interfaces for the container.
-  * @param {bool} onboot Specifies whether a VM will be started during system bootup.
+  * @param {bool} onboot Specifies whether a container will be started during system bootup.
   * @param {string} ostype OS type. This is used to setup configuration inside the container, and corresponds to lxc setup scripts in /usr/share/lxc/config/&amp;lt;ostype&amp;gt;.common.conf. Value 'unmanaged' can be used to skip and OS specific setup.
   *   Enum: debian,devuan,ubuntu,centos,fedora,opensuse,archlinux,alpine,gentoo,nixos,unmanaged
   * @param {bool} protection Sets the protection flag of the container. This will prevent the CT or CT's disk remove/update operation.
@@ -8339,7 +8525,7 @@ class PVEVmidLxcNodeNodesConfig {
   * @param {string} rootfs Use volume as container root.
   * @param {string} searchdomain Sets DNS search domains for a container. Create will automatically use the setting from the host if you neither set searchdomain nor nameserver.
   * @param {string} startup Startup and shutdown behavior. Order is a non-negative number defining the general startup order. Shutdown in done with reverse ordering. Additionally you can set the 'up' or 'down' delay in seconds, which specifies a delay to wait before the next VM is started or stopped.
-  * @param {int} swap Amount of SWAP for the VM in MB.
+  * @param {int} swap Amount of SWAP for the container in MB.
   * @param {string} tags Tags of the Container. This is only meta information.
   * @param {bool} template Enable/disable Template.
   * @param {string} timezone Time zone to use in the container. If option isn't set, then nothing will be done. Can be set to 'host' to match the host time zone, or an arbitrary time zone option from /usr/share/zoneinfo/zone.tab
@@ -8389,8 +8575,8 @@ class PVEVmidLxcNodeNodesConfig {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesStatus
-*/
+ * Class PVEVmidLxcNodeNodesStatus
+ */
 class PVEVmidLxcNodeNodesStatus {
   #node;
   #vmid;
@@ -8405,45 +8591,45 @@ class PVEVmidLxcNodeNodesStatus {
 
   #current;
   /**
-  * Get StatusVmidLxcNodeNodesCurrent
-  * @returns {PVEStatusVmidLxcNodeNodesCurrent}
-  */
+   * Get StatusVmidLxcNodeNodesCurrent
+   * @returns {PVEStatusVmidLxcNodeNodesCurrent}
+   */
   get current() { return this.#current == null ? (this.#current = new PVEStatusVmidLxcNodeNodesCurrent(this.#client, this.#node, this.#vmid)) : this.#current; }
   #start;
   /**
-  * Get StatusVmidLxcNodeNodesStart
-  * @returns {PVEStatusVmidLxcNodeNodesStart}
-  */
+   * Get StatusVmidLxcNodeNodesStart
+   * @returns {PVEStatusVmidLxcNodeNodesStart}
+   */
   get start() { return this.#start == null ? (this.#start = new PVEStatusVmidLxcNodeNodesStart(this.#client, this.#node, this.#vmid)) : this.#start; }
   #stop;
   /**
-  * Get StatusVmidLxcNodeNodesStop
-  * @returns {PVEStatusVmidLxcNodeNodesStop}
-  */
+   * Get StatusVmidLxcNodeNodesStop
+   * @returns {PVEStatusVmidLxcNodeNodesStop}
+   */
   get stop() { return this.#stop == null ? (this.#stop = new PVEStatusVmidLxcNodeNodesStop(this.#client, this.#node, this.#vmid)) : this.#stop; }
   #shutdown;
   /**
-  * Get StatusVmidLxcNodeNodesShutdown
-  * @returns {PVEStatusVmidLxcNodeNodesShutdown}
-  */
+   * Get StatusVmidLxcNodeNodesShutdown
+   * @returns {PVEStatusVmidLxcNodeNodesShutdown}
+   */
   get shutdown() { return this.#shutdown == null ? (this.#shutdown = new PVEStatusVmidLxcNodeNodesShutdown(this.#client, this.#node, this.#vmid)) : this.#shutdown; }
   #suspend;
   /**
-  * Get StatusVmidLxcNodeNodesSuspend
-  * @returns {PVEStatusVmidLxcNodeNodesSuspend}
-  */
+   * Get StatusVmidLxcNodeNodesSuspend
+   * @returns {PVEStatusVmidLxcNodeNodesSuspend}
+   */
   get suspend() { return this.#suspend == null ? (this.#suspend = new PVEStatusVmidLxcNodeNodesSuspend(this.#client, this.#node, this.#vmid)) : this.#suspend; }
   #resume;
   /**
-  * Get StatusVmidLxcNodeNodesResume
-  * @returns {PVEStatusVmidLxcNodeNodesResume}
-  */
+   * Get StatusVmidLxcNodeNodesResume
+   * @returns {PVEStatusVmidLxcNodeNodesResume}
+   */
   get resume() { return this.#resume == null ? (this.#resume = new PVEStatusVmidLxcNodeNodesResume(this.#client, this.#node, this.#vmid)) : this.#resume; }
   #reboot;
   /**
-  * Get StatusVmidLxcNodeNodesReboot
-  * @returns {PVEStatusVmidLxcNodeNodesReboot}
-  */
+   * Get StatusVmidLxcNodeNodesReboot
+   * @returns {PVEStatusVmidLxcNodeNodesReboot}
+   */
   get reboot() { return this.#reboot == null ? (this.#reboot = new PVEStatusVmidLxcNodeNodesReboot(this.#client, this.#node, this.#vmid)) : this.#reboot; }
 
 
@@ -8457,8 +8643,8 @@ class PVEVmidLxcNodeNodesStatus {
 
 }
 /**
-* Class PVEStatusVmidLxcNodeNodesCurrent
-*/
+ * Class PVEStatusVmidLxcNodeNodesCurrent
+ */
 class PVEStatusVmidLxcNodeNodesCurrent {
   #node;
   #vmid;
@@ -8484,8 +8670,8 @@ class PVEStatusVmidLxcNodeNodesCurrent {
 }
 
 /**
-* Class PVEStatusVmidLxcNodeNodesStart
-*/
+ * Class PVEStatusVmidLxcNodeNodesStart
+ */
 class PVEStatusVmidLxcNodeNodesStart {
   #node;
   #vmid;
@@ -8517,8 +8703,8 @@ class PVEStatusVmidLxcNodeNodesStart {
 }
 
 /**
-* Class PVEStatusVmidLxcNodeNodesStop
-*/
+ * Class PVEStatusVmidLxcNodeNodesStop
+ */
 class PVEStatusVmidLxcNodeNodesStop {
   #node;
   #vmid;
@@ -8546,8 +8732,8 @@ class PVEStatusVmidLxcNodeNodesStop {
 }
 
 /**
-* Class PVEStatusVmidLxcNodeNodesShutdown
-*/
+ * Class PVEStatusVmidLxcNodeNodesShutdown
+ */
 class PVEStatusVmidLxcNodeNodesShutdown {
   #node;
   #vmid;
@@ -8579,8 +8765,8 @@ class PVEStatusVmidLxcNodeNodesShutdown {
 }
 
 /**
-* Class PVEStatusVmidLxcNodeNodesSuspend
-*/
+ * Class PVEStatusVmidLxcNodeNodesSuspend
+ */
 class PVEStatusVmidLxcNodeNodesSuspend {
   #node;
   #vmid;
@@ -8606,8 +8792,8 @@ class PVEStatusVmidLxcNodeNodesSuspend {
 }
 
 /**
-* Class PVEStatusVmidLxcNodeNodesResume
-*/
+ * Class PVEStatusVmidLxcNodeNodesResume
+ */
 class PVEStatusVmidLxcNodeNodesResume {
   #node;
   #vmid;
@@ -8633,8 +8819,8 @@ class PVEStatusVmidLxcNodeNodesResume {
 }
 
 /**
-* Class PVEStatusVmidLxcNodeNodesReboot
-*/
+ * Class PVEStatusVmidLxcNodeNodesReboot
+ */
 class PVEStatusVmidLxcNodeNodesReboot {
   #node;
   #vmid;
@@ -8662,8 +8848,8 @@ class PVEStatusVmidLxcNodeNodesReboot {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesSnapshot
-*/
+ * Class PVEVmidLxcNodeNodesSnapshot
+ */
 class PVEVmidLxcNodeNodesSnapshot {
   #node;
   #vmid;
@@ -8678,10 +8864,10 @@ class PVEVmidLxcNodeNodesSnapshot {
 
 
   /**
-  * Get ItemSnapshotVmidLxcNodeNodesSnapname
-  * @param snapname
-  * @returns {PVEItemSnapshotVmidLxcNodeNodesSnapname}
-  */
+   * Get ItemSnapshotVmidLxcNodeNodesSnapname
+   * @param snapname
+   * @returns {PVEItemSnapshotVmidLxcNodeNodesSnapname}
+   */
   get(snapname) { return new PVEItemSnapshotVmidLxcNodeNodesSnapname(this.#client, this.#node, this.#vmid, snapname); }
 
   /**
@@ -8707,8 +8893,8 @@ class PVEVmidLxcNodeNodesSnapshot {
 
 }
 /**
-* Class PVEItemSnapshotVmidLxcNodeNodesSnapname
-*/
+ * Class PVEItemSnapshotVmidLxcNodeNodesSnapname
+ */
 class PVEItemSnapshotVmidLxcNodeNodesSnapname {
   #node;
   #vmid;
@@ -8725,15 +8911,15 @@ class PVEItemSnapshotVmidLxcNodeNodesSnapname {
 
   #rollback;
   /**
-  * Get SnapnameSnapshotVmidLxcNodeNodesRollback
-  * @returns {PVESnapnameSnapshotVmidLxcNodeNodesRollback}
-  */
+   * Get SnapnameSnapshotVmidLxcNodeNodesRollback
+   * @returns {PVESnapnameSnapshotVmidLxcNodeNodesRollback}
+   */
   get rollback() { return this.#rollback == null ? (this.#rollback = new PVESnapnameSnapshotVmidLxcNodeNodesRollback(this.#client, this.#node, this.#vmid, this.#snapname)) : this.#rollback; }
   #config;
   /**
-  * Get SnapnameSnapshotVmidLxcNodeNodesConfig
-  * @returns {PVESnapnameSnapshotVmidLxcNodeNodesConfig}
-  */
+   * Get SnapnameSnapshotVmidLxcNodeNodesConfig
+   * @returns {PVESnapnameSnapshotVmidLxcNodeNodesConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVESnapnameSnapshotVmidLxcNodeNodesConfig(this.#client, this.#node, this.#vmid, this.#snapname)) : this.#config; }
 
 
@@ -8756,8 +8942,8 @@ class PVEItemSnapshotVmidLxcNodeNodesSnapname {
 
 }
 /**
-* Class PVESnapnameSnapshotVmidLxcNodeNodesRollback
-*/
+ * Class PVESnapnameSnapshotVmidLxcNodeNodesRollback
+ */
 class PVESnapnameSnapshotVmidLxcNodeNodesRollback {
   #node;
   #vmid;
@@ -8776,17 +8962,19 @@ class PVESnapnameSnapshotVmidLxcNodeNodesRollback {
 
   /**
   * Rollback LXC state to specified snapshot.
+  * @param {bool} start Whether the container should get started after rolling back successfully
   * @returns {Result}
   */
-  async rollback() {
-    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname}/rollback`);
+  async rollback(start) {
+    const parameters = { 'start': start };
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname}/rollback`, parameters);
   }
 
 }
 
 /**
-* Class PVESnapnameSnapshotVmidLxcNodeNodesConfig
-*/
+ * Class PVESnapnameSnapshotVmidLxcNodeNodesConfig
+ */
 class PVESnapnameSnapshotVmidLxcNodeNodesConfig {
   #node;
   #vmid;
@@ -8823,8 +9011,8 @@ class PVESnapnameSnapshotVmidLxcNodeNodesConfig {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesFirewall
-*/
+ * Class PVEVmidLxcNodeNodesFirewall
+ */
 class PVEVmidLxcNodeNodesFirewall {
   #node;
   #vmid;
@@ -8839,39 +9027,39 @@ class PVEVmidLxcNodeNodesFirewall {
 
   #rules;
   /**
-  * Get FirewallVmidLxcNodeNodesRules
-  * @returns {PVEFirewallVmidLxcNodeNodesRules}
-  */
+   * Get FirewallVmidLxcNodeNodesRules
+   * @returns {PVEFirewallVmidLxcNodeNodesRules}
+   */
   get rules() { return this.#rules == null ? (this.#rules = new PVEFirewallVmidLxcNodeNodesRules(this.#client, this.#node, this.#vmid)) : this.#rules; }
   #aliases;
   /**
-  * Get FirewallVmidLxcNodeNodesAliases
-  * @returns {PVEFirewallVmidLxcNodeNodesAliases}
-  */
+   * Get FirewallVmidLxcNodeNodesAliases
+   * @returns {PVEFirewallVmidLxcNodeNodesAliases}
+   */
   get aliases() { return this.#aliases == null ? (this.#aliases = new PVEFirewallVmidLxcNodeNodesAliases(this.#client, this.#node, this.#vmid)) : this.#aliases; }
   #ipset;
   /**
-  * Get FirewallVmidLxcNodeNodesIpset
-  * @returns {PVEFirewallVmidLxcNodeNodesIpset}
-  */
+   * Get FirewallVmidLxcNodeNodesIpset
+   * @returns {PVEFirewallVmidLxcNodeNodesIpset}
+   */
   get ipset() { return this.#ipset == null ? (this.#ipset = new PVEFirewallVmidLxcNodeNodesIpset(this.#client, this.#node, this.#vmid)) : this.#ipset; }
   #options;
   /**
-  * Get FirewallVmidLxcNodeNodesOptions
-  * @returns {PVEFirewallVmidLxcNodeNodesOptions}
-  */
+   * Get FirewallVmidLxcNodeNodesOptions
+   * @returns {PVEFirewallVmidLxcNodeNodesOptions}
+   */
   get options() { return this.#options == null ? (this.#options = new PVEFirewallVmidLxcNodeNodesOptions(this.#client, this.#node, this.#vmid)) : this.#options; }
   #log;
   /**
-  * Get FirewallVmidLxcNodeNodesLog
-  * @returns {PVEFirewallVmidLxcNodeNodesLog}
-  */
+   * Get FirewallVmidLxcNodeNodesLog
+   * @returns {PVEFirewallVmidLxcNodeNodesLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVEFirewallVmidLxcNodeNodesLog(this.#client, this.#node, this.#vmid)) : this.#log; }
   #refs;
   /**
-  * Get FirewallVmidLxcNodeNodesRefs
-  * @returns {PVEFirewallVmidLxcNodeNodesRefs}
-  */
+   * Get FirewallVmidLxcNodeNodesRefs
+   * @returns {PVEFirewallVmidLxcNodeNodesRefs}
+   */
   get refs() { return this.#refs == null ? (this.#refs = new PVEFirewallVmidLxcNodeNodesRefs(this.#client, this.#node, this.#vmid)) : this.#refs; }
 
 
@@ -8885,8 +9073,8 @@ class PVEVmidLxcNodeNodesFirewall {
 
 }
 /**
-* Class PVEFirewallVmidLxcNodeNodesRules
-*/
+ * Class PVEFirewallVmidLxcNodeNodesRules
+ */
 class PVEFirewallVmidLxcNodeNodesRules {
   #node;
   #vmid;
@@ -8901,10 +9089,10 @@ class PVEFirewallVmidLxcNodeNodesRules {
 
 
   /**
-  * Get ItemRulesFirewallVmidLxcNodeNodesPos
-  * @param pos
-  * @returns {PVEItemRulesFirewallVmidLxcNodeNodesPos}
-  */
+   * Get ItemRulesFirewallVmidLxcNodeNodesPos
+   * @param pos
+   * @returns {PVEItemRulesFirewallVmidLxcNodeNodesPos}
+   */
   get(pos) { return new PVEItemRulesFirewallVmidLxcNodeNodesPos(this.#client, this.#node, this.#vmid, pos); }
 
   /**
@@ -8958,8 +9146,8 @@ class PVEFirewallVmidLxcNodeNodesRules {
 
 }
 /**
-* Class PVEItemRulesFirewallVmidLxcNodeNodesPos
-*/
+ * Class PVEItemRulesFirewallVmidLxcNodeNodesPos
+ */
 class PVEItemRulesFirewallVmidLxcNodeNodesPos {
   #node;
   #vmid;
@@ -9039,8 +9227,8 @@ class PVEItemRulesFirewallVmidLxcNodeNodesPos {
 }
 
 /**
-* Class PVEFirewallVmidLxcNodeNodesAliases
-*/
+ * Class PVEFirewallVmidLxcNodeNodesAliases
+ */
 class PVEFirewallVmidLxcNodeNodesAliases {
   #node;
   #vmid;
@@ -9055,10 +9243,10 @@ class PVEFirewallVmidLxcNodeNodesAliases {
 
 
   /**
-  * Get ItemAliasesFirewallVmidLxcNodeNodesName
-  * @param name
-  * @returns {PVEItemAliasesFirewallVmidLxcNodeNodesName}
-  */
+   * Get ItemAliasesFirewallVmidLxcNodeNodesName
+   * @param name
+   * @returns {PVEItemAliasesFirewallVmidLxcNodeNodesName}
+   */
   get(name) { return new PVEItemAliasesFirewallVmidLxcNodeNodesName(this.#client, this.#node, this.#vmid, name); }
 
   /**
@@ -9086,8 +9274,8 @@ class PVEFirewallVmidLxcNodeNodesAliases {
 
 }
 /**
-* Class PVEItemAliasesFirewallVmidLxcNodeNodesName
-*/
+ * Class PVEItemAliasesFirewallVmidLxcNodeNodesName
+ */
 class PVEItemAliasesFirewallVmidLxcNodeNodesName {
   #node;
   #vmid;
@@ -9141,8 +9329,8 @@ class PVEItemAliasesFirewallVmidLxcNodeNodesName {
 }
 
 /**
-* Class PVEFirewallVmidLxcNodeNodesIpset
-*/
+ * Class PVEFirewallVmidLxcNodeNodesIpset
+ */
 class PVEFirewallVmidLxcNodeNodesIpset {
   #node;
   #vmid;
@@ -9157,10 +9345,10 @@ class PVEFirewallVmidLxcNodeNodesIpset {
 
 
   /**
-  * Get ItemIpsetFirewallVmidLxcNodeNodesName
-  * @param name
-  * @returns {PVEItemIpsetFirewallVmidLxcNodeNodesName}
-  */
+   * Get ItemIpsetFirewallVmidLxcNodeNodesName
+   * @param name
+   * @returns {PVEItemIpsetFirewallVmidLxcNodeNodesName}
+   */
   get(name) { return new PVEItemIpsetFirewallVmidLxcNodeNodesName(this.#client, this.#node, this.#vmid, name); }
 
   /**
@@ -9190,8 +9378,8 @@ class PVEFirewallVmidLxcNodeNodesIpset {
 
 }
 /**
-* Class PVEItemIpsetFirewallVmidLxcNodeNodesName
-*/
+ * Class PVEItemIpsetFirewallVmidLxcNodeNodesName
+ */
 class PVEItemIpsetFirewallVmidLxcNodeNodesName {
   #node;
   #vmid;
@@ -9208,18 +9396,20 @@ class PVEItemIpsetFirewallVmidLxcNodeNodesName {
 
 
   /**
-  * Get ItemNameIpsetFirewallVmidLxcNodeNodesCidr
-  * @param cidr
-  * @returns {PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr}
-  */
+   * Get ItemNameIpsetFirewallVmidLxcNodeNodesCidr
+   * @param cidr
+   * @returns {PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr}
+   */
   get(cidr) { return new PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr(this.#client, this.#node, this.#vmid, this.#name, cidr); }
 
   /**
   * Delete IPSet
+  * @param {bool} force Delete all members of the IPSet, if there are any.
   * @returns {Result}
   */
-  async deleteIpset() {
-    return await this.#client.delete(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}`);
+  async deleteIpset(force) {
+    const parameters = { 'force': force };
+    return await this.#client.delete(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}`, parameters);
   }
   /**
   * List IPSet content
@@ -9246,8 +9436,8 @@ class PVEItemIpsetFirewallVmidLxcNodeNodesName {
 
 }
 /**
-* Class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr
-*/
+ * Class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr
+ */
 class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
   #node;
   #vmid;
@@ -9301,8 +9491,8 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
 }
 
 /**
-* Class PVEFirewallVmidLxcNodeNodesOptions
-*/
+ * Class PVEFirewallVmidLxcNodeNodesOptions
+ */
 class PVEFirewallVmidLxcNodeNodesOptions {
   #node;
   #vmid;
@@ -9365,8 +9555,8 @@ class PVEFirewallVmidLxcNodeNodesOptions {
 }
 
 /**
-* Class PVEFirewallVmidLxcNodeNodesLog
-*/
+ * Class PVEFirewallVmidLxcNodeNodesLog
+ */
 class PVEFirewallVmidLxcNodeNodesLog {
   #node;
   #vmid;
@@ -9398,8 +9588,8 @@ class PVEFirewallVmidLxcNodeNodesLog {
 }
 
 /**
-* Class PVEFirewallVmidLxcNodeNodesRefs
-*/
+ * Class PVEFirewallVmidLxcNodeNodesRefs
+ */
 class PVEFirewallVmidLxcNodeNodesRefs {
   #node;
   #vmid;
@@ -9428,8 +9618,8 @@ class PVEFirewallVmidLxcNodeNodesRefs {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesRrd
-*/
+ * Class PVEVmidLxcNodeNodesRrd
+ */
 class PVEVmidLxcNodeNodesRrd {
   #node;
   #vmid;
@@ -9465,8 +9655,8 @@ class PVEVmidLxcNodeNodesRrd {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesRrddata
-*/
+ * Class PVEVmidLxcNodeNodesRrddata
+ */
 class PVEVmidLxcNodeNodesRrddata {
   #node;
   #vmid;
@@ -9500,8 +9690,8 @@ class PVEVmidLxcNodeNodesRrddata {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesVncproxy
-*/
+ * Class PVEVmidLxcNodeNodesVncproxy
+ */
 class PVEVmidLxcNodeNodesVncproxy {
   #node;
   #vmid;
@@ -9535,8 +9725,8 @@ class PVEVmidLxcNodeNodesVncproxy {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesTermproxy
-*/
+ * Class PVEVmidLxcNodeNodesTermproxy
+ */
 class PVEVmidLxcNodeNodesTermproxy {
   #node;
   #vmid;
@@ -9562,8 +9752,8 @@ class PVEVmidLxcNodeNodesTermproxy {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesVncwebsocket
-*/
+ * Class PVEVmidLxcNodeNodesVncwebsocket
+ */
 class PVEVmidLxcNodeNodesVncwebsocket {
   #node;
   #vmid;
@@ -9595,8 +9785,8 @@ class PVEVmidLxcNodeNodesVncwebsocket {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesSpiceproxy
-*/
+ * Class PVEVmidLxcNodeNodesSpiceproxy
+ */
 class PVEVmidLxcNodeNodesSpiceproxy {
   #node;
   #vmid;
@@ -9624,8 +9814,55 @@ class PVEVmidLxcNodeNodesSpiceproxy {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesMigrate
-*/
+ * Class PVEVmidLxcNodeNodesRemoteMigrate
+ */
+class PVEVmidLxcNodeNodesRemoteMigrate {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Migrate the container to another cluster. Creates a new migration task. EXPERIMENTAL feature!
+  * @param {string} target_bridge Mapping from source to target bridges. Providing only a single bridge ID maps all source bridges to that bridge. Providing the special value '1' will map each source bridge to itself.
+  * @param {string} target_endpoint Remote target endpoint
+  * @param {string} target_storage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
+  * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
+  * @param {bool} delete_ Delete the original CT and related data after successful migration. By default the original CT is kept on the source cluster in a stopped state.
+  * @param {bool} online Use online/live migration.
+  * @param {bool} restart Use restart migration
+  * @param {int} target_vmid The (unique) ID of the VM.
+  * @param {int} timeout Timeout in seconds for shutdown for restart migration
+  * @returns {Result}
+  */
+  async remoteMigrateVm(target_bridge, target_endpoint, target_storage, bwlimit, delete_, online, restart, target_vmid, timeout) {
+    const parameters = {
+      'target-bridge': target_bridge,
+      'target-endpoint': target_endpoint,
+      'target-storage': target_storage,
+      'bwlimit': bwlimit,
+      'delete': delete_,
+      'online': online,
+      'restart': restart,
+      'target-vmid': target_vmid,
+      'timeout': timeout
+    };
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/remote_migrate`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEVmidLxcNodeNodesMigrate
+ */
 class PVEVmidLxcNodeNodesMigrate {
   #node;
   #vmid;
@@ -9665,8 +9902,8 @@ class PVEVmidLxcNodeNodesMigrate {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesFeature
-*/
+ * Class PVEVmidLxcNodeNodesFeature
+ */
 class PVEVmidLxcNodeNodesFeature {
   #node;
   #vmid;
@@ -9699,8 +9936,8 @@ class PVEVmidLxcNodeNodesFeature {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesTemplate
-*/
+ * Class PVEVmidLxcNodeNodesTemplate
+ */
 class PVEVmidLxcNodeNodesTemplate {
   #node;
   #vmid;
@@ -9726,8 +9963,8 @@ class PVEVmidLxcNodeNodesTemplate {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesClone
-*/
+ * Class PVEVmidLxcNodeNodesClone
+ */
 class PVEVmidLxcNodeNodesClone {
   #node;
   #vmid;
@@ -9773,8 +10010,8 @@ class PVEVmidLxcNodeNodesClone {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesResize
-*/
+ * Class PVEVmidLxcNodeNodesResize
+ */
 class PVEVmidLxcNodeNodesResize {
   #node;
   #vmid;
@@ -9809,8 +10046,8 @@ class PVEVmidLxcNodeNodesResize {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesMoveVolume
-*/
+ * Class PVEVmidLxcNodeNodesMoveVolume
+ */
 class PVEVmidLxcNodeNodesMoveVolume {
   #node;
   #vmid;
@@ -9856,8 +10093,8 @@ class PVEVmidLxcNodeNodesMoveVolume {
 }
 
 /**
-* Class PVEVmidLxcNodeNodesPending
-*/
+ * Class PVEVmidLxcNodeNodesPending
+ */
 class PVEVmidLxcNodeNodesPending {
   #node;
   #vmid;
@@ -9883,8 +10120,74 @@ class PVEVmidLxcNodeNodesPending {
 }
 
 /**
-* Class PVENodeNodesCeph
-*/
+ * Class PVEVmidLxcNodeNodesMtunnel
+ */
+class PVEVmidLxcNodeNodesMtunnel {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Migration tunnel endpoint - only for internal use by CT migration.
+  * @param {string} bridges List of network bridges to check availability. Will be checked again for actually used bridges during migration.
+  * @param {string} storages List of storages to check permission and availability. Will be checked again for all actually used storages during migration.
+  * @returns {Result}
+  */
+  async mtunnel(bridges, storages) {
+    const parameters = {
+      'bridges': bridges,
+      'storages': storages
+    };
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/mtunnel`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEVmidLxcNodeNodesMtunnelwebsocket
+ */
+class PVEVmidLxcNodeNodesMtunnelwebsocket {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Migration tunnel endpoint for websocket upgrade - only for internal use by VM migration.
+  * @param {string} socket unix socket to forward to
+  * @param {string} ticket ticket return by initial 'mtunnel' API call, or retrieved via 'ticket' tunnel command
+  * @returns {Result}
+  */
+  async mtunnelwebsocket(socket, ticket) {
+    const parameters = {
+      'socket': socket,
+      'ticket': ticket
+    };
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/mtunnelwebsocket`, parameters);
+  }
+
+}
+
+/**
+ * Class PVENodeNodesCeph
+ */
 class PVENodeNodesCeph {
   #node;
   /** @type {PveClient} */
@@ -9897,100 +10200,106 @@ class PVENodeNodesCeph {
 
   #osd;
   /**
-  * Get CephNodeNodesOsd
-  * @returns {PVECephNodeNodesOsd}
-  */
+   * Get CephNodeNodesOsd
+   * @returns {PVECephNodeNodesOsd}
+   */
   get osd() { return this.#osd == null ? (this.#osd = new PVECephNodeNodesOsd(this.#client, this.#node)) : this.#osd; }
   #mds;
   /**
-  * Get CephNodeNodesMds
-  * @returns {PVECephNodeNodesMds}
-  */
+   * Get CephNodeNodesMds
+   * @returns {PVECephNodeNodesMds}
+   */
   get mds() { return this.#mds == null ? (this.#mds = new PVECephNodeNodesMds(this.#client, this.#node)) : this.#mds; }
   #mgr;
   /**
-  * Get CephNodeNodesMgr
-  * @returns {PVECephNodeNodesMgr}
-  */
+   * Get CephNodeNodesMgr
+   * @returns {PVECephNodeNodesMgr}
+   */
   get mgr() { return this.#mgr == null ? (this.#mgr = new PVECephNodeNodesMgr(this.#client, this.#node)) : this.#mgr; }
   #mon;
   /**
-  * Get CephNodeNodesMon
-  * @returns {PVECephNodeNodesMon}
-  */
+   * Get CephNodeNodesMon
+   * @returns {PVECephNodeNodesMon}
+   */
   get mon() { return this.#mon == null ? (this.#mon = new PVECephNodeNodesMon(this.#client, this.#node)) : this.#mon; }
   #fs;
   /**
-  * Get CephNodeNodesFs
-  * @returns {PVECephNodeNodesFs}
-  */
+   * Get CephNodeNodesFs
+   * @returns {PVECephNodeNodesFs}
+   */
   get fs() { return this.#fs == null ? (this.#fs = new PVECephNodeNodesFs(this.#client, this.#node)) : this.#fs; }
   #pools;
   /**
-  * Get CephNodeNodesPools
-  * @returns {PVECephNodeNodesPools}
-  */
+   * Get CephNodeNodesPools
+   * @returns {PVECephNodeNodesPools}
+   */
   get pools() { return this.#pools == null ? (this.#pools = new PVECephNodeNodesPools(this.#client, this.#node)) : this.#pools; }
   #config;
   /**
-  * Get CephNodeNodesConfig
-  * @returns {PVECephNodeNodesConfig}
-  */
+   * Get CephNodeNodesConfig
+   * @returns {PVECephNodeNodesConfig}
+   */
   get config() { return this.#config == null ? (this.#config = new PVECephNodeNodesConfig(this.#client, this.#node)) : this.#config; }
   #configdb;
   /**
-  * Get CephNodeNodesConfigdb
-  * @returns {PVECephNodeNodesConfigdb}
-  */
+   * Get CephNodeNodesConfigdb
+   * @returns {PVECephNodeNodesConfigdb}
+   */
   get configdb() { return this.#configdb == null ? (this.#configdb = new PVECephNodeNodesConfigdb(this.#client, this.#node)) : this.#configdb; }
   #init;
   /**
-  * Get CephNodeNodesInit
-  * @returns {PVECephNodeNodesInit}
-  */
+   * Get CephNodeNodesInit
+   * @returns {PVECephNodeNodesInit}
+   */
   get init() { return this.#init == null ? (this.#init = new PVECephNodeNodesInit(this.#client, this.#node)) : this.#init; }
   #stop;
   /**
-  * Get CephNodeNodesStop
-  * @returns {PVECephNodeNodesStop}
-  */
+   * Get CephNodeNodesStop
+   * @returns {PVECephNodeNodesStop}
+   */
   get stop() { return this.#stop == null ? (this.#stop = new PVECephNodeNodesStop(this.#client, this.#node)) : this.#stop; }
   #start;
   /**
-  * Get CephNodeNodesStart
-  * @returns {PVECephNodeNodesStart}
-  */
+   * Get CephNodeNodesStart
+   * @returns {PVECephNodeNodesStart}
+   */
   get start() { return this.#start == null ? (this.#start = new PVECephNodeNodesStart(this.#client, this.#node)) : this.#start; }
   #restart;
   /**
-  * Get CephNodeNodesRestart
-  * @returns {PVECephNodeNodesRestart}
-  */
+   * Get CephNodeNodesRestart
+   * @returns {PVECephNodeNodesRestart}
+   */
   get restart() { return this.#restart == null ? (this.#restart = new PVECephNodeNodesRestart(this.#client, this.#node)) : this.#restart; }
   #status;
   /**
-  * Get CephNodeNodesStatus
-  * @returns {PVECephNodeNodesStatus}
-  */
+   * Get CephNodeNodesStatus
+   * @returns {PVECephNodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVECephNodeNodesStatus(this.#client, this.#node)) : this.#status; }
   #crush;
   /**
-  * Get CephNodeNodesCrush
-  * @returns {PVECephNodeNodesCrush}
-  */
+   * Get CephNodeNodesCrush
+   * @returns {PVECephNodeNodesCrush}
+   */
   get crush() { return this.#crush == null ? (this.#crush = new PVECephNodeNodesCrush(this.#client, this.#node)) : this.#crush; }
   #log;
   /**
-  * Get CephNodeNodesLog
-  * @returns {PVECephNodeNodesLog}
-  */
+   * Get CephNodeNodesLog
+   * @returns {PVECephNodeNodesLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVECephNodeNodesLog(this.#client, this.#node)) : this.#log; }
   #rules;
   /**
-  * Get CephNodeNodesRules
-  * @returns {PVECephNodeNodesRules}
-  */
+   * Get CephNodeNodesRules
+   * @returns {PVECephNodeNodesRules}
+   */
   get rules() { return this.#rules == null ? (this.#rules = new PVECephNodeNodesRules(this.#client, this.#node)) : this.#rules; }
+  #cmdSafety;
+  /**
+   * Get CephNodeNodesCmdSafety
+   * @returns {PVECephNodeNodesCmdSafety}
+   */
+  get cmdSafety() { return this.#cmdSafety == null ? (this.#cmdSafety = new PVECephNodeNodesCmdSafety(this.#client, this.#node)) : this.#cmdSafety; }
 
 
   /**
@@ -10003,8 +10312,8 @@ class PVENodeNodesCeph {
 
 }
 /**
-* Class PVECephNodeNodesOsd
-*/
+ * Class PVECephNodeNodesOsd
+ */
 class PVECephNodeNodesOsd {
   #node;
   /** @type {PveClient} */
@@ -10017,10 +10326,10 @@ class PVECephNodeNodesOsd {
 
 
   /**
-  * Get ItemOsdCephNodeNodesOsdid
-  * @param osdid
-  * @returns {PVEItemOsdCephNodeNodesOsdid}
-  */
+   * Get ItemOsdCephNodeNodesOsdid
+   * @param osdid
+   * @returns {PVEItemOsdCephNodeNodesOsdid}
+   */
   get(osdid) { return new PVEItemOsdCephNodeNodesOsdid(this.#client, this.#node, osdid); }
 
   /**
@@ -10056,8 +10365,8 @@ class PVECephNodeNodesOsd {
 
 }
 /**
-* Class PVEItemOsdCephNodeNodesOsdid
-*/
+ * Class PVEItemOsdCephNodeNodesOsdid
+ */
 class PVEItemOsdCephNodeNodesOsdid {
   #node;
   #osdid;
@@ -10072,21 +10381,21 @@ class PVEItemOsdCephNodeNodesOsdid {
 
   #in;
   /**
-  * Get OsdidOsdCephNodeNodesIn
-  * @returns {PVEOsdidOsdCephNodeNodesIn}
-  */
+   * Get OsdidOsdCephNodeNodesIn
+   * @returns {PVEOsdidOsdCephNodeNodesIn}
+   */
   get in() { return this.#in == null ? (this.#in = new PVEOsdidOsdCephNodeNodesIn(this.#client, this.#node, this.#osdid)) : this.#in; }
   #out;
   /**
-  * Get OsdidOsdCephNodeNodesOut
-  * @returns {PVEOsdidOsdCephNodeNodesOut}
-  */
+   * Get OsdidOsdCephNodeNodesOut
+   * @returns {PVEOsdidOsdCephNodeNodesOut}
+   */
   get out() { return this.#out == null ? (this.#out = new PVEOsdidOsdCephNodeNodesOut(this.#client, this.#node, this.#osdid)) : this.#out; }
   #scrub;
   /**
-  * Get OsdidOsdCephNodeNodesScrub
-  * @returns {PVEOsdidOsdCephNodeNodesScrub}
-  */
+   * Get OsdidOsdCephNodeNodesScrub
+   * @returns {PVEOsdidOsdCephNodeNodesScrub}
+   */
   get scrub() { return this.#scrub == null ? (this.#scrub = new PVEOsdidOsdCephNodeNodesScrub(this.#client, this.#node, this.#osdid)) : this.#scrub; }
 
 
@@ -10102,8 +10411,8 @@ class PVEItemOsdCephNodeNodesOsdid {
 
 }
 /**
-* Class PVEOsdidOsdCephNodeNodesIn
-*/
+ * Class PVEOsdidOsdCephNodeNodesIn
+ */
 class PVEOsdidOsdCephNodeNodesIn {
   #node;
   #osdid;
@@ -10129,8 +10438,8 @@ class PVEOsdidOsdCephNodeNodesIn {
 }
 
 /**
-* Class PVEOsdidOsdCephNodeNodesOut
-*/
+ * Class PVEOsdidOsdCephNodeNodesOut
+ */
 class PVEOsdidOsdCephNodeNodesOut {
   #node;
   #osdid;
@@ -10156,8 +10465,8 @@ class PVEOsdidOsdCephNodeNodesOut {
 }
 
 /**
-* Class PVEOsdidOsdCephNodeNodesScrub
-*/
+ * Class PVEOsdidOsdCephNodeNodesScrub
+ */
 class PVEOsdidOsdCephNodeNodesScrub {
   #node;
   #osdid;
@@ -10185,8 +10494,8 @@ class PVEOsdidOsdCephNodeNodesScrub {
 }
 
 /**
-* Class PVECephNodeNodesMds
-*/
+ * Class PVECephNodeNodesMds
+ */
 class PVECephNodeNodesMds {
   #node;
   /** @type {PveClient} */
@@ -10199,10 +10508,10 @@ class PVECephNodeNodesMds {
 
 
   /**
-  * Get ItemMdsCephNodeNodesName
-  * @param name
-  * @returns {PVEItemMdsCephNodeNodesName}
-  */
+   * Get ItemMdsCephNodeNodesName
+   * @param name
+   * @returns {PVEItemMdsCephNodeNodesName}
+   */
   get(name) { return new PVEItemMdsCephNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -10215,8 +10524,8 @@ class PVECephNodeNodesMds {
 
 }
 /**
-* Class PVEItemMdsCephNodeNodesName
-*/
+ * Class PVEItemMdsCephNodeNodesName
+ */
 class PVEItemMdsCephNodeNodesName {
   #node;
   #name;
@@ -10251,8 +10560,8 @@ class PVEItemMdsCephNodeNodesName {
 }
 
 /**
-* Class PVECephNodeNodesMgr
-*/
+ * Class PVECephNodeNodesMgr
+ */
 class PVECephNodeNodesMgr {
   #node;
   /** @type {PveClient} */
@@ -10265,10 +10574,10 @@ class PVECephNodeNodesMgr {
 
 
   /**
-  * Get ItemMgrCephNodeNodesId
-  * @param id
-  * @returns {PVEItemMgrCephNodeNodesId}
-  */
+   * Get ItemMgrCephNodeNodesId
+   * @param id
+   * @returns {PVEItemMgrCephNodeNodesId}
+   */
   get(id) { return new PVEItemMgrCephNodeNodesId(this.#client, this.#node, id); }
 
   /**
@@ -10281,8 +10590,8 @@ class PVECephNodeNodesMgr {
 
 }
 /**
-* Class PVEItemMgrCephNodeNodesId
-*/
+ * Class PVEItemMgrCephNodeNodesId
+ */
 class PVEItemMgrCephNodeNodesId {
   #node;
   #id;
@@ -10315,8 +10624,8 @@ class PVEItemMgrCephNodeNodesId {
 }
 
 /**
-* Class PVECephNodeNodesMon
-*/
+ * Class PVECephNodeNodesMon
+ */
 class PVECephNodeNodesMon {
   #node;
   /** @type {PveClient} */
@@ -10329,10 +10638,10 @@ class PVECephNodeNodesMon {
 
 
   /**
-  * Get ItemMonCephNodeNodesMonid
-  * @param monid
-  * @returns {PVEItemMonCephNodeNodesMonid}
-  */
+   * Get ItemMonCephNodeNodesMonid
+   * @param monid
+   * @returns {PVEItemMonCephNodeNodesMonid}
+   */
   get(monid) { return new PVEItemMonCephNodeNodesMonid(this.#client, this.#node, monid); }
 
   /**
@@ -10345,8 +10654,8 @@ class PVECephNodeNodesMon {
 
 }
 /**
-* Class PVEItemMonCephNodeNodesMonid
-*/
+ * Class PVEItemMonCephNodeNodesMonid
+ */
 class PVEItemMonCephNodeNodesMonid {
   #node;
   #monid;
@@ -10381,8 +10690,8 @@ class PVEItemMonCephNodeNodesMonid {
 }
 
 /**
-* Class PVECephNodeNodesFs
-*/
+ * Class PVECephNodeNodesFs
+ */
 class PVECephNodeNodesFs {
   #node;
   /** @type {PveClient} */
@@ -10395,10 +10704,10 @@ class PVECephNodeNodesFs {
 
 
   /**
-  * Get ItemFsCephNodeNodesName
-  * @param name
-  * @returns {PVEItemFsCephNodeNodesName}
-  */
+   * Get ItemFsCephNodeNodesName
+   * @param name
+   * @returns {PVEItemFsCephNodeNodesName}
+   */
   get(name) { return new PVEItemFsCephNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -10411,8 +10720,8 @@ class PVECephNodeNodesFs {
 
 }
 /**
-* Class PVEItemFsCephNodeNodesName
-*/
+ * Class PVEItemFsCephNodeNodesName
+ */
 class PVEItemFsCephNodeNodesName {
   #node;
   #name;
@@ -10444,8 +10753,8 @@ class PVEItemFsCephNodeNodesName {
 }
 
 /**
-* Class PVECephNodeNodesPools
-*/
+ * Class PVECephNodeNodesPools
+ */
 class PVECephNodeNodesPools {
   #node;
   /** @type {PveClient} */
@@ -10458,10 +10767,10 @@ class PVECephNodeNodesPools {
 
 
   /**
-  * Get ItemPoolsCephNodeNodesName
-  * @param name
-  * @returns {PVEItemPoolsCephNodeNodesName}
-  */
+   * Get ItemPoolsCephNodeNodesName
+   * @param name
+   * @returns {PVEItemPoolsCephNodeNodesName}
+   */
   get(name) { return new PVEItemPoolsCephNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -10509,8 +10818,8 @@ class PVECephNodeNodesPools {
 
 }
 /**
-* Class PVEItemPoolsCephNodeNodesName
-*/
+ * Class PVEItemPoolsCephNodeNodesName
+ */
 class PVEItemPoolsCephNodeNodesName {
   #node;
   #name;
@@ -10582,8 +10891,8 @@ class PVEItemPoolsCephNodeNodesName {
 }
 
 /**
-* Class PVECephNodeNodesConfig
-*/
+ * Class PVECephNodeNodesConfig
+ */
 class PVECephNodeNodesConfig {
   #node;
   /** @type {PveClient} */
@@ -10607,8 +10916,8 @@ class PVECephNodeNodesConfig {
 }
 
 /**
-* Class PVECephNodeNodesConfigdb
-*/
+ * Class PVECephNodeNodesConfigdb
+ */
 class PVECephNodeNodesConfigdb {
   #node;
   /** @type {PveClient} */
@@ -10632,8 +10941,8 @@ class PVECephNodeNodesConfigdb {
 }
 
 /**
-* Class PVECephNodeNodesInit
-*/
+ * Class PVECephNodeNodesInit
+ */
 class PVECephNodeNodesInit {
   #node;
   /** @type {PveClient} */
@@ -10671,8 +10980,8 @@ class PVECephNodeNodesInit {
 }
 
 /**
-* Class PVECephNodeNodesStop
-*/
+ * Class PVECephNodeNodesStop
+ */
 class PVECephNodeNodesStop {
   #node;
   /** @type {PveClient} */
@@ -10698,8 +11007,8 @@ class PVECephNodeNodesStop {
 }
 
 /**
-* Class PVECephNodeNodesStart
-*/
+ * Class PVECephNodeNodesStart
+ */
 class PVECephNodeNodesStart {
   #node;
   /** @type {PveClient} */
@@ -10725,8 +11034,8 @@ class PVECephNodeNodesStart {
 }
 
 /**
-* Class PVECephNodeNodesRestart
-*/
+ * Class PVECephNodeNodesRestart
+ */
 class PVECephNodeNodesRestart {
   #node;
   /** @type {PveClient} */
@@ -10752,8 +11061,8 @@ class PVECephNodeNodesRestart {
 }
 
 /**
-* Class PVECephNodeNodesStatus
-*/
+ * Class PVECephNodeNodesStatus
+ */
 class PVECephNodeNodesStatus {
   #node;
   /** @type {PveClient} */
@@ -10777,8 +11086,8 @@ class PVECephNodeNodesStatus {
 }
 
 /**
-* Class PVECephNodeNodesCrush
-*/
+ * Class PVECephNodeNodesCrush
+ */
 class PVECephNodeNodesCrush {
   #node;
   /** @type {PveClient} */
@@ -10802,8 +11111,8 @@ class PVECephNodeNodesCrush {
 }
 
 /**
-* Class PVECephNodeNodesLog
-*/
+ * Class PVECephNodeNodesLog
+ */
 class PVECephNodeNodesLog {
   #node;
   /** @type {PveClient} */
@@ -10833,8 +11142,8 @@ class PVECephNodeNodesLog {
 }
 
 /**
-* Class PVECephNodeNodesRules
-*/
+ * Class PVECephNodeNodesRules
+ */
 class PVECephNodeNodesRules {
   #node;
   /** @type {PveClient} */
@@ -10858,8 +11167,43 @@ class PVECephNodeNodesRules {
 }
 
 /**
-* Class PVENodeNodesVzdump
-*/
+ * Class PVECephNodeNodesCmdSafety
+ */
+class PVECephNodeNodesCmdSafety {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+
+
+  /**
+  * Heuristical check if it is safe to perform an action.
+  * @param {string} action Action to check
+  *   Enum: stop,destroy
+  * @param {string} id ID of the service
+  * @param {string} service Service type
+  *   Enum: osd,mon,mds
+  * @returns {Result}
+  */
+  async cmdSafety(action, id, service) {
+    const parameters = {
+      'action': action,
+      'id': id,
+      'service': service
+    };
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cmd-safety`, parameters);
+  }
+
+}
+
+/**
+ * Class PVENodeNodesVzdump
+ */
 class PVENodeNodesVzdump {
   #node;
   /** @type {PveClient} */
@@ -10872,15 +11216,15 @@ class PVENodeNodesVzdump {
 
   #defaults;
   /**
-  * Get VzdumpNodeNodesDefaults
-  * @returns {PVEVzdumpNodeNodesDefaults}
-  */
+   * Get VzdumpNodeNodesDefaults
+   * @returns {PVEVzdumpNodeNodesDefaults}
+   */
   get defaults() { return this.#defaults == null ? (this.#defaults = new PVEVzdumpNodeNodesDefaults(this.#client, this.#node)) : this.#defaults; }
   #extractconfig;
   /**
-  * Get VzdumpNodeNodesExtractconfig
-  * @returns {PVEVzdumpNodeNodesExtractconfig}
-  */
+   * Get VzdumpNodeNodesExtractconfig
+   * @returns {PVEVzdumpNodeNodesExtractconfig}
+   */
   get extractconfig() { return this.#extractconfig == null ? (this.#extractconfig = new PVEVzdumpNodeNodesExtractconfig(this.#client, this.#node)) : this.#extractconfig; }
 
 
@@ -10901,7 +11245,8 @@ class PVENodeNodesVzdump {
   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
   * @param {string} mode Backup mode.
   *   Enum: snapshot,suspend,stop
-  * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future.
+  * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
+  * @param {string} performance Other performance-related settings.
   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
   * @param {string} pool Backup all known guest systems included in the specified pool.
   * @param {bool} protected_ If true, mark backup(s) as protected.
@@ -10919,7 +11264,7 @@ class PVENodeNodesVzdump {
   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, N&amp;gt;0 uses N as thread count.
   * @returns {Result}
   */
-  async vzdump(all, bwlimit, compress, dumpdir, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, notes_template, pigz, pool, protected_, prune_backups, quiet, remove, script, stdexcludes, stdout, stop, stopwait, storage, tmpdir, vmid, zstd) {
+  async vzdump(all, bwlimit, compress, dumpdir, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, notes_template, performance, pigz, pool, protected_, prune_backups, quiet, remove, script, stdexcludes, stdout, stop, stopwait, storage, tmpdir, vmid, zstd) {
     const parameters = {
       'all': all,
       'bwlimit': bwlimit,
@@ -10934,6 +11279,7 @@ class PVENodeNodesVzdump {
       'maxfiles': maxfiles,
       'mode': mode,
       'notes-template': notes_template,
+      'performance': performance,
       'pigz': pigz,
       'pool': pool,
       'protected': protected_,
@@ -10955,8 +11301,8 @@ class PVENodeNodesVzdump {
 
 }
 /**
-* Class PVEVzdumpNodeNodesDefaults
-*/
+ * Class PVEVzdumpNodeNodesDefaults
+ */
 class PVEVzdumpNodeNodesDefaults {
   #node;
   /** @type {PveClient} */
@@ -10982,8 +11328,8 @@ class PVEVzdumpNodeNodesDefaults {
 }
 
 /**
-* Class PVEVzdumpNodeNodesExtractconfig
-*/
+ * Class PVEVzdumpNodeNodesExtractconfig
+ */
 class PVEVzdumpNodeNodesExtractconfig {
   #node;
   /** @type {PveClient} */
@@ -11009,8 +11355,8 @@ class PVEVzdumpNodeNodesExtractconfig {
 }
 
 /**
-* Class PVENodeNodesServices
-*/
+ * Class PVENodeNodesServices
+ */
 class PVENodeNodesServices {
   #node;
   /** @type {PveClient} */
@@ -11023,10 +11369,10 @@ class PVENodeNodesServices {
 
 
   /**
-  * Get ItemServicesNodeNodesService
-  * @param service
-  * @returns {PVEItemServicesNodeNodesService}
-  */
+   * Get ItemServicesNodeNodesService
+   * @param service
+   * @returns {PVEItemServicesNodeNodesService}
+   */
   get(service) { return new PVEItemServicesNodeNodesService(this.#client, this.#node, service); }
 
   /**
@@ -11039,8 +11385,8 @@ class PVENodeNodesServices {
 
 }
 /**
-* Class PVEItemServicesNodeNodesService
-*/
+ * Class PVEItemServicesNodeNodesService
+ */
 class PVEItemServicesNodeNodesService {
   #node;
   #service;
@@ -11055,33 +11401,33 @@ class PVEItemServicesNodeNodesService {
 
   #state;
   /**
-  * Get ServiceServicesNodeNodesState
-  * @returns {PVEServiceServicesNodeNodesState}
-  */
+   * Get ServiceServicesNodeNodesState
+   * @returns {PVEServiceServicesNodeNodesState}
+   */
   get state() { return this.#state == null ? (this.#state = new PVEServiceServicesNodeNodesState(this.#client, this.#node, this.#service)) : this.#state; }
   #start;
   /**
-  * Get ServiceServicesNodeNodesStart
-  * @returns {PVEServiceServicesNodeNodesStart}
-  */
+   * Get ServiceServicesNodeNodesStart
+   * @returns {PVEServiceServicesNodeNodesStart}
+   */
   get start() { return this.#start == null ? (this.#start = new PVEServiceServicesNodeNodesStart(this.#client, this.#node, this.#service)) : this.#start; }
   #stop;
   /**
-  * Get ServiceServicesNodeNodesStop
-  * @returns {PVEServiceServicesNodeNodesStop}
-  */
+   * Get ServiceServicesNodeNodesStop
+   * @returns {PVEServiceServicesNodeNodesStop}
+   */
   get stop() { return this.#stop == null ? (this.#stop = new PVEServiceServicesNodeNodesStop(this.#client, this.#node, this.#service)) : this.#stop; }
   #restart;
   /**
-  * Get ServiceServicesNodeNodesRestart
-  * @returns {PVEServiceServicesNodeNodesRestart}
-  */
+   * Get ServiceServicesNodeNodesRestart
+   * @returns {PVEServiceServicesNodeNodesRestart}
+   */
   get restart() { return this.#restart == null ? (this.#restart = new PVEServiceServicesNodeNodesRestart(this.#client, this.#node, this.#service)) : this.#restart; }
   #reload;
   /**
-  * Get ServiceServicesNodeNodesReload
-  * @returns {PVEServiceServicesNodeNodesReload}
-  */
+   * Get ServiceServicesNodeNodesReload
+   * @returns {PVEServiceServicesNodeNodesReload}
+   */
   get reload() { return this.#reload == null ? (this.#reload = new PVEServiceServicesNodeNodesReload(this.#client, this.#node, this.#service)) : this.#reload; }
 
 
@@ -11095,8 +11441,8 @@ class PVEItemServicesNodeNodesService {
 
 }
 /**
-* Class PVEServiceServicesNodeNodesState
-*/
+ * Class PVEServiceServicesNodeNodesState
+ */
 class PVEServiceServicesNodeNodesState {
   #node;
   #service;
@@ -11122,8 +11468,8 @@ class PVEServiceServicesNodeNodesState {
 }
 
 /**
-* Class PVEServiceServicesNodeNodesStart
-*/
+ * Class PVEServiceServicesNodeNodesStart
+ */
 class PVEServiceServicesNodeNodesStart {
   #node;
   #service;
@@ -11149,8 +11495,8 @@ class PVEServiceServicesNodeNodesStart {
 }
 
 /**
-* Class PVEServiceServicesNodeNodesStop
-*/
+ * Class PVEServiceServicesNodeNodesStop
+ */
 class PVEServiceServicesNodeNodesStop {
   #node;
   #service;
@@ -11176,8 +11522,8 @@ class PVEServiceServicesNodeNodesStop {
 }
 
 /**
-* Class PVEServiceServicesNodeNodesRestart
-*/
+ * Class PVEServiceServicesNodeNodesRestart
+ */
 class PVEServiceServicesNodeNodesRestart {
   #node;
   #service;
@@ -11203,8 +11549,8 @@ class PVEServiceServicesNodeNodesRestart {
 }
 
 /**
-* Class PVEServiceServicesNodeNodesReload
-*/
+ * Class PVEServiceServicesNodeNodesReload
+ */
 class PVEServiceServicesNodeNodesReload {
   #node;
   #service;
@@ -11230,8 +11576,8 @@ class PVEServiceServicesNodeNodesReload {
 }
 
 /**
-* Class PVENodeNodesSubscription
-*/
+ * Class PVENodeNodesSubscription
+ */
 class PVENodeNodesSubscription {
   #node;
   /** @type {PveClient} */
@@ -11280,8 +11626,8 @@ class PVENodeNodesSubscription {
 }
 
 /**
-* Class PVENodeNodesNetwork
-*/
+ * Class PVENodeNodesNetwork
+ */
 class PVENodeNodesNetwork {
   #node;
   /** @type {PveClient} */
@@ -11294,10 +11640,10 @@ class PVENodeNodesNetwork {
 
 
   /**
-  * Get ItemNetworkNodeNodesIface
-  * @param iface
-  * @returns {PVEItemNetworkNodeNodesIface}
-  */
+   * Get ItemNetworkNodeNodesIface
+   * @param iface
+   * @returns {PVEItemNetworkNodeNodesIface}
+   */
   get(iface) { return new PVEItemNetworkNodeNodesIface(this.#client, this.#node, iface); }
 
   /**
@@ -11393,8 +11739,8 @@ class PVENodeNodesNetwork {
 
 }
 /**
-* Class PVEItemNetworkNodeNodesIface
-*/
+ * Class PVEItemNetworkNodeNodesIface
+ */
 class PVEItemNetworkNodeNodesIface {
   #node;
   #iface;
@@ -11493,8 +11839,8 @@ class PVEItemNetworkNodeNodesIface {
 }
 
 /**
-* Class PVENodeNodesTasks
-*/
+ * Class PVENodeNodesTasks
+ */
 class PVENodeNodesTasks {
   #node;
   /** @type {PveClient} */
@@ -11507,10 +11853,10 @@ class PVENodeNodesTasks {
 
 
   /**
-  * Get ItemTasksNodeNodesUpid
-  * @param upid
-  * @returns {PVEItemTasksNodeNodesUpid}
-  */
+   * Get ItemTasksNodeNodesUpid
+   * @param upid
+   * @returns {PVEItemTasksNodeNodesUpid}
+   */
   get(upid) { return new PVEItemTasksNodeNodesUpid(this.#client, this.#node, upid); }
 
   /**
@@ -11546,8 +11892,8 @@ class PVENodeNodesTasks {
 
 }
 /**
-* Class PVEItemTasksNodeNodesUpid
-*/
+ * Class PVEItemTasksNodeNodesUpid
+ */
 class PVEItemTasksNodeNodesUpid {
   #node;
   #upid;
@@ -11562,15 +11908,15 @@ class PVEItemTasksNodeNodesUpid {
 
   #log;
   /**
-  * Get UpidTasksNodeNodesLog
-  * @returns {PVEUpidTasksNodeNodesLog}
-  */
+   * Get UpidTasksNodeNodesLog
+   * @returns {PVEUpidTasksNodeNodesLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVEUpidTasksNodeNodesLog(this.#client, this.#node, this.#upid)) : this.#log; }
   #status;
   /**
-  * Get UpidTasksNodeNodesStatus
-  * @returns {PVEUpidTasksNodeNodesStatus}
-  */
+   * Get UpidTasksNodeNodesStatus
+   * @returns {PVEUpidTasksNodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEUpidTasksNodeNodesStatus(this.#client, this.#node, this.#upid)) : this.#status; }
 
 
@@ -11591,8 +11937,8 @@ class PVEItemTasksNodeNodesUpid {
 
 }
 /**
-* Class PVEUpidTasksNodeNodesLog
-*/
+ * Class PVEUpidTasksNodeNodesLog
+ */
 class PVEUpidTasksNodeNodesLog {
   #node;
   #upid;
@@ -11624,8 +11970,8 @@ class PVEUpidTasksNodeNodesLog {
 }
 
 /**
-* Class PVEUpidTasksNodeNodesStatus
-*/
+ * Class PVEUpidTasksNodeNodesStatus
+ */
 class PVEUpidTasksNodeNodesStatus {
   #node;
   #upid;
@@ -11651,8 +11997,8 @@ class PVEUpidTasksNodeNodesStatus {
 }
 
 /**
-* Class PVENodeNodesScan
-*/
+ * Class PVENodeNodesScan
+ */
 class PVENodeNodesScan {
   #node;
   /** @type {PveClient} */
@@ -11665,51 +12011,51 @@ class PVENodeNodesScan {
 
   #nfs;
   /**
-  * Get ScanNodeNodesNfs
-  * @returns {PVEScanNodeNodesNfs}
-  */
+   * Get ScanNodeNodesNfs
+   * @returns {PVEScanNodeNodesNfs}
+   */
   get nfs() { return this.#nfs == null ? (this.#nfs = new PVEScanNodeNodesNfs(this.#client, this.#node)) : this.#nfs; }
   #cifs;
   /**
-  * Get ScanNodeNodesCifs
-  * @returns {PVEScanNodeNodesCifs}
-  */
+   * Get ScanNodeNodesCifs
+   * @returns {PVEScanNodeNodesCifs}
+   */
   get cifs() { return this.#cifs == null ? (this.#cifs = new PVEScanNodeNodesCifs(this.#client, this.#node)) : this.#cifs; }
   #pbs;
   /**
-  * Get ScanNodeNodesPbs
-  * @returns {PVEScanNodeNodesPbs}
-  */
+   * Get ScanNodeNodesPbs
+   * @returns {PVEScanNodeNodesPbs}
+   */
   get pbs() { return this.#pbs == null ? (this.#pbs = new PVEScanNodeNodesPbs(this.#client, this.#node)) : this.#pbs; }
   #glusterfs;
   /**
-  * Get ScanNodeNodesGlusterfs
-  * @returns {PVEScanNodeNodesGlusterfs}
-  */
+   * Get ScanNodeNodesGlusterfs
+   * @returns {PVEScanNodeNodesGlusterfs}
+   */
   get glusterfs() { return this.#glusterfs == null ? (this.#glusterfs = new PVEScanNodeNodesGlusterfs(this.#client, this.#node)) : this.#glusterfs; }
   #iscsi;
   /**
-  * Get ScanNodeNodesIscsi
-  * @returns {PVEScanNodeNodesIscsi}
-  */
+   * Get ScanNodeNodesIscsi
+   * @returns {PVEScanNodeNodesIscsi}
+   */
   get iscsi() { return this.#iscsi == null ? (this.#iscsi = new PVEScanNodeNodesIscsi(this.#client, this.#node)) : this.#iscsi; }
   #lvm;
   /**
-  * Get ScanNodeNodesLvm
-  * @returns {PVEScanNodeNodesLvm}
-  */
+   * Get ScanNodeNodesLvm
+   * @returns {PVEScanNodeNodesLvm}
+   */
   get lvm() { return this.#lvm == null ? (this.#lvm = new PVEScanNodeNodesLvm(this.#client, this.#node)) : this.#lvm; }
   #lvmthin;
   /**
-  * Get ScanNodeNodesLvmthin
-  * @returns {PVEScanNodeNodesLvmthin}
-  */
+   * Get ScanNodeNodesLvmthin
+   * @returns {PVEScanNodeNodesLvmthin}
+   */
   get lvmthin() { return this.#lvmthin == null ? (this.#lvmthin = new PVEScanNodeNodesLvmthin(this.#client, this.#node)) : this.#lvmthin; }
   #zfs;
   /**
-  * Get ScanNodeNodesZfs
-  * @returns {PVEScanNodeNodesZfs}
-  */
+   * Get ScanNodeNodesZfs
+   * @returns {PVEScanNodeNodesZfs}
+   */
   get zfs() { return this.#zfs == null ? (this.#zfs = new PVEScanNodeNodesZfs(this.#client, this.#node)) : this.#zfs; }
 
 
@@ -11723,8 +12069,8 @@ class PVENodeNodesScan {
 
 }
 /**
-* Class PVEScanNodeNodesNfs
-*/
+ * Class PVEScanNodeNodesNfs
+ */
 class PVEScanNodeNodesNfs {
   #node;
   /** @type {PveClient} */
@@ -11750,8 +12096,8 @@ class PVEScanNodeNodesNfs {
 }
 
 /**
-* Class PVEScanNodeNodesCifs
-*/
+ * Class PVEScanNodeNodesCifs
+ */
 class PVEScanNodeNodesCifs {
   #node;
   /** @type {PveClient} */
@@ -11785,8 +12131,8 @@ class PVEScanNodeNodesCifs {
 }
 
 /**
-* Class PVEScanNodeNodesPbs
-*/
+ * Class PVEScanNodeNodesPbs
+ */
 class PVEScanNodeNodesPbs {
   #node;
   /** @type {PveClient} */
@@ -11822,8 +12168,8 @@ class PVEScanNodeNodesPbs {
 }
 
 /**
-* Class PVEScanNodeNodesGlusterfs
-*/
+ * Class PVEScanNodeNodesGlusterfs
+ */
 class PVEScanNodeNodesGlusterfs {
   #node;
   /** @type {PveClient} */
@@ -11849,8 +12195,8 @@ class PVEScanNodeNodesGlusterfs {
 }
 
 /**
-* Class PVEScanNodeNodesIscsi
-*/
+ * Class PVEScanNodeNodesIscsi
+ */
 class PVEScanNodeNodesIscsi {
   #node;
   /** @type {PveClient} */
@@ -11876,8 +12222,8 @@ class PVEScanNodeNodesIscsi {
 }
 
 /**
-* Class PVEScanNodeNodesLvm
-*/
+ * Class PVEScanNodeNodesLvm
+ */
 class PVEScanNodeNodesLvm {
   #node;
   /** @type {PveClient} */
@@ -11901,8 +12247,8 @@ class PVEScanNodeNodesLvm {
 }
 
 /**
-* Class PVEScanNodeNodesLvmthin
-*/
+ * Class PVEScanNodeNodesLvmthin
+ */
 class PVEScanNodeNodesLvmthin {
   #node;
   /** @type {PveClient} */
@@ -11928,8 +12274,8 @@ class PVEScanNodeNodesLvmthin {
 }
 
 /**
-* Class PVEScanNodeNodesZfs
-*/
+ * Class PVEScanNodeNodesZfs
+ */
 class PVEScanNodeNodesZfs {
   #node;
   /** @type {PveClient} */
@@ -11953,8 +12299,8 @@ class PVEScanNodeNodesZfs {
 }
 
 /**
-* Class PVENodeNodesHardware
-*/
+ * Class PVENodeNodesHardware
+ */
 class PVENodeNodesHardware {
   #node;
   /** @type {PveClient} */
@@ -11967,15 +12313,15 @@ class PVENodeNodesHardware {
 
   #pci;
   /**
-  * Get HardwareNodeNodesPci
-  * @returns {PVEHardwareNodeNodesPci}
-  */
+   * Get HardwareNodeNodesPci
+   * @returns {PVEHardwareNodeNodesPci}
+   */
   get pci() { return this.#pci == null ? (this.#pci = new PVEHardwareNodeNodesPci(this.#client, this.#node)) : this.#pci; }
   #usb;
   /**
-  * Get HardwareNodeNodesUsb
-  * @returns {PVEHardwareNodeNodesUsb}
-  */
+   * Get HardwareNodeNodesUsb
+   * @returns {PVEHardwareNodeNodesUsb}
+   */
   get usb() { return this.#usb == null ? (this.#usb = new PVEHardwareNodeNodesUsb(this.#client, this.#node)) : this.#usb; }
 
 
@@ -11989,8 +12335,8 @@ class PVENodeNodesHardware {
 
 }
 /**
-* Class PVEHardwareNodeNodesPci
-*/
+ * Class PVEHardwareNodeNodesPci
+ */
 class PVEHardwareNodeNodesPci {
   #node;
   /** @type {PveClient} */
@@ -12003,10 +12349,10 @@ class PVEHardwareNodeNodesPci {
 
 
   /**
-  * Get ItemPciHardwareNodeNodesPciid
-  * @param pciid
-  * @returns {PVEItemPciHardwareNodeNodesPciid}
-  */
+   * Get ItemPciHardwareNodeNodesPciid
+   * @param pciid
+   * @returns {PVEItemPciHardwareNodeNodesPciid}
+   */
   get(pciid) { return new PVEItemPciHardwareNodeNodesPciid(this.#client, this.#node, pciid); }
 
   /**
@@ -12025,8 +12371,8 @@ class PVEHardwareNodeNodesPci {
 
 }
 /**
-* Class PVEItemPciHardwareNodeNodesPciid
-*/
+ * Class PVEItemPciHardwareNodeNodesPciid
+ */
 class PVEItemPciHardwareNodeNodesPciid {
   #node;
   #pciid;
@@ -12041,9 +12387,9 @@ class PVEItemPciHardwareNodeNodesPciid {
 
   #mdev;
   /**
-  * Get PciidPciHardwareNodeNodesMdev
-  * @returns {PVEPciidPciHardwareNodeNodesMdev}
-  */
+   * Get PciidPciHardwareNodeNodesMdev
+   * @returns {PVEPciidPciHardwareNodeNodesMdev}
+   */
   get mdev() { return this.#mdev == null ? (this.#mdev = new PVEPciidPciHardwareNodeNodesMdev(this.#client, this.#node, this.#pciid)) : this.#mdev; }
 
 
@@ -12057,8 +12403,8 @@ class PVEItemPciHardwareNodeNodesPciid {
 
 }
 /**
-* Class PVEPciidPciHardwareNodeNodesMdev
-*/
+ * Class PVEPciidPciHardwareNodeNodesMdev
+ */
 class PVEPciidPciHardwareNodeNodesMdev {
   #node;
   #pciid;
@@ -12084,8 +12430,8 @@ class PVEPciidPciHardwareNodeNodesMdev {
 }
 
 /**
-* Class PVEHardwareNodeNodesUsb
-*/
+ * Class PVEHardwareNodeNodesUsb
+ */
 class PVEHardwareNodeNodesUsb {
   #node;
   /** @type {PveClient} */
@@ -12109,8 +12455,8 @@ class PVEHardwareNodeNodesUsb {
 }
 
 /**
-* Class PVENodeNodesCapabilities
-*/
+ * Class PVENodeNodesCapabilities
+ */
 class PVENodeNodesCapabilities {
   #node;
   /** @type {PveClient} */
@@ -12123,9 +12469,9 @@ class PVENodeNodesCapabilities {
 
   #qemu;
   /**
-  * Get CapabilitiesNodeNodesQemu
-  * @returns {PVECapabilitiesNodeNodesQemu}
-  */
+   * Get CapabilitiesNodeNodesQemu
+   * @returns {PVECapabilitiesNodeNodesQemu}
+   */
   get qemu() { return this.#qemu == null ? (this.#qemu = new PVECapabilitiesNodeNodesQemu(this.#client, this.#node)) : this.#qemu; }
 
 
@@ -12139,8 +12485,8 @@ class PVENodeNodesCapabilities {
 
 }
 /**
-* Class PVECapabilitiesNodeNodesQemu
-*/
+ * Class PVECapabilitiesNodeNodesQemu
+ */
 class PVECapabilitiesNodeNodesQemu {
   #node;
   /** @type {PveClient} */
@@ -12153,15 +12499,15 @@ class PVECapabilitiesNodeNodesQemu {
 
   #cpu;
   /**
-  * Get QemuCapabilitiesNodeNodesCpu
-  * @returns {PVEQemuCapabilitiesNodeNodesCpu}
-  */
+   * Get QemuCapabilitiesNodeNodesCpu
+   * @returns {PVEQemuCapabilitiesNodeNodesCpu}
+   */
   get cpu() { return this.#cpu == null ? (this.#cpu = new PVEQemuCapabilitiesNodeNodesCpu(this.#client, this.#node)) : this.#cpu; }
   #machines;
   /**
-  * Get QemuCapabilitiesNodeNodesMachines
-  * @returns {PVEQemuCapabilitiesNodeNodesMachines}
-  */
+   * Get QemuCapabilitiesNodeNodesMachines
+   * @returns {PVEQemuCapabilitiesNodeNodesMachines}
+   */
   get machines() { return this.#machines == null ? (this.#machines = new PVEQemuCapabilitiesNodeNodesMachines(this.#client, this.#node)) : this.#machines; }
 
 
@@ -12175,8 +12521,8 @@ class PVECapabilitiesNodeNodesQemu {
 
 }
 /**
-* Class PVEQemuCapabilitiesNodeNodesCpu
-*/
+ * Class PVEQemuCapabilitiesNodeNodesCpu
+ */
 class PVEQemuCapabilitiesNodeNodesCpu {
   #node;
   /** @type {PveClient} */
@@ -12200,8 +12546,8 @@ class PVEQemuCapabilitiesNodeNodesCpu {
 }
 
 /**
-* Class PVEQemuCapabilitiesNodeNodesMachines
-*/
+ * Class PVEQemuCapabilitiesNodeNodesMachines
+ */
 class PVEQemuCapabilitiesNodeNodesMachines {
   #node;
   /** @type {PveClient} */
@@ -12225,8 +12571,8 @@ class PVEQemuCapabilitiesNodeNodesMachines {
 }
 
 /**
-* Class PVENodeNodesStorage
-*/
+ * Class PVENodeNodesStorage
+ */
 class PVENodeNodesStorage {
   #node;
   /** @type {PveClient} */
@@ -12239,10 +12585,10 @@ class PVENodeNodesStorage {
 
 
   /**
-  * Get ItemStorageNodeNodesStorage
-  * @param storage
-  * @returns {PVEItemStorageNodeNodesStorage}
-  */
+   * Get ItemStorageNodeNodesStorage
+   * @param storage
+   * @returns {PVEItemStorageNodeNodesStorage}
+   */
   get(storage) { return new PVEItemStorageNodeNodesStorage(this.#client, this.#node, storage); }
 
   /**
@@ -12267,8 +12613,8 @@ class PVENodeNodesStorage {
 
 }
 /**
-* Class PVEItemStorageNodeNodesStorage
-*/
+ * Class PVEItemStorageNodeNodesStorage
+ */
 class PVEItemStorageNodeNodesStorage {
   #node;
   #storage;
@@ -12283,51 +12629,51 @@ class PVEItemStorageNodeNodesStorage {
 
   #prunebackups;
   /**
-  * Get StorageStorageNodeNodesPrunebackups
-  * @returns {PVEStorageStorageNodeNodesPrunebackups}
-  */
+   * Get StorageStorageNodeNodesPrunebackups
+   * @returns {PVEStorageStorageNodeNodesPrunebackups}
+   */
   get prunebackups() { return this.#prunebackups == null ? (this.#prunebackups = new PVEStorageStorageNodeNodesPrunebackups(this.#client, this.#node, this.#storage)) : this.#prunebackups; }
   #content;
   /**
-  * Get StorageStorageNodeNodesContent
-  * @returns {PVEStorageStorageNodeNodesContent}
-  */
+   * Get StorageStorageNodeNodesContent
+   * @returns {PVEStorageStorageNodeNodesContent}
+   */
   get content() { return this.#content == null ? (this.#content = new PVEStorageStorageNodeNodesContent(this.#client, this.#node, this.#storage)) : this.#content; }
   #fileRestore;
   /**
-  * Get StorageStorageNodeNodesFileRestore
-  * @returns {PVEStorageStorageNodeNodesFileRestore}
-  */
+   * Get StorageStorageNodeNodesFileRestore
+   * @returns {PVEStorageStorageNodeNodesFileRestore}
+   */
   get fileRestore() { return this.#fileRestore == null ? (this.#fileRestore = new PVEStorageStorageNodeNodesFileRestore(this.#client, this.#node, this.#storage)) : this.#fileRestore; }
   #status;
   /**
-  * Get StorageStorageNodeNodesStatus
-  * @returns {PVEStorageStorageNodeNodesStatus}
-  */
+   * Get StorageStorageNodeNodesStatus
+   * @returns {PVEStorageStorageNodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEStorageStorageNodeNodesStatus(this.#client, this.#node, this.#storage)) : this.#status; }
   #rrd;
   /**
-  * Get StorageStorageNodeNodesRrd
-  * @returns {PVEStorageStorageNodeNodesRrd}
-  */
+   * Get StorageStorageNodeNodesRrd
+   * @returns {PVEStorageStorageNodeNodesRrd}
+   */
   get rrd() { return this.#rrd == null ? (this.#rrd = new PVEStorageStorageNodeNodesRrd(this.#client, this.#node, this.#storage)) : this.#rrd; }
   #rrddata;
   /**
-  * Get StorageStorageNodeNodesRrddata
-  * @returns {PVEStorageStorageNodeNodesRrddata}
-  */
+   * Get StorageStorageNodeNodesRrddata
+   * @returns {PVEStorageStorageNodeNodesRrddata}
+   */
   get rrddata() { return this.#rrddata == null ? (this.#rrddata = new PVEStorageStorageNodeNodesRrddata(this.#client, this.#node, this.#storage)) : this.#rrddata; }
   #upload;
   /**
-  * Get StorageStorageNodeNodesUpload
-  * @returns {PVEStorageStorageNodeNodesUpload}
-  */
+   * Get StorageStorageNodeNodesUpload
+   * @returns {PVEStorageStorageNodeNodesUpload}
+   */
   get upload() { return this.#upload == null ? (this.#upload = new PVEStorageStorageNodeNodesUpload(this.#client, this.#node, this.#storage)) : this.#upload; }
   #downloadUrl;
   /**
-  * Get StorageStorageNodeNodesDownloadUrl
-  * @returns {PVEStorageStorageNodeNodesDownloadUrl}
-  */
+   * Get StorageStorageNodeNodesDownloadUrl
+   * @returns {PVEStorageStorageNodeNodesDownloadUrl}
+   */
   get downloadUrl() { return this.#downloadUrl == null ? (this.#downloadUrl = new PVEStorageStorageNodeNodesDownloadUrl(this.#client, this.#node, this.#storage)) : this.#downloadUrl; }
 
 
@@ -12341,8 +12687,8 @@ class PVEItemStorageNodeNodesStorage {
 
 }
 /**
-* Class PVEStorageStorageNodeNodesPrunebackups
-*/
+ * Class PVEStorageStorageNodeNodesPrunebackups
+ */
 class PVEStorageStorageNodeNodesPrunebackups {
   #node;
   #storage;
@@ -12393,8 +12739,8 @@ class PVEStorageStorageNodeNodesPrunebackups {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesContent
-*/
+ * Class PVEStorageStorageNodeNodesContent
+ */
 class PVEStorageStorageNodeNodesContent {
   #node;
   #storage;
@@ -12409,10 +12755,10 @@ class PVEStorageStorageNodeNodesContent {
 
 
   /**
-  * Get ItemContentStorageStorageNodeNodesVolume
-  * @param volume
-  * @returns {PVEItemContentStorageStorageNodeNodesVolume}
-  */
+   * Get ItemContentStorageStorageNodeNodesVolume
+   * @param volume
+   * @returns {PVEItemContentStorageStorageNodeNodesVolume}
+   */
   get(volume) { return new PVEItemContentStorageStorageNodeNodesVolume(this.#client, this.#node, this.#storage, volume); }
 
   /**
@@ -12449,8 +12795,8 @@ class PVEStorageStorageNodeNodesContent {
 
 }
 /**
-* Class PVEItemContentStorageStorageNodeNodesVolume
-*/
+ * Class PVEItemContentStorageStorageNodeNodesVolume
+ */
 class PVEItemContentStorageStorageNodeNodesVolume {
   #node;
   #storage;
@@ -12513,8 +12859,8 @@ class PVEItemContentStorageStorageNodeNodesVolume {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesFileRestore
-*/
+ * Class PVEStorageStorageNodeNodesFileRestore
+ */
 class PVEStorageStorageNodeNodesFileRestore {
   #node;
   #storage;
@@ -12529,23 +12875,23 @@ class PVEStorageStorageNodeNodesFileRestore {
 
   #list;
   /**
-  * Get FileRestoreStorageStorageNodeNodesList
-  * @returns {PVEFileRestoreStorageStorageNodeNodesList}
-  */
+   * Get FileRestoreStorageStorageNodeNodesList
+   * @returns {PVEFileRestoreStorageStorageNodeNodesList}
+   */
   get list() { return this.#list == null ? (this.#list = new PVEFileRestoreStorageStorageNodeNodesList(this.#client, this.#node, this.#storage)) : this.#list; }
   #download;
   /**
-  * Get FileRestoreStorageStorageNodeNodesDownload
-  * @returns {PVEFileRestoreStorageStorageNodeNodesDownload}
-  */
+   * Get FileRestoreStorageStorageNodeNodesDownload
+   * @returns {PVEFileRestoreStorageStorageNodeNodesDownload}
+   */
   get download() { return this.#download == null ? (this.#download = new PVEFileRestoreStorageStorageNodeNodesDownload(this.#client, this.#node, this.#storage)) : this.#download; }
 
 
 
 }
 /**
-* Class PVEFileRestoreStorageStorageNodeNodesList
-*/
+ * Class PVEFileRestoreStorageStorageNodeNodesList
+ */
 class PVEFileRestoreStorageStorageNodeNodesList {
   #node;
   #storage;
@@ -12577,8 +12923,8 @@ class PVEFileRestoreStorageStorageNodeNodesList {
 }
 
 /**
-* Class PVEFileRestoreStorageStorageNodeNodesDownload
-*/
+ * Class PVEFileRestoreStorageStorageNodeNodesDownload
+ */
 class PVEFileRestoreStorageStorageNodeNodesDownload {
   #node;
   #storage;
@@ -12610,8 +12956,8 @@ class PVEFileRestoreStorageStorageNodeNodesDownload {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesStatus
-*/
+ * Class PVEStorageStorageNodeNodesStatus
+ */
 class PVEStorageStorageNodeNodesStatus {
   #node;
   #storage;
@@ -12637,8 +12983,8 @@ class PVEStorageStorageNodeNodesStatus {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesRrd
-*/
+ * Class PVEStorageStorageNodeNodesRrd
+ */
 class PVEStorageStorageNodeNodesRrd {
   #node;
   #storage;
@@ -12674,8 +13020,8 @@ class PVEStorageStorageNodeNodesRrd {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesRrddata
-*/
+ * Class PVEStorageStorageNodeNodesRrddata
+ */
 class PVEStorageStorageNodeNodesRrddata {
   #node;
   #storage;
@@ -12709,8 +13055,8 @@ class PVEStorageStorageNodeNodesRrddata {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesUpload
-*/
+ * Class PVEStorageStorageNodeNodesUpload
+ */
 class PVEStorageStorageNodeNodesUpload {
   #node;
   #storage;
@@ -12750,8 +13096,8 @@ class PVEStorageStorageNodeNodesUpload {
 }
 
 /**
-* Class PVEStorageStorageNodeNodesDownloadUrl
-*/
+ * Class PVEStorageStorageNodeNodesDownloadUrl
+ */
 class PVEStorageStorageNodeNodesDownloadUrl {
   #node;
   #storage;
@@ -12793,8 +13139,8 @@ class PVEStorageStorageNodeNodesDownloadUrl {
 }
 
 /**
-* Class PVENodeNodesDisks
-*/
+ * Class PVENodeNodesDisks
+ */
 class PVENodeNodesDisks {
   #node;
   /** @type {PveClient} */
@@ -12807,51 +13153,51 @@ class PVENodeNodesDisks {
 
   #lvm;
   /**
-  * Get DisksNodeNodesLvm
-  * @returns {PVEDisksNodeNodesLvm}
-  */
+   * Get DisksNodeNodesLvm
+   * @returns {PVEDisksNodeNodesLvm}
+   */
   get lvm() { return this.#lvm == null ? (this.#lvm = new PVEDisksNodeNodesLvm(this.#client, this.#node)) : this.#lvm; }
   #lvmthin;
   /**
-  * Get DisksNodeNodesLvmthin
-  * @returns {PVEDisksNodeNodesLvmthin}
-  */
+   * Get DisksNodeNodesLvmthin
+   * @returns {PVEDisksNodeNodesLvmthin}
+   */
   get lvmthin() { return this.#lvmthin == null ? (this.#lvmthin = new PVEDisksNodeNodesLvmthin(this.#client, this.#node)) : this.#lvmthin; }
   #directory;
   /**
-  * Get DisksNodeNodesDirectory
-  * @returns {PVEDisksNodeNodesDirectory}
-  */
+   * Get DisksNodeNodesDirectory
+   * @returns {PVEDisksNodeNodesDirectory}
+   */
   get directory() { return this.#directory == null ? (this.#directory = new PVEDisksNodeNodesDirectory(this.#client, this.#node)) : this.#directory; }
   #zfs;
   /**
-  * Get DisksNodeNodesZfs
-  * @returns {PVEDisksNodeNodesZfs}
-  */
+   * Get DisksNodeNodesZfs
+   * @returns {PVEDisksNodeNodesZfs}
+   */
   get zfs() { return this.#zfs == null ? (this.#zfs = new PVEDisksNodeNodesZfs(this.#client, this.#node)) : this.#zfs; }
   #list;
   /**
-  * Get DisksNodeNodesList
-  * @returns {PVEDisksNodeNodesList}
-  */
+   * Get DisksNodeNodesList
+   * @returns {PVEDisksNodeNodesList}
+   */
   get list() { return this.#list == null ? (this.#list = new PVEDisksNodeNodesList(this.#client, this.#node)) : this.#list; }
   #smart;
   /**
-  * Get DisksNodeNodesSmart
-  * @returns {PVEDisksNodeNodesSmart}
-  */
+   * Get DisksNodeNodesSmart
+   * @returns {PVEDisksNodeNodesSmart}
+   */
   get smart() { return this.#smart == null ? (this.#smart = new PVEDisksNodeNodesSmart(this.#client, this.#node)) : this.#smart; }
   #initgpt;
   /**
-  * Get DisksNodeNodesInitgpt
-  * @returns {PVEDisksNodeNodesInitgpt}
-  */
+   * Get DisksNodeNodesInitgpt
+   * @returns {PVEDisksNodeNodesInitgpt}
+   */
   get initgpt() { return this.#initgpt == null ? (this.#initgpt = new PVEDisksNodeNodesInitgpt(this.#client, this.#node)) : this.#initgpt; }
   #wipedisk;
   /**
-  * Get DisksNodeNodesWipedisk
-  * @returns {PVEDisksNodeNodesWipedisk}
-  */
+   * Get DisksNodeNodesWipedisk
+   * @returns {PVEDisksNodeNodesWipedisk}
+   */
   get wipedisk() { return this.#wipedisk == null ? (this.#wipedisk = new PVEDisksNodeNodesWipedisk(this.#client, this.#node)) : this.#wipedisk; }
 
 
@@ -12865,8 +13211,8 @@ class PVENodeNodesDisks {
 
 }
 /**
-* Class PVEDisksNodeNodesLvm
-*/
+ * Class PVEDisksNodeNodesLvm
+ */
 class PVEDisksNodeNodesLvm {
   #node;
   /** @type {PveClient} */
@@ -12879,10 +13225,10 @@ class PVEDisksNodeNodesLvm {
 
 
   /**
-  * Get ItemLvmDisksNodeNodesName
-  * @param name
-  * @returns {PVEItemLvmDisksNodeNodesName}
-  */
+   * Get ItemLvmDisksNodeNodesName
+   * @param name
+   * @returns {PVEItemLvmDisksNodeNodesName}
+   */
   get(name) { return new PVEItemLvmDisksNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -12910,8 +13256,8 @@ class PVEDisksNodeNodesLvm {
 
 }
 /**
-* Class PVEItemLvmDisksNodeNodesName
-*/
+ * Class PVEItemLvmDisksNodeNodesName
+ */
 class PVEItemLvmDisksNodeNodesName {
   #node;
   #name;
@@ -12943,8 +13289,8 @@ class PVEItemLvmDisksNodeNodesName {
 }
 
 /**
-* Class PVEDisksNodeNodesLvmthin
-*/
+ * Class PVEDisksNodeNodesLvmthin
+ */
 class PVEDisksNodeNodesLvmthin {
   #node;
   /** @type {PveClient} */
@@ -12957,10 +13303,10 @@ class PVEDisksNodeNodesLvmthin {
 
 
   /**
-  * Get ItemLvmthinDisksNodeNodesName
-  * @param name
-  * @returns {PVEItemLvmthinDisksNodeNodesName}
-  */
+   * Get ItemLvmthinDisksNodeNodesName
+   * @param name
+   * @returns {PVEItemLvmthinDisksNodeNodesName}
+   */
   get(name) { return new PVEItemLvmthinDisksNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -12988,8 +13334,8 @@ class PVEDisksNodeNodesLvmthin {
 
 }
 /**
-* Class PVEItemLvmthinDisksNodeNodesName
-*/
+ * Class PVEItemLvmthinDisksNodeNodesName
+ */
 class PVEItemLvmthinDisksNodeNodesName {
   #node;
   #name;
@@ -13023,8 +13369,8 @@ class PVEItemLvmthinDisksNodeNodesName {
 }
 
 /**
-* Class PVEDisksNodeNodesDirectory
-*/
+ * Class PVEDisksNodeNodesDirectory
+ */
 class PVEDisksNodeNodesDirectory {
   #node;
   /** @type {PveClient} */
@@ -13037,10 +13383,10 @@ class PVEDisksNodeNodesDirectory {
 
 
   /**
-  * Get ItemDirectoryDisksNodeNodesName
-  * @param name
-  * @returns {PVEItemDirectoryDisksNodeNodesName}
-  */
+   * Get ItemDirectoryDisksNodeNodesName
+   * @param name
+   * @returns {PVEItemDirectoryDisksNodeNodesName}
+   */
   get(name) { return new PVEItemDirectoryDisksNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -13071,8 +13417,8 @@ class PVEDisksNodeNodesDirectory {
 
 }
 /**
-* Class PVEItemDirectoryDisksNodeNodesName
-*/
+ * Class PVEItemDirectoryDisksNodeNodesName
+ */
 class PVEItemDirectoryDisksNodeNodesName {
   #node;
   #name;
@@ -13104,8 +13450,8 @@ class PVEItemDirectoryDisksNodeNodesName {
 }
 
 /**
-* Class PVEDisksNodeNodesZfs
-*/
+ * Class PVEDisksNodeNodesZfs
+ */
 class PVEDisksNodeNodesZfs {
   #node;
   /** @type {PveClient} */
@@ -13118,10 +13464,10 @@ class PVEDisksNodeNodesZfs {
 
 
   /**
-  * Get ItemZfsDisksNodeNodesName
-  * @param name
-  * @returns {PVEItemZfsDisksNodeNodesName}
-  */
+   * Get ItemZfsDisksNodeNodesName
+   * @param name
+   * @returns {PVEItemZfsDisksNodeNodesName}
+   */
   get(name) { return new PVEItemZfsDisksNodeNodesName(this.#client, this.#node, name); }
 
   /**
@@ -13136,29 +13482,31 @@ class PVEDisksNodeNodesZfs {
   * @param {string} devices The block devices you want to create the zpool on.
   * @param {string} name The storage identifier.
   * @param {string} raidlevel The RAID level to use.
-  *   Enum: single,mirror,raid10,raidz,raidz2,raidz3
+  *   Enum: single,mirror,raid10,raidz,raidz2,raidz3,draid,draid2,draid3
   * @param {bool} add_storage Configure storage using the zpool.
   * @param {int} ashift Pool sector size exponent.
   * @param {string} compression The compression algorithm to use.
   *   Enum: on,off,gzip,lz4,lzjb,zle,zstd
+  * @param {string} draid_config
   * @returns {Result}
   */
-  async create(devices, name, raidlevel, add_storage, ashift, compression) {
+  async create(devices, name, raidlevel, add_storage, ashift, compression, draid_config) {
     const parameters = {
       'devices': devices,
       'name': name,
       'raidlevel': raidlevel,
       'add_storage': add_storage,
       'ashift': ashift,
-      'compression': compression
+      'compression': compression,
+      'draid-config': draid_config
     };
     return await this.#client.create(`/nodes/${this.#node}/disks/zfs`, parameters);
   }
 
 }
 /**
-* Class PVEItemZfsDisksNodeNodesName
-*/
+ * Class PVEItemZfsDisksNodeNodesName
+ */
 class PVEItemZfsDisksNodeNodesName {
   #node;
   #name;
@@ -13197,8 +13545,8 @@ class PVEItemZfsDisksNodeNodesName {
 }
 
 /**
-* Class PVEDisksNodeNodesList
-*/
+ * Class PVEDisksNodeNodesList
+ */
 class PVEDisksNodeNodesList {
   #node;
   /** @type {PveClient} */
@@ -13231,8 +13579,8 @@ class PVEDisksNodeNodesList {
 }
 
 /**
-* Class PVEDisksNodeNodesSmart
-*/
+ * Class PVEDisksNodeNodesSmart
+ */
 class PVEDisksNodeNodesSmart {
   #node;
   /** @type {PveClient} */
@@ -13262,8 +13610,8 @@ class PVEDisksNodeNodesSmart {
 }
 
 /**
-* Class PVEDisksNodeNodesInitgpt
-*/
+ * Class PVEDisksNodeNodesInitgpt
+ */
 class PVEDisksNodeNodesInitgpt {
   #node;
   /** @type {PveClient} */
@@ -13293,8 +13641,8 @@ class PVEDisksNodeNodesInitgpt {
 }
 
 /**
-* Class PVEDisksNodeNodesWipedisk
-*/
+ * Class PVEDisksNodeNodesWipedisk
+ */
 class PVEDisksNodeNodesWipedisk {
   #node;
   /** @type {PveClient} */
@@ -13320,8 +13668,8 @@ class PVEDisksNodeNodesWipedisk {
 }
 
 /**
-* Class PVENodeNodesApt
-*/
+ * Class PVENodeNodesApt
+ */
 class PVENodeNodesApt {
   #node;
   /** @type {PveClient} */
@@ -13334,27 +13682,27 @@ class PVENodeNodesApt {
 
   #update;
   /**
-  * Get AptNodeNodesUpdate
-  * @returns {PVEAptNodeNodesUpdate}
-  */
+   * Get AptNodeNodesUpdate
+   * @returns {PVEAptNodeNodesUpdate}
+   */
   get update() { return this.#update == null ? (this.#update = new PVEAptNodeNodesUpdate(this.#client, this.#node)) : this.#update; }
   #changelog;
   /**
-  * Get AptNodeNodesChangelog
-  * @returns {PVEAptNodeNodesChangelog}
-  */
+   * Get AptNodeNodesChangelog
+   * @returns {PVEAptNodeNodesChangelog}
+   */
   get changelog() { return this.#changelog == null ? (this.#changelog = new PVEAptNodeNodesChangelog(this.#client, this.#node)) : this.#changelog; }
   #repositories;
   /**
-  * Get AptNodeNodesRepositories
-  * @returns {PVEAptNodeNodesRepositories}
-  */
+   * Get AptNodeNodesRepositories
+   * @returns {PVEAptNodeNodesRepositories}
+   */
   get repositories() { return this.#repositories == null ? (this.#repositories = new PVEAptNodeNodesRepositories(this.#client, this.#node)) : this.#repositories; }
   #versions;
   /**
-  * Get AptNodeNodesVersions
-  * @returns {PVEAptNodeNodesVersions}
-  */
+   * Get AptNodeNodesVersions
+   * @returns {PVEAptNodeNodesVersions}
+   */
   get versions() { return this.#versions == null ? (this.#versions = new PVEAptNodeNodesVersions(this.#client, this.#node)) : this.#versions; }
 
 
@@ -13368,8 +13716,8 @@ class PVENodeNodesApt {
 
 }
 /**
-* Class PVEAptNodeNodesUpdate
-*/
+ * Class PVEAptNodeNodesUpdate
+ */
 class PVEAptNodeNodesUpdate {
   #node;
   /** @type {PveClient} */
@@ -13406,8 +13754,8 @@ class PVEAptNodeNodesUpdate {
 }
 
 /**
-* Class PVEAptNodeNodesChangelog
-*/
+ * Class PVEAptNodeNodesChangelog
+ */
 class PVEAptNodeNodesChangelog {
   #node;
   /** @type {PveClient} */
@@ -13437,8 +13785,8 @@ class PVEAptNodeNodesChangelog {
 }
 
 /**
-* Class PVEAptNodeNodesRepositories
-*/
+ * Class PVEAptNodeNodesRepositories
+ */
 class PVEAptNodeNodesRepositories {
   #node;
   /** @type {PveClient} */
@@ -13492,8 +13840,8 @@ class PVEAptNodeNodesRepositories {
 }
 
 /**
-* Class PVEAptNodeNodesVersions
-*/
+ * Class PVEAptNodeNodesVersions
+ */
 class PVEAptNodeNodesVersions {
   #node;
   /** @type {PveClient} */
@@ -13517,8 +13865,8 @@ class PVEAptNodeNodesVersions {
 }
 
 /**
-* Class PVENodeNodesFirewall
-*/
+ * Class PVENodeNodesFirewall
+ */
 class PVENodeNodesFirewall {
   #node;
   /** @type {PveClient} */
@@ -13531,21 +13879,21 @@ class PVENodeNodesFirewall {
 
   #rules;
   /**
-  * Get FirewallNodeNodesRules
-  * @returns {PVEFirewallNodeNodesRules}
-  */
+   * Get FirewallNodeNodesRules
+   * @returns {PVEFirewallNodeNodesRules}
+   */
   get rules() { return this.#rules == null ? (this.#rules = new PVEFirewallNodeNodesRules(this.#client, this.#node)) : this.#rules; }
   #options;
   /**
-  * Get FirewallNodeNodesOptions
-  * @returns {PVEFirewallNodeNodesOptions}
-  */
+   * Get FirewallNodeNodesOptions
+   * @returns {PVEFirewallNodeNodesOptions}
+   */
   get options() { return this.#options == null ? (this.#options = new PVEFirewallNodeNodesOptions(this.#client, this.#node)) : this.#options; }
   #log;
   /**
-  * Get FirewallNodeNodesLog
-  * @returns {PVEFirewallNodeNodesLog}
-  */
+   * Get FirewallNodeNodesLog
+   * @returns {PVEFirewallNodeNodesLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVEFirewallNodeNodesLog(this.#client, this.#node)) : this.#log; }
 
 
@@ -13559,8 +13907,8 @@ class PVENodeNodesFirewall {
 
 }
 /**
-* Class PVEFirewallNodeNodesRules
-*/
+ * Class PVEFirewallNodeNodesRules
+ */
 class PVEFirewallNodeNodesRules {
   #node;
   /** @type {PveClient} */
@@ -13573,10 +13921,10 @@ class PVEFirewallNodeNodesRules {
 
 
   /**
-  * Get ItemRulesFirewallNodeNodesPos
-  * @param pos
-  * @returns {PVEItemRulesFirewallNodeNodesPos}
-  */
+   * Get ItemRulesFirewallNodeNodesPos
+   * @param pos
+   * @returns {PVEItemRulesFirewallNodeNodesPos}
+   */
   get(pos) { return new PVEItemRulesFirewallNodeNodesPos(this.#client, this.#node, pos); }
 
   /**
@@ -13630,8 +13978,8 @@ class PVEFirewallNodeNodesRules {
 
 }
 /**
-* Class PVEItemRulesFirewallNodeNodesPos
-*/
+ * Class PVEItemRulesFirewallNodeNodesPos
+ */
 class PVEItemRulesFirewallNodeNodesPos {
   #node;
   #pos;
@@ -13709,8 +14057,8 @@ class PVEItemRulesFirewallNodeNodesPos {
 }
 
 /**
-* Class PVEFirewallNodeNodesOptions
-*/
+ * Class PVEFirewallNodeNodesOptions
+ */
 class PVEFirewallNodeNodesOptions {
   #node;
   /** @type {PveClient} */
@@ -13783,8 +14131,8 @@ class PVEFirewallNodeNodesOptions {
 }
 
 /**
-* Class PVEFirewallNodeNodesLog
-*/
+ * Class PVEFirewallNodeNodesLog
+ */
 class PVEFirewallNodeNodesLog {
   #node;
   /** @type {PveClient} */
@@ -13814,8 +14162,8 @@ class PVEFirewallNodeNodesLog {
 }
 
 /**
-* Class PVENodeNodesReplication
-*/
+ * Class PVENodeNodesReplication
+ */
 class PVENodeNodesReplication {
   #node;
   /** @type {PveClient} */
@@ -13828,10 +14176,10 @@ class PVENodeNodesReplication {
 
 
   /**
-  * Get ItemReplicationNodeNodesId
-  * @param id
-  * @returns {PVEItemReplicationNodeNodesId}
-  */
+   * Get ItemReplicationNodeNodesId
+   * @param id
+   * @returns {PVEItemReplicationNodeNodesId}
+   */
   get(id) { return new PVEItemReplicationNodeNodesId(this.#client, this.#node, id); }
 
   /**
@@ -13846,8 +14194,8 @@ class PVENodeNodesReplication {
 
 }
 /**
-* Class PVEItemReplicationNodeNodesId
-*/
+ * Class PVEItemReplicationNodeNodesId
+ */
 class PVEItemReplicationNodeNodesId {
   #node;
   #id;
@@ -13862,21 +14210,21 @@ class PVEItemReplicationNodeNodesId {
 
   #status;
   /**
-  * Get IdReplicationNodeNodesStatus
-  * @returns {PVEIdReplicationNodeNodesStatus}
-  */
+   * Get IdReplicationNodeNodesStatus
+   * @returns {PVEIdReplicationNodeNodesStatus}
+   */
   get status() { return this.#status == null ? (this.#status = new PVEIdReplicationNodeNodesStatus(this.#client, this.#node, this.#id)) : this.#status; }
   #log;
   /**
-  * Get IdReplicationNodeNodesLog
-  * @returns {PVEIdReplicationNodeNodesLog}
-  */
+   * Get IdReplicationNodeNodesLog
+   * @returns {PVEIdReplicationNodeNodesLog}
+   */
   get log() { return this.#log == null ? (this.#log = new PVEIdReplicationNodeNodesLog(this.#client, this.#node, this.#id)) : this.#log; }
   #scheduleNow;
   /**
-  * Get IdReplicationNodeNodesScheduleNow
-  * @returns {PVEIdReplicationNodeNodesScheduleNow}
-  */
+   * Get IdReplicationNodeNodesScheduleNow
+   * @returns {PVEIdReplicationNodeNodesScheduleNow}
+   */
   get scheduleNow() { return this.#scheduleNow == null ? (this.#scheduleNow = new PVEIdReplicationNodeNodesScheduleNow(this.#client, this.#node, this.#id)) : this.#scheduleNow; }
 
 
@@ -13890,8 +14238,8 @@ class PVEItemReplicationNodeNodesId {
 
 }
 /**
-* Class PVEIdReplicationNodeNodesStatus
-*/
+ * Class PVEIdReplicationNodeNodesStatus
+ */
 class PVEIdReplicationNodeNodesStatus {
   #node;
   #id;
@@ -13917,8 +14265,8 @@ class PVEIdReplicationNodeNodesStatus {
 }
 
 /**
-* Class PVEIdReplicationNodeNodesLog
-*/
+ * Class PVEIdReplicationNodeNodesLog
+ */
 class PVEIdReplicationNodeNodesLog {
   #node;
   #id;
@@ -13950,8 +14298,8 @@ class PVEIdReplicationNodeNodesLog {
 }
 
 /**
-* Class PVEIdReplicationNodeNodesScheduleNow
-*/
+ * Class PVEIdReplicationNodeNodesScheduleNow
+ */
 class PVEIdReplicationNodeNodesScheduleNow {
   #node;
   #id;
@@ -13977,8 +14325,8 @@ class PVEIdReplicationNodeNodesScheduleNow {
 }
 
 /**
-* Class PVENodeNodesCertificates
-*/
+ * Class PVENodeNodesCertificates
+ */
 class PVENodeNodesCertificates {
   #node;
   /** @type {PveClient} */
@@ -13991,21 +14339,21 @@ class PVENodeNodesCertificates {
 
   #acme;
   /**
-  * Get CertificatesNodeNodesAcme
-  * @returns {PVECertificatesNodeNodesAcme}
-  */
+   * Get CertificatesNodeNodesAcme
+   * @returns {PVECertificatesNodeNodesAcme}
+   */
   get acme() { return this.#acme == null ? (this.#acme = new PVECertificatesNodeNodesAcme(this.#client, this.#node)) : this.#acme; }
   #info;
   /**
-  * Get CertificatesNodeNodesInfo
-  * @returns {PVECertificatesNodeNodesInfo}
-  */
+   * Get CertificatesNodeNodesInfo
+   * @returns {PVECertificatesNodeNodesInfo}
+   */
   get info() { return this.#info == null ? (this.#info = new PVECertificatesNodeNodesInfo(this.#client, this.#node)) : this.#info; }
   #custom;
   /**
-  * Get CertificatesNodeNodesCustom
-  * @returns {PVECertificatesNodeNodesCustom}
-  */
+   * Get CertificatesNodeNodesCustom
+   * @returns {PVECertificatesNodeNodesCustom}
+   */
   get custom() { return this.#custom == null ? (this.#custom = new PVECertificatesNodeNodesCustom(this.#client, this.#node)) : this.#custom; }
 
 
@@ -14019,8 +14367,8 @@ class PVENodeNodesCertificates {
 
 }
 /**
-* Class PVECertificatesNodeNodesAcme
-*/
+ * Class PVECertificatesNodeNodesAcme
+ */
 class PVECertificatesNodeNodesAcme {
   #node;
   /** @type {PveClient} */
@@ -14033,9 +14381,9 @@ class PVECertificatesNodeNodesAcme {
 
   #certificate;
   /**
-  * Get AcmeCertificatesNodeNodesCertificate
-  * @returns {PVEAcmeCertificatesNodeNodesCertificate}
-  */
+   * Get AcmeCertificatesNodeNodesCertificate
+   * @returns {PVEAcmeCertificatesNodeNodesCertificate}
+   */
   get certificate() { return this.#certificate == null ? (this.#certificate = new PVEAcmeCertificatesNodeNodesCertificate(this.#client, this.#node)) : this.#certificate; }
 
 
@@ -14049,8 +14397,8 @@ class PVECertificatesNodeNodesAcme {
 
 }
 /**
-* Class PVEAcmeCertificatesNodeNodesCertificate
-*/
+ * Class PVEAcmeCertificatesNodeNodesCertificate
+ */
 class PVEAcmeCertificatesNodeNodesCertificate {
   #node;
   /** @type {PveClient} */
@@ -14092,8 +14440,8 @@ class PVEAcmeCertificatesNodeNodesCertificate {
 }
 
 /**
-* Class PVECertificatesNodeNodesInfo
-*/
+ * Class PVECertificatesNodeNodesInfo
+ */
 class PVECertificatesNodeNodesInfo {
   #node;
   /** @type {PveClient} */
@@ -14117,8 +14465,8 @@ class PVECertificatesNodeNodesInfo {
 }
 
 /**
-* Class PVECertificatesNodeNodesCustom
-*/
+ * Class PVECertificatesNodeNodesCustom
+ */
 class PVECertificatesNodeNodesCustom {
   #node;
   /** @type {PveClient} */
@@ -14161,8 +14509,8 @@ class PVECertificatesNodeNodesCustom {
 }
 
 /**
-* Class PVENodeNodesConfig
-*/
+ * Class PVENodeNodesConfig
+ */
 class PVENodeNodesConfig {
   #node;
   /** @type {PveClient} */
@@ -14212,8 +14560,8 @@ class PVENodeNodesConfig {
 }
 
 /**
-* Class PVENodeNodesSdn
-*/
+ * Class PVENodeNodesSdn
+ */
 class PVENodeNodesSdn {
   #node;
   /** @type {PveClient} */
@@ -14226,9 +14574,9 @@ class PVENodeNodesSdn {
 
   #zones;
   /**
-  * Get SdnNodeNodesZones
-  * @returns {PVESdnNodeNodesZones}
-  */
+   * Get SdnNodeNodesZones
+   * @returns {PVESdnNodeNodesZones}
+   */
   get zones() { return this.#zones == null ? (this.#zones = new PVESdnNodeNodesZones(this.#client, this.#node)) : this.#zones; }
 
 
@@ -14242,8 +14590,8 @@ class PVENodeNodesSdn {
 
 }
 /**
-* Class PVESdnNodeNodesZones
-*/
+ * Class PVESdnNodeNodesZones
+ */
 class PVESdnNodeNodesZones {
   #node;
   /** @type {PveClient} */
@@ -14256,10 +14604,10 @@ class PVESdnNodeNodesZones {
 
 
   /**
-  * Get ItemZonesSdnNodeNodesZone
-  * @param zone
-  * @returns {PVEItemZonesSdnNodeNodesZone}
-  */
+   * Get ItemZonesSdnNodeNodesZone
+   * @param zone
+   * @returns {PVEItemZonesSdnNodeNodesZone}
+   */
   get(zone) { return new PVEItemZonesSdnNodeNodesZone(this.#client, this.#node, zone); }
 
   /**
@@ -14272,8 +14620,8 @@ class PVESdnNodeNodesZones {
 
 }
 /**
-* Class PVEItemZonesSdnNodeNodesZone
-*/
+ * Class PVEItemZonesSdnNodeNodesZone
+ */
 class PVEItemZonesSdnNodeNodesZone {
   #node;
   #zone;
@@ -14288,9 +14636,9 @@ class PVEItemZonesSdnNodeNodesZone {
 
   #content;
   /**
-  * Get ZoneZonesSdnNodeNodesContent
-  * @returns {PVEZoneZonesSdnNodeNodesContent}
-  */
+   * Get ZoneZonesSdnNodeNodesContent
+   * @returns {PVEZoneZonesSdnNodeNodesContent}
+   */
   get content() { return this.#content == null ? (this.#content = new PVEZoneZonesSdnNodeNodesContent(this.#client, this.#node, this.#zone)) : this.#content; }
 
 
@@ -14304,8 +14652,8 @@ class PVEItemZonesSdnNodeNodesZone {
 
 }
 /**
-* Class PVEZoneZonesSdnNodeNodesContent
-*/
+ * Class PVEZoneZonesSdnNodeNodesContent
+ */
 class PVEZoneZonesSdnNodeNodesContent {
   #node;
   #zone;
@@ -14331,8 +14679,8 @@ class PVEZoneZonesSdnNodeNodesContent {
 }
 
 /**
-* Class PVENodeNodesVersion
-*/
+ * Class PVENodeNodesVersion
+ */
 class PVENodeNodesVersion {
   #node;
   /** @type {PveClient} */
@@ -14356,8 +14704,8 @@ class PVENodeNodesVersion {
 }
 
 /**
-* Class PVENodeNodesStatus
-*/
+ * Class PVENodeNodesStatus
+ */
 class PVENodeNodesStatus {
   #node;
   /** @type {PveClient} */
@@ -14391,8 +14739,8 @@ class PVENodeNodesStatus {
 }
 
 /**
-* Class PVENodeNodesNetstat
-*/
+ * Class PVENodeNodesNetstat
+ */
 class PVENodeNodesNetstat {
   #node;
   /** @type {PveClient} */
@@ -14416,8 +14764,8 @@ class PVENodeNodesNetstat {
 }
 
 /**
-* Class PVENodeNodesExecute
-*/
+ * Class PVENodeNodesExecute
+ */
 class PVENodeNodesExecute {
   #node;
   /** @type {PveClient} */
@@ -14443,8 +14791,8 @@ class PVENodeNodesExecute {
 }
 
 /**
-* Class PVENodeNodesWakeonlan
-*/
+ * Class PVENodeNodesWakeonlan
+ */
 class PVENodeNodesWakeonlan {
   #node;
   /** @type {PveClient} */
@@ -14468,8 +14816,8 @@ class PVENodeNodesWakeonlan {
 }
 
 /**
-* Class PVENodeNodesRrd
-*/
+ * Class PVENodeNodesRrd
+ */
 class PVENodeNodesRrd {
   #node;
   /** @type {PveClient} */
@@ -14503,8 +14851,8 @@ class PVENodeNodesRrd {
 }
 
 /**
-* Class PVENodeNodesRrddata
-*/
+ * Class PVENodeNodesRrddata
+ */
 class PVENodeNodesRrddata {
   #node;
   /** @type {PveClient} */
@@ -14536,8 +14884,8 @@ class PVENodeNodesRrddata {
 }
 
 /**
-* Class PVENodeNodesSyslog
-*/
+ * Class PVENodeNodesSyslog
+ */
 class PVENodeNodesSyslog {
   #node;
   /** @type {PveClient} */
@@ -14573,8 +14921,8 @@ class PVENodeNodesSyslog {
 }
 
 /**
-* Class PVENodeNodesJournal
-*/
+ * Class PVENodeNodesJournal
+ */
 class PVENodeNodesJournal {
   #node;
   /** @type {PveClient} */
@@ -14610,8 +14958,8 @@ class PVENodeNodesJournal {
 }
 
 /**
-* Class PVENodeNodesVncshell
-*/
+ * Class PVENodeNodesVncshell
+ */
 class PVENodeNodesVncshell {
   #node;
   /** @type {PveClient} */
@@ -14627,7 +14975,7 @@ class PVENodeNodesVncshell {
   /**
   * Creates a VNC Shell proxy.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,upgrade,login
+  *   Enum: ceph_install,login,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {int} height sets the height of the console in pixels.
   * @param {bool} websocket use websocket instead of standard vnc.
@@ -14648,8 +14996,8 @@ class PVENodeNodesVncshell {
 }
 
 /**
-* Class PVENodeNodesTermproxy
-*/
+ * Class PVENodeNodesTermproxy
+ */
 class PVENodeNodesTermproxy {
   #node;
   /** @type {PveClient} */
@@ -14665,7 +15013,7 @@ class PVENodeNodesTermproxy {
   /**
   * Creates a VNC Shell proxy.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,upgrade,login
+  *   Enum: ceph_install,login,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @returns {Result}
   */
@@ -14680,8 +15028,8 @@ class PVENodeNodesTermproxy {
 }
 
 /**
-* Class PVENodeNodesVncwebsocket
-*/
+ * Class PVENodeNodesVncwebsocket
+ */
 class PVENodeNodesVncwebsocket {
   #node;
   /** @type {PveClient} */
@@ -14711,8 +15059,8 @@ class PVENodeNodesVncwebsocket {
 }
 
 /**
-* Class PVENodeNodesSpiceshell
-*/
+ * Class PVENodeNodesSpiceshell
+ */
 class PVENodeNodesSpiceshell {
   #node;
   /** @type {PveClient} */
@@ -14728,7 +15076,7 @@ class PVENodeNodesSpiceshell {
   /**
   * Creates a SPICE shell.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,upgrade,login
+  *   Enum: ceph_install,login,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {string} proxy SPICE proxy server. This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As reasonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).
   * @returns {Result}
@@ -14745,8 +15093,8 @@ class PVENodeNodesSpiceshell {
 }
 
 /**
-* Class PVENodeNodesDns
-*/
+ * Class PVENodeNodesDns
+ */
 class PVENodeNodesDns {
   #node;
   /** @type {PveClient} */
@@ -14787,8 +15135,8 @@ class PVENodeNodesDns {
 }
 
 /**
-* Class PVENodeNodesTime
-*/
+ * Class PVENodeNodesTime
+ */
 class PVENodeNodesTime {
   #node;
   /** @type {PveClient} */
@@ -14821,8 +15169,8 @@ class PVENodeNodesTime {
 }
 
 /**
-* Class PVENodeNodesAplinfo
-*/
+ * Class PVENodeNodesAplinfo
+ */
 class PVENodeNodesAplinfo {
   #node;
   /** @type {PveClient} */
@@ -14859,8 +15207,8 @@ class PVENodeNodesAplinfo {
 }
 
 /**
-* Class PVENodeNodesQueryUrlMetadata
-*/
+ * Class PVENodeNodesQueryUrlMetadata
+ */
 class PVENodeNodesQueryUrlMetadata {
   #node;
   /** @type {PveClient} */
@@ -14890,8 +15238,8 @@ class PVENodeNodesQueryUrlMetadata {
 }
 
 /**
-* Class PVENodeNodesReport
-*/
+ * Class PVENodeNodesReport
+ */
 class PVENodeNodesReport {
   #node;
   /** @type {PveClient} */
@@ -14915,8 +15263,8 @@ class PVENodeNodesReport {
 }
 
 /**
-* Class PVENodeNodesStartall
-*/
+ * Class PVENodeNodesStartall
+ */
 class PVENodeNodesStartall {
   #node;
   /** @type {PveClient} */
@@ -14946,8 +15294,8 @@ class PVENodeNodesStartall {
 }
 
 /**
-* Class PVENodeNodesStopall
-*/
+ * Class PVENodeNodesStopall
+ */
 class PVENodeNodesStopall {
   #node;
   /** @type {PveClient} */
@@ -14973,8 +15321,8 @@ class PVENodeNodesStopall {
 }
 
 /**
-* Class PVENodeNodesMigrateall
-*/
+ * Class PVENodeNodesMigrateall
+ */
 class PVENodeNodesMigrateall {
   #node;
   /** @type {PveClient} */
@@ -15008,8 +15356,8 @@ class PVENodeNodesMigrateall {
 }
 
 /**
-* Class PVENodeNodesHosts
-*/
+ * Class PVENodeNodesHosts
+ */
 class PVENodeNodesHosts {
   #node;
   /** @type {PveClient} */
@@ -15046,8 +15394,8 @@ class PVENodeNodesHosts {
 }
 
 /**
-* Class PVEStorage
-*/
+ * Class PVEStorage
+ */
 class PVEStorage {
 
   /** @type {PveClient} */
@@ -15060,10 +15408,10 @@ class PVEStorage {
 
 
   /**
-  * Get ItemStorageStorage
-  * @param storage
-  * @returns {PVEItemStorageStorage}
-  */
+   * Get ItemStorageStorage
+   * @param storage
+   * @returns {PVEItemStorageStorage}
+   */
   get(storage) { return new PVEItemStorageStorage(this.#client, storage); }
 
   /**
@@ -15109,7 +15457,7 @@ class PVEStorage {
   * @param {bool} mkdir Create the directory if it doesn't exist.
   * @param {string} monhost IP addresses of monitors (for external clusters).
   * @param {string} mountpoint mount point
-  * @param {string} namespace RBD Namespace.
+  * @param {string} namespace Namespace.
   * @param {bool} nocow Set the NOCOW flag on files. Disables data checksumming and causes data errors to be unrecoverable from while allowing direct I/O. Only use this if data does not need to be any more safe than on a single ext4 formatted disk with no underlying raid system.
   * @param {string} nodes List of cluster node names.
   * @param {bool} nowritecache disable write caching on the target
@@ -15208,8 +15556,8 @@ class PVEStorage {
 
 }
 /**
-* Class PVEItemStorageStorage
-*/
+ * Class PVEItemStorageStorage
+ */
 class PVEItemStorageStorage {
   #storage;
   /** @type {PveClient} */
@@ -15263,7 +15611,7 @@ class PVEItemStorageStorage {
   * @param {bool} mkdir Create the directory if it doesn't exist.
   * @param {string} monhost IP addresses of monitors (for external clusters).
   * @param {string} mountpoint mount point
-  * @param {string} namespace RBD Namespace.
+  * @param {string} namespace Namespace.
   * @param {bool} nocow Set the NOCOW flag on files. Disables data checksumming and causes data errors to be unrecoverable from while allowing direct I/O. Only use this if data does not need to be any more safe than on a single ext4 formatted disk with no underlying raid system.
   * @param {string} nodes List of cluster node names.
   * @param {bool} nowritecache disable write caching on the target
@@ -15344,8 +15692,8 @@ class PVEItemStorageStorage {
 }
 
 /**
-* Class PVEAccess
-*/
+ * Class PVEAccess
+ */
 class PVEAccess {
 
   /** @type {PveClient} */
@@ -15358,63 +15706,63 @@ class PVEAccess {
 
   #users;
   /**
-  * Get AccessUsers
-  * @returns {PVEAccessUsers}
-  */
+   * Get AccessUsers
+   * @returns {PVEAccessUsers}
+   */
   get users() { return this.#users == null ? (this.#users = new PVEAccessUsers(this.#client)) : this.#users; }
   #groups;
   /**
-  * Get AccessGroups
-  * @returns {PVEAccessGroups}
-  */
+   * Get AccessGroups
+   * @returns {PVEAccessGroups}
+   */
   get groups() { return this.#groups == null ? (this.#groups = new PVEAccessGroups(this.#client)) : this.#groups; }
   #roles;
   /**
-  * Get AccessRoles
-  * @returns {PVEAccessRoles}
-  */
+   * Get AccessRoles
+   * @returns {PVEAccessRoles}
+   */
   get roles() { return this.#roles == null ? (this.#roles = new PVEAccessRoles(this.#client)) : this.#roles; }
   #acl;
   /**
-  * Get AccessAcl
-  * @returns {PVEAccessAcl}
-  */
+   * Get AccessAcl
+   * @returns {PVEAccessAcl}
+   */
   get acl() { return this.#acl == null ? (this.#acl = new PVEAccessAcl(this.#client)) : this.#acl; }
   #domains;
   /**
-  * Get AccessDomains
-  * @returns {PVEAccessDomains}
-  */
+   * Get AccessDomains
+   * @returns {PVEAccessDomains}
+   */
   get domains() { return this.#domains == null ? (this.#domains = new PVEAccessDomains(this.#client)) : this.#domains; }
   #openid;
   /**
-  * Get AccessOpenid
-  * @returns {PVEAccessOpenid}
-  */
+   * Get AccessOpenid
+   * @returns {PVEAccessOpenid}
+   */
   get openid() { return this.#openid == null ? (this.#openid = new PVEAccessOpenid(this.#client)) : this.#openid; }
   #tfa;
   /**
-  * Get AccessTfa
-  * @returns {PVEAccessTfa}
-  */
+   * Get AccessTfa
+   * @returns {PVEAccessTfa}
+   */
   get tfa() { return this.#tfa == null ? (this.#tfa = new PVEAccessTfa(this.#client)) : this.#tfa; }
   #ticket;
   /**
-  * Get AccessTicket
-  * @returns {PVEAccessTicket}
-  */
+   * Get AccessTicket
+   * @returns {PVEAccessTicket}
+   */
   get ticket() { return this.#ticket == null ? (this.#ticket = new PVEAccessTicket(this.#client)) : this.#ticket; }
   #password;
   /**
-  * Get AccessPassword
-  * @returns {PVEAccessPassword}
-  */
+   * Get AccessPassword
+   * @returns {PVEAccessPassword}
+   */
   get password() { return this.#password == null ? (this.#password = new PVEAccessPassword(this.#client)) : this.#password; }
   #permissions;
   /**
-  * Get AccessPermissions
-  * @returns {PVEAccessPermissions}
-  */
+   * Get AccessPermissions
+   * @returns {PVEAccessPermissions}
+   */
   get permissions() { return this.#permissions == null ? (this.#permissions = new PVEAccessPermissions(this.#client)) : this.#permissions; }
 
 
@@ -15428,8 +15776,8 @@ class PVEAccess {
 
 }
 /**
-* Class PVEAccessUsers
-*/
+ * Class PVEAccessUsers
+ */
 class PVEAccessUsers {
 
   /** @type {PveClient} */
@@ -15442,10 +15790,10 @@ class PVEAccessUsers {
 
 
   /**
-  * Get ItemUsersAccessUserid
-  * @param userid
-  * @returns {PVEItemUsersAccessUserid}
-  */
+   * Get ItemUsersAccessUserid
+   * @param userid
+   * @returns {PVEItemUsersAccessUserid}
+   */
   get(userid) { return new PVEItemUsersAccessUserid(this.#client, userid); }
 
   /**
@@ -15493,8 +15841,8 @@ class PVEAccessUsers {
 
 }
 /**
-* Class PVEItemUsersAccessUserid
-*/
+ * Class PVEItemUsersAccessUserid
+ */
 class PVEItemUsersAccessUserid {
   #userid;
   /** @type {PveClient} */
@@ -15507,15 +15855,15 @@ class PVEItemUsersAccessUserid {
 
   #tfa;
   /**
-  * Get UseridUsersAccessTfa
-  * @returns {PVEUseridUsersAccessTfa}
-  */
+   * Get UseridUsersAccessTfa
+   * @returns {PVEUseridUsersAccessTfa}
+   */
   get tfa() { return this.#tfa == null ? (this.#tfa = new PVEUseridUsersAccessTfa(this.#client, this.#userid)) : this.#tfa; }
   #token;
   /**
-  * Get UseridUsersAccessToken
-  * @returns {PVEUseridUsersAccessToken}
-  */
+   * Get UseridUsersAccessToken
+   * @returns {PVEUseridUsersAccessToken}
+   */
   get token() { return this.#token == null ? (this.#token = new PVEUseridUsersAccessToken(this.#client, this.#userid)) : this.#token; }
 
 
@@ -15563,8 +15911,8 @@ class PVEItemUsersAccessUserid {
 
 }
 /**
-* Class PVEUseridUsersAccessTfa
-*/
+ * Class PVEUseridUsersAccessTfa
+ */
 class PVEUseridUsersAccessTfa {
   #userid;
   /** @type {PveClient} */
@@ -15590,8 +15938,8 @@ class PVEUseridUsersAccessTfa {
 }
 
 /**
-* Class PVEUseridUsersAccessToken
-*/
+ * Class PVEUseridUsersAccessToken
+ */
 class PVEUseridUsersAccessToken {
   #userid;
   /** @type {PveClient} */
@@ -15604,10 +15952,10 @@ class PVEUseridUsersAccessToken {
 
 
   /**
-  * Get ItemTokenUseridUsersAccessTokenid
-  * @param tokenid
-  * @returns {PVEItemTokenUseridUsersAccessTokenid}
-  */
+   * Get ItemTokenUseridUsersAccessTokenid
+   * @param tokenid
+   * @returns {PVEItemTokenUseridUsersAccessTokenid}
+   */
   get(tokenid) { return new PVEItemTokenUseridUsersAccessTokenid(this.#client, this.#userid, tokenid); }
 
   /**
@@ -15620,8 +15968,8 @@ class PVEUseridUsersAccessToken {
 
 }
 /**
-* Class PVEItemTokenUseridUsersAccessTokenid
-*/
+ * Class PVEItemTokenUseridUsersAccessTokenid
+ */
 class PVEItemTokenUseridUsersAccessTokenid {
   #userid;
   #tokenid;
@@ -15684,8 +16032,8 @@ class PVEItemTokenUseridUsersAccessTokenid {
 }
 
 /**
-* Class PVEAccessGroups
-*/
+ * Class PVEAccessGroups
+ */
 class PVEAccessGroups {
 
   /** @type {PveClient} */
@@ -15698,10 +16046,10 @@ class PVEAccessGroups {
 
 
   /**
-  * Get ItemGroupsAccessGroupid
-  * @param groupid
-  * @returns {PVEItemGroupsAccessGroupid}
-  */
+   * Get ItemGroupsAccessGroupid
+   * @param groupid
+   * @returns {PVEItemGroupsAccessGroupid}
+   */
   get(groupid) { return new PVEItemGroupsAccessGroupid(this.#client, groupid); }
 
   /**
@@ -15727,8 +16075,8 @@ class PVEAccessGroups {
 
 }
 /**
-* Class PVEItemGroupsAccessGroupid
-*/
+ * Class PVEItemGroupsAccessGroupid
+ */
 class PVEItemGroupsAccessGroupid {
   #groupid;
   /** @type {PveClient} */
@@ -15768,8 +16116,8 @@ class PVEItemGroupsAccessGroupid {
 }
 
 /**
-* Class PVEAccessRoles
-*/
+ * Class PVEAccessRoles
+ */
 class PVEAccessRoles {
 
   /** @type {PveClient} */
@@ -15782,10 +16130,10 @@ class PVEAccessRoles {
 
 
   /**
-  * Get ItemRolesAccessRoleid
-  * @param roleid
-  * @returns {PVEItemRolesAccessRoleid}
-  */
+   * Get ItemRolesAccessRoleid
+   * @param roleid
+   * @returns {PVEItemRolesAccessRoleid}
+   */
   get(roleid) { return new PVEItemRolesAccessRoleid(this.#client, roleid); }
 
   /**
@@ -15811,8 +16159,8 @@ class PVEAccessRoles {
 
 }
 /**
-* Class PVEItemRolesAccessRoleid
-*/
+ * Class PVEItemRolesAccessRoleid
+ */
 class PVEItemRolesAccessRoleid {
   #roleid;
   /** @type {PveClient} */
@@ -15856,8 +16204,8 @@ class PVEItemRolesAccessRoleid {
 }
 
 /**
-* Class PVEAccessAcl
-*/
+ * Class PVEAccessAcl
+ */
 class PVEAccessAcl {
 
   /** @type {PveClient} */
@@ -15904,8 +16252,8 @@ class PVEAccessAcl {
 }
 
 /**
-* Class PVEAccessDomains
-*/
+ * Class PVEAccessDomains
+ */
 class PVEAccessDomains {
 
   /** @type {PveClient} */
@@ -15918,10 +16266,10 @@ class PVEAccessDomains {
 
 
   /**
-  * Get ItemDomainsAccessRealm
-  * @param realm
-  * @returns {PVEItemDomainsAccessRealm}
-  */
+   * Get ItemDomainsAccessRealm
+   * @param realm
+   * @returns {PVEItemDomainsAccessRealm}
+   */
   get(realm) { return new PVEItemDomainsAccessRealm(this.#client, realm); }
 
   /**
@@ -16020,8 +16368,8 @@ class PVEAccessDomains {
 
 }
 /**
-* Class PVEItemDomainsAccessRealm
-*/
+ * Class PVEItemDomainsAccessRealm
+ */
 class PVEItemDomainsAccessRealm {
   #realm;
   /** @type {PveClient} */
@@ -16034,9 +16382,9 @@ class PVEItemDomainsAccessRealm {
 
   #sync;
   /**
-  * Get RealmDomainsAccessSync
-  * @returns {PVERealmDomainsAccessSync}
-  */
+   * Get RealmDomainsAccessSync
+   * @returns {PVERealmDomainsAccessSync}
+   */
   get sync() { return this.#sync == null ? (this.#sync = new PVERealmDomainsAccessSync(this.#client, this.#realm)) : this.#sync; }
 
 
@@ -16140,8 +16488,8 @@ class PVEItemDomainsAccessRealm {
 
 }
 /**
-* Class PVERealmDomainsAccessSync
-*/
+ * Class PVERealmDomainsAccessSync
+ */
 class PVERealmDomainsAccessSync {
   #realm;
   /** @type {PveClient} */
@@ -16180,8 +16528,8 @@ class PVERealmDomainsAccessSync {
 }
 
 /**
-* Class PVEAccessOpenid
-*/
+ * Class PVEAccessOpenid
+ */
 class PVEAccessOpenid {
 
   /** @type {PveClient} */
@@ -16194,15 +16542,15 @@ class PVEAccessOpenid {
 
   #authUrl;
   /**
-  * Get OpenidAccessAuthUrl
-  * @returns {PVEOpenidAccessAuthUrl}
-  */
+   * Get OpenidAccessAuthUrl
+   * @returns {PVEOpenidAccessAuthUrl}
+   */
   get authUrl() { return this.#authUrl == null ? (this.#authUrl = new PVEOpenidAccessAuthUrl(this.#client)) : this.#authUrl; }
   #login;
   /**
-  * Get OpenidAccessLogin
-  * @returns {PVEOpenidAccessLogin}
-  */
+   * Get OpenidAccessLogin
+   * @returns {PVEOpenidAccessLogin}
+   */
   get login() { return this.#login == null ? (this.#login = new PVEOpenidAccessLogin(this.#client)) : this.#login; }
 
 
@@ -16216,8 +16564,8 @@ class PVEAccessOpenid {
 
 }
 /**
-* Class PVEOpenidAccessAuthUrl
-*/
+ * Class PVEOpenidAccessAuthUrl
+ */
 class PVEOpenidAccessAuthUrl {
 
   /** @type {PveClient} */
@@ -16247,8 +16595,8 @@ class PVEOpenidAccessAuthUrl {
 }
 
 /**
-* Class PVEOpenidAccessLogin
-*/
+ * Class PVEOpenidAccessLogin
+ */
 class PVEOpenidAccessLogin {
 
   /** @type {PveClient} */
@@ -16280,8 +16628,8 @@ class PVEOpenidAccessLogin {
 }
 
 /**
-* Class PVEAccessTfa
-*/
+ * Class PVEAccessTfa
+ */
 class PVEAccessTfa {
 
   /** @type {PveClient} */
@@ -16294,10 +16642,10 @@ class PVEAccessTfa {
 
 
   /**
-  * Get ItemTfaAccessUserid
-  * @param userid
-  * @returns {PVEItemTfaAccessUserid}
-  */
+   * Get ItemTfaAccessUserid
+   * @param userid
+   * @returns {PVEItemTfaAccessUserid}
+   */
   get(userid) { return new PVEItemTfaAccessUserid(this.#client, userid); }
 
   /**
@@ -16319,8 +16667,8 @@ class PVEAccessTfa {
 
 }
 /**
-* Class PVEItemTfaAccessUserid
-*/
+ * Class PVEItemTfaAccessUserid
+ */
 class PVEItemTfaAccessUserid {
   #userid;
   /** @type {PveClient} */
@@ -16333,10 +16681,10 @@ class PVEItemTfaAccessUserid {
 
 
   /**
-  * Get ItemUseridTfaAccessId
-  * @param id
-  * @returns {PVEItemUseridTfaAccessId}
-  */
+   * Get ItemUseridTfaAccessId
+   * @param id
+   * @returns {PVEItemUseridTfaAccessId}
+   */
   get(id) { return new PVEItemUseridTfaAccessId(this.#client, this.#userid, id); }
 
   /**
@@ -16371,8 +16719,8 @@ class PVEItemTfaAccessUserid {
 
 }
 /**
-* Class PVEItemUseridTfaAccessId
-*/
+ * Class PVEItemUseridTfaAccessId
+ */
 class PVEItemUseridTfaAccessId {
   #userid;
   #id;
@@ -16422,8 +16770,8 @@ class PVEItemUseridTfaAccessId {
 }
 
 /**
-* Class PVEAccessTicket
-*/
+ * Class PVEAccessTicket
+ */
 class PVEAccessTicket {
 
   /** @type {PveClient} */
@@ -16472,8 +16820,8 @@ class PVEAccessTicket {
 }
 
 /**
-* Class PVEAccessPassword
-*/
+ * Class PVEAccessPassword
+ */
 class PVEAccessPassword {
 
   /** @type {PveClient} */
@@ -16503,8 +16851,8 @@ class PVEAccessPassword {
 }
 
 /**
-* Class PVEAccessPermissions
-*/
+ * Class PVEAccessPermissions
+ */
 class PVEAccessPermissions {
 
   /** @type {PveClient} */
@@ -16534,8 +16882,8 @@ class PVEAccessPermissions {
 }
 
 /**
-* Class PVEPools
-*/
+ * Class PVEPools
+ */
 class PVEPools {
 
   /** @type {PveClient} */
@@ -16548,10 +16896,10 @@ class PVEPools {
 
 
   /**
-  * Get ItemPoolsPoolid
-  * @param poolid
-  * @returns {PVEItemPoolsPoolid}
-  */
+   * Get ItemPoolsPoolid
+   * @param poolid
+   * @returns {PVEItemPoolsPoolid}
+   */
   get(poolid) { return new PVEItemPoolsPoolid(this.#client, poolid); }
 
   /**
@@ -16577,8 +16925,8 @@ class PVEPools {
 
 }
 /**
-* Class PVEItemPoolsPoolid
-*/
+ * Class PVEItemPoolsPoolid
+ */
 class PVEItemPoolsPoolid {
   #poolid;
   /** @type {PveClient} */
@@ -16629,8 +16977,8 @@ class PVEItemPoolsPoolid {
 }
 
 /**
-* Class PVEVersion
-*/
+ * Class PVEVersion
+ */
 class PVEVersion {
 
   /** @type {PveClient} */
