@@ -1,6 +1,6 @@
 # cv4pve-api-javascript
 
-Proxmox VE Client API Java
+Proxmox VE Client API Javascript
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-api-javascript.svg)](LICENSE.md) ![GitHub release](https://img.shields.io/github/release/Corsinvest/cv4pve-api-javascript.svg)
 
