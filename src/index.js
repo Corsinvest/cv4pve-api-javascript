@@ -2772,7 +2772,7 @@ class PVEAcmeClusterPlugins {
   * @param {string} type ACME challenge type.
   *   Enum: dns,standalone
   * @param {string} api API plugin name
-  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,cf,clouddns,cloudns,cn,conoha,constellix,cx,cyon,da,ddnss,desec,df,dgon,dnsimple,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,freedns,gandi_livedns,gcloud,gd,gdnsdk,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ispconfig,jd,joker,kappernet,kas,kinghost,knot,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,namecheap,namecom,namesilo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rcode0,regru,scaleway,schlundtech,selectel,servercow,simply,tele3,transip,ultra,unoeuro,variomedia,veesp,vscale,vultr,websupport,world4you,yandex,zilore,zone,zonomi
+  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gd,geoscaling,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
   * @param {string} data DNS plugin data. (base64 encoded)
   * @param {bool} disable Flag to disable the config.
   * @param {string} nodes List of cluster node names.
@@ -2825,7 +2825,7 @@ class PVEItemPluginsAcmeClusterId {
   /**
   * Update ACME plugin configuration.
   * @param {string} api API plugin name
-  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,cf,clouddns,cloudns,cn,conoha,constellix,cx,cyon,da,ddnss,desec,df,dgon,dnsimple,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,freedns,gandi_livedns,gcloud,gd,gdnsdk,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ispconfig,jd,joker,kappernet,kas,kinghost,knot,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,namecheap,namecom,namesilo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rcode0,regru,scaleway,schlundtech,selectel,servercow,simply,tele3,transip,ultra,unoeuro,variomedia,veesp,vscale,vultr,websupport,world4you,yandex,zilore,zone,zonomi
+  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gd,geoscaling,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
   * @param {string} data DNS plugin data. (base64 encoded)
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -4225,6 +4225,7 @@ class PVEClusterOptions {
   * @param {string} migration For cluster wide migration settings.
   * @param {bool} migration_unsecure Migration is secure using SSH tunnel by default. For secure private networks you can disable it to speed up migration. Deprecated, use the 'migration' property instead!
   * @param {string} next_id Control the range for the free VMID auto-selection pool.
+  * @param {string} notify Cluster-wide notification settings.
   * @param {string} registered_tags A list of tags that require a `Sys.Modify` on '/' to set and delete. Tags set here that are also in 'user-tag-access' also require `Sys.Modify`.
   * @param {string} tag_style Tag style options.
   * @param {string} u2f u2f
@@ -4232,7 +4233,7 @@ class PVEClusterOptions {
   * @param {string} webauthn webauthn configuration
   * @returns {Result}
   */
-  async setOptions(bwlimit, console, crs, delete_, description, email_from, fencing, ha, http_proxy, keyboard, language, mac_prefix, max_workers, migration, migration_unsecure, next_id, registered_tags, tag_style, u2f, user_tag_access, webauthn) {
+  async setOptions(bwlimit, console, crs, delete_, description, email_from, fencing, ha, http_proxy, keyboard, language, mac_prefix, max_workers, migration, migration_unsecure, next_id, notify, registered_tags, tag_style, u2f, user_tag_access, webauthn) {
     const parameters = {
       'bwlimit': bwlimit,
       'console': console,
@@ -4250,6 +4251,7 @@ class PVEClusterOptions {
       'migration': migration,
       'migration_unsecure': migration_unsecure,
       'next-id': next_id,
+      'notify': notify,
       'registered-tags': registered_tags,
       'tag-style': tag_style,
       'u2f': u2f,
@@ -4648,14 +4650,14 @@ class PVENodeNodesQemu {
   * @param {int} vmid The (unique) ID of the VM.
   * @param {bool} acpi Enable/disable ACPI.
   * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
-  * @param {string} agent Enable/disable communication with the Qemu Guest Agent and its properties.
+  * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
   * @param {string} arch Virtual processor architecture. Defaults to the host.
   *   Enum: x86_64,aarch64
   * @param {string} archive The backup archive. Either the file system path to a .tar or .vma file (use '-' to pipe data from stdin) or a proxmox storage backup volume identifier.
   * @param {string} args Arbitrary arguments passed to kvm.
   * @param {string} audio0 Configure a audio device, useful in combination with QXL/Spice.
   * @param {bool} autostart Automatic restart after crash (currently ignored).
-  * @param {int} balloon Amount of target RAM for the VM in MB. Using zero disables the ballon driver.
+  * @param {int} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
   * @param {string} bios Select BIOS implementation.
   *   Enum: seabios,ovmf
   * @param {string} boot Specify guest boot order. Use the 'order=' sub-property as usage with no key or 'legacy=' is deprecated.
@@ -4672,7 +4674,7 @@ class PVENodeNodesQemu {
   * @param {float} cpulimit Limit of CPU usage.
   * @param {int} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
   * @param {string} description Description for the VM. Shown in the web-interface VM's summary. This is saved as comment inside the configuration file.
-  * @param {string} efidisk0 Configure a Disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+  * @param {string} efidisk0 Configure a disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {bool} force Allow to overwrite existing VM.
   * @param {bool} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
   * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
@@ -4691,8 +4693,8 @@ class PVENodeNodesQemu {
   * @param {bool} localtime Set the real time clock (RTC) to local time. This is enabled by default if the `ostype` indicates a Microsoft Windows OS.
   * @param {string} lock Lock/unlock the VM.
   *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
-  * @param {string} machine Specifies the Qemu machine type.
-  * @param {int} memory Amount of RAM for the VM in MB. This is the maximum available memory when you use the balloon device.
+  * @param {string} machine Specifies the QEMU machine type.
+  * @param {int} memory Amount of RAM for the VM in MiB. This is the maximum available memory when you use the balloon device.
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
@@ -5587,13 +5589,17 @@ class PVEFirewallVmidQemuNodeNodesLog {
   /**
   * Read firewall log
   * @param {int} limit
+  * @param {int} since Display log since this UNIX epoch.
   * @param {int} start
+  * @param {int} until Display log until this UNIX epoch.
   * @returns {Result}
   */
-  async log(limit, start) {
+  async log(limit, since, start, until) {
     const parameters = {
       'limit': limit,
-      'start': start
+      'since': since,
+      'start': start,
+      'until': until
     };
     return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/log`, parameters);
   }
@@ -5798,14 +5804,14 @@ class PVEVmidQemuNodeNodesAgent {
 
 
   /**
-  * Qemu Agent command index.
+  * QEMU Guest Agent command index.
   * @returns {Result}
   */
   async index() {
     return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent`);
   }
   /**
-  * Execute Qemu Guest Agent commands.
+  * Execute QEMU Guest Agent commands.
   * @param {string} command The QGA command.
   *   Enum: fsfreeze-freeze,fsfreeze-status,fsfreeze-thaw,fstrim,get-fsinfo,get-host-name,get-memory-block-info,get-memory-blocks,get-osinfo,get-time,get-timezone,get-users,get-vcpus,info,network-get-interfaces,ping,shutdown,suspend-disk,suspend-hybrid,suspend-ram
   * @returns {Result}
@@ -6623,14 +6629,14 @@ class PVEVmidQemuNodeNodesConfig {
   * Set virtual machine options (asynchrounous API).
   * @param {bool} acpi Enable/disable ACPI.
   * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
-  * @param {string} agent Enable/disable communication with the Qemu Guest Agent and its properties.
+  * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
   * @param {string} arch Virtual processor architecture. Defaults to the host.
   *   Enum: x86_64,aarch64
   * @param {string} args Arbitrary arguments passed to kvm.
   * @param {string} audio0 Configure a audio device, useful in combination with QXL/Spice.
   * @param {bool} autostart Automatic restart after crash (currently ignored).
   * @param {int} background_delay Time to wait for the task to finish. We return 'null' if the task finish within that time.
-  * @param {int} balloon Amount of target RAM for the VM in MB. Using zero disables the ballon driver.
+  * @param {int} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
   * @param {string} bios Select BIOS implementation.
   *   Enum: seabios,ovmf
   * @param {string} boot Specify guest boot order. Use the 'order=' sub-property as usage with no key or 'legacy=' is deprecated.
@@ -6648,7 +6654,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} description Description for the VM. Shown in the web-interface VM's summary. This is saved as comment inside the configuration file.
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
-  * @param {string} efidisk0 Configure a Disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+  * @param {string} efidisk0 Configure a disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {bool} force Force physical removal. Without this, we simple remove the disk from the config file and create an additional configuration entry called 'unused[n]', which contains the volume ID. Unlink of unused[n] always cause physical removal.
   * @param {bool} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
   * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
@@ -6666,8 +6672,8 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {bool} localtime Set the real time clock (RTC) to local time. This is enabled by default if the `ostype` indicates a Microsoft Windows OS.
   * @param {string} lock Lock/unlock the VM.
   *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
-  * @param {string} machine Specifies the Qemu machine type.
-  * @param {int} memory Amount of RAM for the VM in MB. This is the maximum available memory when you use the balloon device.
+  * @param {string} machine Specifies the QEMU machine type.
+  * @param {int} memory Amount of RAM for the VM in MiB. This is the maximum available memory when you use the balloon device.
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
@@ -6804,13 +6810,13 @@ class PVEVmidQemuNodeNodesConfig {
   * Set virtual machine options (synchrounous API) - You should consider using the POST method instead for any actions involving hotplug or storage allocation.
   * @param {bool} acpi Enable/disable ACPI.
   * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
-  * @param {string} agent Enable/disable communication with the Qemu Guest Agent and its properties.
+  * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
   * @param {string} arch Virtual processor architecture. Defaults to the host.
   *   Enum: x86_64,aarch64
   * @param {string} args Arbitrary arguments passed to kvm.
   * @param {string} audio0 Configure a audio device, useful in combination with QXL/Spice.
   * @param {bool} autostart Automatic restart after crash (currently ignored).
-  * @param {int} balloon Amount of target RAM for the VM in MB. Using zero disables the ballon driver.
+  * @param {int} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
   * @param {string} bios Select BIOS implementation.
   *   Enum: seabios,ovmf
   * @param {string} boot Specify guest boot order. Use the 'order=' sub-property as usage with no key or 'legacy=' is deprecated.
@@ -6828,7 +6834,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} description Description for the VM. Shown in the web-interface VM's summary. This is saved as comment inside the configuration file.
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
-  * @param {string} efidisk0 Configure a Disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+  * @param {string} efidisk0 Configure a disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
   * @param {bool} force Force physical removal. Without this, we simple remove the disk from the config file and create an additional configuration entry called 'unused[n]', which contains the volume ID. Unlink of unused[n] always cause physical removal.
   * @param {bool} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
   * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
@@ -6846,8 +6852,8 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {bool} localtime Set the real time clock (RTC) to local time. This is enabled by default if the `ostype` indicates a Microsoft Windows OS.
   * @param {string} lock Lock/unlock the VM.
   *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
-  * @param {string} machine Specifies the Qemu machine type.
-  * @param {int} memory Amount of RAM for the VM in MB. This is the maximum available memory when you use the balloon device.
+  * @param {string} machine Specifies the QEMU machine type.
+  * @param {int} memory Amount of RAM for the VM in MiB. This is the maximum available memory when you use the balloon device.
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
@@ -7357,7 +7363,7 @@ class PVEStatusVmidQemuNodeNodesStart {
   /**
   * Start virtual machine.
   * @param {string} force_cpu Override QEMU's -cpu argument with the given string.
-  * @param {string} machine Specifies the Qemu machine type.
+  * @param {string} machine Specifies the QEMU machine type.
   * @param {string} migratedfrom The cluster node name.
   * @param {string} migration_network CIDR of the (sub) network that is used for migration.
   * @param {string} migration_type Migration traffic is encrypted using an SSH tunnel by default. On secure, completely private networks this can be disabled to increase performance.
@@ -7868,7 +7874,7 @@ class PVEVmidQemuNodeNodesMonitor {
 
 
   /**
-  * Execute Qemu monitor commands.
+  * Execute QEMU monitor commands.
   * @param {string} command The monitor command.
   * @returns {Result}
   */
@@ -8072,7 +8078,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesRollback {
 
   /**
   * Rollback VM state to specified snapshot.
-  * @param {bool} start Whether the VM should get started after rolling back successfully
+  * @param {bool} start Whether the VM should get started after rolling back successfully. (Note: VMs will be automatically started if the snapshot includes RAM.)
   * @returns {Result}
   */
   async rollback(start) {
@@ -8211,7 +8217,7 @@ class PVENodeNodesLxc {
   * @param {string} ostemplate The OS template or backup file.
   * @param {int} vmid The (unique) ID of the VM.
   * @param {string} arch OS architecture type.
-  *   Enum: amd64,i386,arm64,armhf
+  *   Enum: amd64,i386,arm64,armhf,riscv32,riscv64
   * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
   * @param {string} cmode Console mode. By default, the console command tries to open a connection to one of the available tty devices. By setting cmode to 'console' it tries to attach to /dev/console instead. If you set cmode to 'shell', it simply invokes a shell inside the container (no login).
   *   Enum: shell,console,tty
@@ -8497,7 +8503,7 @@ class PVEVmidLxcNodeNodesConfig {
   /**
   * Set container options.
   * @param {string} arch OS architecture type.
-  *   Enum: amd64,i386,arm64,armhf
+  *   Enum: amd64,i386,arm64,armhf,riscv32,riscv64
   * @param {string} cmode Console mode. By default, the console command tries to open a connection to one of the available tty devices. By setting cmode to 'console' it tries to attach to /dev/console instead. If you set cmode to 'shell', it simply invokes a shell inside the container (no login).
   *   Enum: shell,console,tty
   * @param {bool} console Attach a console device (/dev/console) to the container.
@@ -9574,13 +9580,17 @@ class PVEFirewallVmidLxcNodeNodesLog {
   /**
   * Read firewall log
   * @param {int} limit
+  * @param {int} since Display log since this UNIX epoch.
   * @param {int} start
+  * @param {int} until Display log until this UNIX epoch.
   * @returns {Result}
   */
-  async log(limit, start) {
+  async log(limit, since, start, until) {
     const parameters = {
       'limit': limit,
-      'start': start
+      'since': since,
+      'start': start,
+      'until': until
     };
     return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/log`, parameters);
   }
@@ -10198,6 +10208,12 @@ class PVENodeNodesCeph {
     this.#node = node;
   }
 
+  #cfg;
+  /**
+   * Get CephNodeNodesCfg
+   * @returns {PVECephNodeNodesCfg}
+   */
+  get cfg() { return this.#cfg == null ? (this.#cfg = new PVECephNodeNodesCfg(this.#client, this.#node)) : this.#cfg; }
   #osd;
   /**
    * Get CephNodeNodesOsd
@@ -10228,6 +10244,12 @@ class PVENodeNodesCeph {
    * @returns {PVECephNodeNodesFs}
    */
   get fs() { return this.#fs == null ? (this.#fs = new PVECephNodeNodesFs(this.#client, this.#node)) : this.#fs; }
+  #pool;
+  /**
+   * Get CephNodeNodesPool
+   * @returns {PVECephNodeNodesPool}
+   */
+  get pool() { return this.#pool == null ? (this.#pool = new PVECephNodeNodesPool(this.#client, this.#node)) : this.#pool; }
   #pools;
   /**
    * Get CephNodeNodesPools
@@ -10312,6 +10334,92 @@ class PVENodeNodesCeph {
 
 }
 /**
+ * Class PVECephNodeNodesCfg
+ */
+class PVECephNodeNodesCfg {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+  #raw;
+  /**
+   * Get CfgCephNodeNodesRaw
+   * @returns {PVECfgCephNodeNodesRaw}
+   */
+  get raw() { return this.#raw == null ? (this.#raw = new PVECfgCephNodeNodesRaw(this.#client, this.#node)) : this.#raw; }
+  #db;
+  /**
+   * Get CfgCephNodeNodesDb
+   * @returns {PVECfgCephNodeNodesDb}
+   */
+  get db() { return this.#db == null ? (this.#db = new PVECfgCephNodeNodesDb(this.#client, this.#node)) : this.#db; }
+
+
+  /**
+  * Directory index.
+  * @returns {Result}
+  */
+  async index() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cfg`);
+  }
+
+}
+/**
+ * Class PVECfgCephNodeNodesRaw
+ */
+class PVECfgCephNodeNodesRaw {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+
+
+  /**
+  * Get the Ceph configuration file.
+  * @returns {Result}
+  */
+  async raw() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cfg/raw`);
+  }
+
+}
+
+/**
+ * Class PVECfgCephNodeNodesDb
+ */
+class PVECfgCephNodeNodesDb {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+
+
+  /**
+  * Get the Ceph configuration database.
+  * @returns {Result}
+  */
+  async db() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cfg/db`);
+  }
+
+}
+
+/**
  * Class PVECephNodeNodesOsd
  */
 class PVECephNodeNodesOsd {
@@ -10379,6 +10487,18 @@ class PVEItemOsdCephNodeNodesOsdid {
     this.#osdid = osdid;
   }
 
+  #metadata;
+  /**
+   * Get OsdidOsdCephNodeNodesMetadata
+   * @returns {PVEOsdidOsdCephNodeNodesMetadata}
+   */
+  get metadata() { return this.#metadata == null ? (this.#metadata = new PVEOsdidOsdCephNodeNodesMetadata(this.#client, this.#node, this.#osdid)) : this.#metadata; }
+  #lvInfo;
+  /**
+   * Get OsdidOsdCephNodeNodesLvInfo
+   * @returns {PVEOsdidOsdCephNodeNodesLvInfo}
+   */
+  get lvInfo() { return this.#lvInfo == null ? (this.#lvInfo = new PVEOsdidOsdCephNodeNodesLvInfo(this.#client, this.#node, this.#osdid)) : this.#lvInfo; }
   #in;
   /**
    * Get OsdidOsdCephNodeNodesIn
@@ -10408,8 +10528,72 @@ class PVEItemOsdCephNodeNodesOsdid {
     const parameters = { 'cleanup': cleanup };
     return await this.#client.delete(`/nodes/${this.#node}/ceph/osd/${this.#osdid}`, parameters);
   }
+  /**
+  * OSD index.
+  * @returns {Result}
+  */
+  async osdindex() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/osd/${this.#osdid}`);
+  }
 
 }
+/**
+ * Class PVEOsdidOsdCephNodeNodesMetadata
+ */
+class PVEOsdidOsdCephNodeNodesMetadata {
+  #node;
+  #osdid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, osdid) {
+    this.#client = client;
+    this.#node = node;
+    this.#osdid = osdid;
+  }
+
+
+
+  /**
+  * Get OSD details
+  * @returns {Result}
+  */
+  async osddetails() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/osd/${this.#osdid}/metadata`);
+  }
+
+}
+
+/**
+ * Class PVEOsdidOsdCephNodeNodesLvInfo
+ */
+class PVEOsdidOsdCephNodeNodesLvInfo {
+  #node;
+  #osdid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, osdid) {
+    this.#client = client;
+    this.#node = node;
+    this.#osdid = osdid;
+  }
+
+
+
+  /**
+  * Get OSD volume details
+  * @param {string} type OSD device type
+  *   Enum: block,db,wal
+  * @returns {Result}
+  */
+  async osdvolume(type) {
+    const parameters = { 'type': type };
+    return await this.#client.get(`/nodes/${this.#node}/ceph/osd/${this.#osdid}/lv-info`, parameters);
+  }
+
+}
+
 /**
  * Class PVEOsdidOsdCephNodeNodesIn
  */
@@ -10753,6 +10937,176 @@ class PVEItemFsCephNodeNodesName {
 }
 
 /**
+ * Class PVECephNodeNodesPool
+ */
+class PVECephNodeNodesPool {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+
+  /**
+   * Get ItemPoolCephNodeNodesName
+   * @param name
+   * @returns {PVEItemPoolCephNodeNodesName}
+   */
+  get(name) { return new PVEItemPoolCephNodeNodesName(this.#client, this.#node, name); }
+
+  /**
+  * List all pools and their settings (which are settable by the POST/PUT endpoints).
+  * @returns {Result}
+  */
+  async lspools() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/pool`);
+  }
+  /**
+  * Create Ceph pool
+  * @param {string} name The name of the pool. It must be unique.
+  * @param {bool} add_storages Configure VM and CT storage using the new pool.
+  * @param {string} application The application of the pool.
+  *   Enum: rbd,cephfs,rgw
+  * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
+  * @param {string} erasure_coding Create an erasure coded pool for RBD with an accompaning replicated pool for metadata storage. With EC, the common ceph options 'size', 'min_size' and 'crush_rule' parameters will be applied to the metadata pool.
+  * @param {int} min_size Minimum number of replicas per object
+  * @param {string} pg_autoscale_mode The automatic PG scaling mode of the pool.
+  *   Enum: on,off,warn
+  * @param {int} pg_num Number of placement groups.
+  * @param {int} pg_num_min Minimal number of placement groups.
+  * @param {int} size Number of replicas per object
+  * @param {string} target_size The estimated target size of the pool for the PG autoscaler.
+  * @param {float} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
+  * @returns {Result}
+  */
+  async createpool(name, add_storages, application, crush_rule, erasure_coding, min_size, pg_autoscale_mode, pg_num, pg_num_min, size, target_size, target_size_ratio) {
+    const parameters = {
+      'name': name,
+      'add_storages': add_storages,
+      'application': application,
+      'crush_rule': crush_rule,
+      'erasure-coding': erasure_coding,
+      'min_size': min_size,
+      'pg_autoscale_mode': pg_autoscale_mode,
+      'pg_num': pg_num,
+      'pg_num_min': pg_num_min,
+      'size': size,
+      'target_size': target_size,
+      'target_size_ratio': target_size_ratio
+    };
+    return await this.#client.create(`/nodes/${this.#node}/ceph/pool`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemPoolCephNodeNodesName
+ */
+class PVEItemPoolCephNodeNodesName {
+  #node;
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, name) {
+    this.#client = client;
+    this.#node = node;
+    this.#name = name;
+  }
+
+  #status;
+  /**
+   * Get NamePoolCephNodeNodesStatus
+   * @returns {PVENamePoolCephNodeNodesStatus}
+   */
+  get status() { return this.#status == null ? (this.#status = new PVENamePoolCephNodeNodesStatus(this.#client, this.#node, this.#name)) : this.#status; }
+
+
+  /**
+  * Destroy pool
+  * @param {bool} force If true, destroys pool even if in use
+  * @param {bool} remove_ecprofile Remove the erasure code profile. Defaults to true, if applicable.
+  * @param {bool} remove_storages Remove all pveceph-managed storages configured for this pool
+  * @returns {Result}
+  */
+  async destroypool(force, remove_ecprofile, remove_storages) {
+    const parameters = {
+      'force': force,
+      'remove_ecprofile': remove_ecprofile,
+      'remove_storages': remove_storages
+    };
+    return await this.#client.delete(`/nodes/${this.#node}/ceph/pool/${this.#name}`, parameters);
+  }
+  /**
+  * Pool index.
+  * @returns {Result}
+  */
+  async poolindex() {
+    return await this.#client.get(`/nodes/${this.#node}/ceph/pool/${this.#name}`);
+  }
+  /**
+  * Change POOL settings
+  * @param {string} application The application of the pool.
+  *   Enum: rbd,cephfs,rgw
+  * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
+  * @param {int} min_size Minimum number of replicas per object
+  * @param {string} pg_autoscale_mode The automatic PG scaling mode of the pool.
+  *   Enum: on,off,warn
+  * @param {int} pg_num Number of placement groups.
+  * @param {int} pg_num_min Minimal number of placement groups.
+  * @param {int} size Number of replicas per object
+  * @param {string} target_size The estimated target size of the pool for the PG autoscaler.
+  * @param {float} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
+  * @returns {Result}
+  */
+  async setpool(application, crush_rule, min_size, pg_autoscale_mode, pg_num, pg_num_min, size, target_size, target_size_ratio) {
+    const parameters = {
+      'application': application,
+      'crush_rule': crush_rule,
+      'min_size': min_size,
+      'pg_autoscale_mode': pg_autoscale_mode,
+      'pg_num': pg_num,
+      'pg_num_min': pg_num_min,
+      'size': size,
+      'target_size': target_size,
+      'target_size_ratio': target_size_ratio
+    };
+    return await this.#client.set(`/nodes/${this.#node}/ceph/pool/${this.#name}`, parameters);
+  }
+
+}
+/**
+ * Class PVENamePoolCephNodeNodesStatus
+ */
+class PVENamePoolCephNodeNodesStatus {
+  #node;
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, name) {
+    this.#client = client;
+    this.#node = node;
+    this.#name = name;
+  }
+
+
+
+  /**
+  * Show the current pool status.
+  * @param {bool} verbose If enabled, will display additional data(eg. statistics).
+  * @returns {Result}
+  */
+  async getpool(verbose) {
+    const parameters = { 'verbose': verbose };
+    return await this.#client.get(`/nodes/${this.#node}/ceph/pool/${this.#name}/status`, parameters);
+  }
+
+}
+
+/**
  * Class PVECephNodeNodesPools
  */
 class PVECephNodeNodesPools {
@@ -10774,14 +11128,14 @@ class PVECephNodeNodesPools {
   get(name) { return new PVEItemPoolsCephNodeNodesName(this.#client, this.#node, name); }
 
   /**
-  * List all pools.
+  * List all pools. Deprecated, please use `/nodes/{node}/ceph/pool`.
   * @returns {Result}
   */
   async lspools() {
     return await this.#client.get(`/nodes/${this.#node}/ceph/pools`);
   }
   /**
-  * Create Ceph pool
+  * Create Ceph pool. Deprecated, please use `/nodes/{node}/ceph/pool`.
   * @param {string} name The name of the pool. It must be unique.
   * @param {bool} add_storages Configure VM and CT storage using the new pool.
   * @param {string} application The application of the pool.
@@ -10835,7 +11189,7 @@ class PVEItemPoolsCephNodeNodesName {
 
 
   /**
-  * Destroy pool
+  * Destroy pool. Deprecated, please use `/nodes/{node}/ceph/pool/{name}`.
   * @param {bool} force If true, destroys pool even if in use
   * @param {bool} remove_ecprofile Remove the erasure code profile. Defaults to true, if applicable.
   * @param {bool} remove_storages Remove all pveceph-managed storages configured for this pool
@@ -10850,7 +11204,7 @@ class PVEItemPoolsCephNodeNodesName {
     return await this.#client.delete(`/nodes/${this.#node}/ceph/pools/${this.#name}`, parameters);
   }
   /**
-  * List pool settings.
+  * List pool settings. Deprecated, please use `/nodes/{node}/ceph/pool/{pool}/status`.
   * @param {bool} verbose If enabled, will display additional data(eg. statistics).
   * @returns {Result}
   */
@@ -10859,7 +11213,7 @@ class PVEItemPoolsCephNodeNodesName {
     return await this.#client.get(`/nodes/${this.#node}/ceph/pools/${this.#name}`, parameters);
   }
   /**
-  * Change POOL settings
+  * Change POOL settings. Deprecated, please use `/nodes/{node}/ceph/pool/{name}`.
   * @param {string} application The application of the pool.
   *   Enum: rbd,cephfs,rgw
   * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
@@ -10906,7 +11260,7 @@ class PVECephNodeNodesConfig {
 
 
   /**
-  * Get Ceph configuration.
+  * Get the Ceph configuration file. Deprecated, please use `/nodes/{node}/ceph/cfg/raw.
   * @returns {Result}
   */
   async config() {
@@ -10931,7 +11285,7 @@ class PVECephNodeNodesConfigdb {
 
 
   /**
-  * Get Ceph configuration database.
+  * Get the Ceph configuration database. Deprecated, please use `/nodes/{node}/ceph/cfg/db.
   * @returns {Result}
   */
   async configdb() {
@@ -11955,12 +12309,14 @@ class PVEUpidTasksNodeNodesLog {
 
   /**
   * Read task log.
-  * @param {int} limit The maximum amount of lines that should be printed.
-  * @param {int} start The line number to start printing at.
+  * @param {bool} download Whether the tasklog file should be downloaded. This parameter can't be used in conjunction with other parameters
+  * @param {int} limit The amount of lines to read from the tasklog.
+  * @param {int} start Start at this line when reading the tasklog
   * @returns {Result}
   */
-  async readTaskLog(limit, start) {
+  async readTaskLog(download, limit, start) {
     const parameters = {
+      'download': download,
       'limit': limit,
       'start': start
     };
@@ -14090,6 +14446,7 @@ class PVEFirewallNodeNodesOptions {
   * @param {bool} log_nf_conntrack Enable logging of conntrack information.
   * @param {bool} ndp Enable NDP (Neighbor Discovery Protocol).
   * @param {bool} nf_conntrack_allow_invalid Allow invalid packets on connection tracking.
+  * @param {string} nf_conntrack_helpers Enable conntrack helpers for specific protocols. Supported protocols: amanda, ftp, irc, netbios-ns, pptp, sane, sip, snmp, tftp
   * @param {int} nf_conntrack_max Maximum number of tracked connections.
   * @param {int} nf_conntrack_tcp_timeout_established Conntrack established timeout.
   * @param {int} nf_conntrack_tcp_timeout_syn_recv Conntrack syn recv timeout.
@@ -14104,7 +14461,7 @@ class PVEFirewallNodeNodesOptions {
   * @param {bool} tcpflags Filter illegal combinations of TCP flags.
   * @returns {Result}
   */
-  async setOptions(delete_, digest, enable, log_level_in, log_level_out, log_nf_conntrack, ndp, nf_conntrack_allow_invalid, nf_conntrack_max, nf_conntrack_tcp_timeout_established, nf_conntrack_tcp_timeout_syn_recv, nosmurfs, protection_synflood, protection_synflood_burst, protection_synflood_rate, smurf_log_level, tcp_flags_log_level, tcpflags) {
+  async setOptions(delete_, digest, enable, log_level_in, log_level_out, log_nf_conntrack, ndp, nf_conntrack_allow_invalid, nf_conntrack_helpers, nf_conntrack_max, nf_conntrack_tcp_timeout_established, nf_conntrack_tcp_timeout_syn_recv, nosmurfs, protection_synflood, protection_synflood_burst, protection_synflood_rate, smurf_log_level, tcp_flags_log_level, tcpflags) {
     const parameters = {
       'delete': delete_,
       'digest': digest,
@@ -14114,6 +14471,7 @@ class PVEFirewallNodeNodesOptions {
       'log_nf_conntrack': log_nf_conntrack,
       'ndp': ndp,
       'nf_conntrack_allow_invalid': nf_conntrack_allow_invalid,
+      'nf_conntrack_helpers': nf_conntrack_helpers,
       'nf_conntrack_max': nf_conntrack_max,
       'nf_conntrack_tcp_timeout_established': nf_conntrack_tcp_timeout_established,
       'nf_conntrack_tcp_timeout_syn_recv': nf_conntrack_tcp_timeout_syn_recv,
@@ -14148,13 +14506,17 @@ class PVEFirewallNodeNodesLog {
   /**
   * Read firewall log
   * @param {int} limit
+  * @param {int} since Display log since this UNIX epoch.
   * @param {int} start
+  * @param {int} until Display log until this UNIX epoch.
   * @returns {Result}
   */
-  async log(limit, start) {
+  async log(limit, since, start, until) {
     const parameters = {
       'limit': limit,
-      'start': start
+      'since': since,
+      'start': start,
+      'until': until
     };
     return await this.#client.get(`/nodes/${this.#node}/firewall/log`, parameters);
   }
@@ -14975,7 +15337,7 @@ class PVENodeNodesVncshell {
   /**
   * Creates a VNC Shell proxy.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,login,upgrade
+  *   Enum: ceph_install,upgrade,login
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {int} height sets the height of the console in pixels.
   * @param {bool} websocket use websocket instead of standard vnc.
@@ -15013,7 +15375,7 @@ class PVENodeNodesTermproxy {
   /**
   * Creates a VNC Shell proxy.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,login,upgrade
+  *   Enum: ceph_install,upgrade,login
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @returns {Result}
   */
@@ -15076,7 +15438,7 @@ class PVENodeNodesSpiceshell {
   /**
   * Creates a SPICE shell.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,login,upgrade
+  *   Enum: ceph_install,upgrade,login
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {string} proxy SPICE proxy server. This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As reasonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).
   * @returns {Result}
@@ -15310,11 +15672,17 @@ class PVENodeNodesStopall {
 
   /**
   * Stop all VMs and Containers.
+  * @param {bool} force_stop Force a hard-stop after the timeout.
+  * @param {int} timeout Timeout for each guest shutdown task. Depending on `force-stop`, the shutdown gets then simply aborted or a hard-stop is forced.
   * @param {string} vms Only consider Guests with these IDs.
   * @returns {Result}
   */
-  async stopall(vms) {
-    const parameters = { 'vms': vms };
+  async stopall(force_stop, timeout, vms) {
+    const parameters = {
+      'force-stop': force_stop,
+      'timeout': timeout,
+      'vms': vms
+    };
     return await this.#client.create(`/nodes/${this.#node}/stopall`, parameters);
   }
 
@@ -15338,7 +15706,7 @@ class PVENodeNodesMigrateall {
   /**
   * Migrate all VMs and Containers.
   * @param {string} target Target node.
-  * @param {int} maxworkers Maximal number of parallel migration job. If not set use 'max_workers' from datacenter.cfg, one of both must be set!
+  * @param {int} maxworkers Maximal number of parallel migration job. If not set, uses'max_workers' from datacenter.cfg. One of both must be set!
   * @param {string} vms Only consider Guests with these IDs.
   * @param {bool} with_local_disks Enable live storage migration for local disk
   * @returns {Result}
@@ -15436,6 +15804,7 @@ class PVEStorage {
   * @param {string} comstar_hg host group for comstar views
   * @param {string} comstar_tg target group for comstar views
   * @param {string} content Allowed content types.  NOTE: the value 'rootdir' is used for Containers, and value 'images' for VMs.
+  * @param {string} content_dirs Overrides for default content type directories.
   * @param {string} data_pool Data Pool (for erasure coding only)
   * @param {string} datastore Proxmox Backup Server datastore name.
   * @param {bool} disable Flag to disable the storage.
@@ -15490,7 +15859,7 @@ class PVEStorage {
   * @param {string} volume Glusterfs Volume.
   * @returns {Result}
   */
-  async create(storage, type, authsupported, base, blocksize, bwlimit, comstar_hg, comstar_tg, content, data_pool, datastore, disable, domain, encryption_key, export_, fingerprint, format, fs_name, fuse, is_mountpoint, iscsiprovider, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, path, pool, port, portal, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, share, shared, smbversion, sparse, subdir, tagged_only, target, thinpool, transport, username, vgname, volume) {
+  async create(storage, type, authsupported, base, blocksize, bwlimit, comstar_hg, comstar_tg, content, content_dirs, data_pool, datastore, disable, domain, encryption_key, export_, fingerprint, format, fs_name, fuse, is_mountpoint, iscsiprovider, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, path, pool, port, portal, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, share, shared, smbversion, sparse, subdir, tagged_only, target, thinpool, transport, username, vgname, volume) {
     const parameters = {
       'storage': storage,
       'type': type,
@@ -15501,6 +15870,7 @@ class PVEStorage {
       'comstar_hg': comstar_hg,
       'comstar_tg': comstar_tg,
       'content': content,
+      'content-dirs': content_dirs,
       'data-pool': data_pool,
       'datastore': datastore,
       'disable': disable,
@@ -15591,6 +15961,7 @@ class PVEItemStorageStorage {
   * @param {string} comstar_hg host group for comstar views
   * @param {string} comstar_tg target group for comstar views
   * @param {string} content Allowed content types.  NOTE: the value 'rootdir' is used for Containers, and value 'images' for VMs.
+  * @param {string} content_dirs Overrides for default content type directories.
   * @param {string} data_pool Data Pool (for erasure coding only)
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -15637,13 +16008,14 @@ class PVEItemStorageStorage {
   * @param {string} username RBD Id.
   * @returns {Result}
   */
-  async update(blocksize, bwlimit, comstar_hg, comstar_tg, content, data_pool, delete_, digest, disable, domain, encryption_key, fingerprint, format, fs_name, fuse, is_mountpoint, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, pool, port, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, shared, smbversion, sparse, subdir, tagged_only, transport, username) {
+  async update(blocksize, bwlimit, comstar_hg, comstar_tg, content, content_dirs, data_pool, delete_, digest, disable, domain, encryption_key, fingerprint, format, fs_name, fuse, is_mountpoint, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, pool, port, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, shared, smbversion, sparse, subdir, tagged_only, transport, username) {
     const parameters = {
       'blocksize': blocksize,
       'bwlimit': bwlimit,
       'comstar_hg': comstar_hg,
       'comstar_tg': comstar_tg,
       'content': content,
+      'content-dirs': content_dirs,
       'data-pool': data_pool,
       'delete': delete_,
       'digest': digest,
@@ -15811,7 +16183,7 @@ class PVEAccessUsers {
   }
   /**
   * Create new user.
-  * @param {string} userid User ID
+  * @param {string} userid Full User ID, in the `name@realm` format.
   * @param {string} comment
   * @param {string} email
   * @param {bool} enable Enable the account (default). You can set this to '0' to disable the account
@@ -16508,7 +16880,7 @@ class PVERealmDomainsAccessSync {
   * @param {bool} enable_new Enable newly synced users immediately.
   * @param {bool} full DEPRECATED: use 'remove-vanished' instead. If set, uses the LDAP Directory as source of truth, deleting users or groups not returned from the sync and removing all locally modified properties of synced users. If not set, only syncs information which is present in the synced data, and does not delete or modify anything else.
   * @param {bool} purge DEPRECATED: use 'remove-vanished' instead. Remove ACLs for users or groups which were removed from the config during a sync.
-  * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync.
+  * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
   * @param {string} scope Select what to sync.
   *   Enum: users,groups,both
   * @returns {Result}
@@ -16837,7 +17209,7 @@ class PVEAccessPassword {
   /**
   * Change user password.
   * @param {string} password The new password.
-  * @param {string} userid User ID
+  * @param {string} userid Full User ID, in the `name@realm` format.
   * @returns {Result}
   */
   async changePassword(password, userid) {
