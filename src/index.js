@@ -226,7 +226,7 @@ class PveClientBase {
       headers['Cookie'] = 'PVEAuthCookie=' + this.#ticketPVEAuthCookie;
     }
 
-    if (this.apiToken != '') { headers['Authorization'] = "PVEAPIToken " + this.apiToken; }
+    if (this.apiToken != '') { headers['Authorization'] = "PVEAPIToken=" + this.apiToken; }
 
     const options = {
       rejectUnauthorized: false,
