@@ -560,6 +560,12 @@ class PVECluster {
    * @returns {PVEClusterJobs}
    */
   get jobs() { return this.#jobs == null ? (this.#jobs = new PVEClusterJobs(this.#client)) : this.#jobs; }
+  #mapping;
+  /**
+   * Get ClusterMapping
+   * @returns {PVEClusterMapping}
+   */
+  get mapping() { return this.#mapping == null ? (this.#mapping = new PVEClusterMapping(this.#client)) : this.#mapping; }
   #sdn;
   /**
    * Get ClusterSdn
@@ -1343,7 +1349,7 @@ class PVEItemGroupsFirewallClusterGroup {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -1418,7 +1424,7 @@ class PVEItemGroupGroupsFirewallClusterPos {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -1493,7 +1499,7 @@ class PVEFirewallClusterRules {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -1566,7 +1572,7 @@ class PVEItemRulesFirewallClusterPos {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -1985,7 +1991,7 @@ class PVEClusterBackup {
   /**
   * Create new vzdump backup job.
   * @param {bool} all Backup all known guest systems on this host.
-  * @param {int} bwlimit Limit I/O bandwidth (KBytes per second).
+  * @param {int} bwlimit Limit I/O bandwidth (in KiB/s).
   * @param {string} comment Description for the Job.
   * @param {string} compress Compress dump file.
   *   Enum: 0,1,gzip,lzo,zstd
@@ -1995,7 +2001,7 @@ class PVEClusterBackup {
   * @param {string} exclude Exclude specified guest systems (assumes --all)
   * @param {string} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root,  other paths match relative to each subdirectory.
   * @param {string} id Job ID (will be autogenerated).
-  * @param {int} ionice Set CFQ ionice priority.
+  * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
   * @param {string} mailnotification Specify when to send an email
   *   Enum: always,failure
@@ -2106,7 +2112,7 @@ class PVEItemBackupClusterId {
   /**
   * Update vzdump backup job definition.
   * @param {bool} all Backup all known guest systems on this host.
-  * @param {int} bwlimit Limit I/O bandwidth (KBytes per second).
+  * @param {int} bwlimit Limit I/O bandwidth (in KiB/s).
   * @param {string} comment Description for the Job.
   * @param {string} compress Compress dump file.
   *   Enum: 0,1,gzip,lzo,zstd
@@ -2116,7 +2122,7 @@ class PVEItemBackupClusterId {
   * @param {bool} enabled Enable or disable the job.
   * @param {string} exclude Exclude specified guest systems (assumes --all)
   * @param {string} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root,  other paths match relative to each subdirectory.
-  * @param {int} ionice Set CFQ ionice priority.
+  * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
   * @param {string} mailnotification Specify when to send an email
   *   Enum: always,failure
@@ -2772,7 +2778,7 @@ class PVEAcmeClusterPlugins {
   * @param {string} type ACME challenge type.
   *   Enum: dns,standalone
   * @param {string} api API plugin name
-  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gd,geoscaling,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
+  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
   * @param {string} data DNS plugin data. (base64 encoded)
   * @param {bool} disable Flag to disable the config.
   * @param {string} nodes List of cluster node names.
@@ -2825,7 +2831,7 @@ class PVEItemPluginsAcmeClusterId {
   /**
   * Update ACME plugin configuration.
   * @param {string} api API plugin name
-  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gd,geoscaling,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
+  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
   * @param {string} data DNS plugin data. (base64 encoded)
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -3217,6 +3223,12 @@ class PVEClusterJobs {
 
   }
 
+  #realmSync;
+  /**
+   * Get JobsClusterRealmSync
+   * @returns {PVEJobsClusterRealmSync}
+   */
+  get realmSync() { return this.#realmSync == null ? (this.#realmSync = new PVEJobsClusterRealmSync(this.#client)) : this.#realmSync; }
   #scheduleAnalyze;
   /**
    * Get JobsClusterScheduleAnalyze
@@ -3234,6 +3246,116 @@ class PVEClusterJobs {
   }
 
 }
+/**
+ * Class PVEJobsClusterRealmSync
+ */
+class PVEJobsClusterRealmSync {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemRealmSyncJobsClusterId
+   * @param id
+   * @returns {PVEItemRealmSyncJobsClusterId}
+   */
+  get(id) { return new PVEItemRealmSyncJobsClusterId(this.#client, id); }
+
+  /**
+  * List configured realm-sync-jobs.
+  * @returns {Result}
+  */
+  async syncjobIndex() {
+    return await this.#client.get(`/cluster/jobs/realm-sync`);
+  }
+
+}
+/**
+ * Class PVEItemRealmSyncJobsClusterId
+ */
+class PVEItemRealmSyncJobsClusterId {
+  #id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, id) {
+    this.#client = client;
+    this.#id = id;
+  }
+
+
+
+  /**
+  * Delete realm-sync job definition.
+  * @returns {Result}
+  */
+  async deleteJob() {
+    return await this.#client.delete(`/cluster/jobs/realm-sync/${this.#id}`);
+  }
+  /**
+  * Read realm-sync job definition.
+  * @returns {Result}
+  */
+  async readJob() {
+    return await this.#client.get(`/cluster/jobs/realm-sync/${this.#id}`);
+  }
+  /**
+  * Create new realm-sync job.
+  * @param {string} schedule Backup schedule. The format is a subset of `systemd` calendar events.
+  * @param {string} comment Description for the Job.
+  * @param {bool} enable_new Enable newly synced users immediately.
+  * @param {bool} enabled Determines if the job is enabled.
+  * @param {string} realm Authentication domain ID
+  * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
+  * @param {string} scope Select what to sync.
+  *   Enum: users,groups,both
+  * @returns {Result}
+  */
+  async createJob(schedule, comment, enable_new, enabled, realm, remove_vanished, scope) {
+    const parameters = {
+      'schedule': schedule,
+      'comment': comment,
+      'enable-new': enable_new,
+      'enabled': enabled,
+      'realm': realm,
+      'remove-vanished': remove_vanished,
+      'scope': scope
+    };
+    return await this.#client.create(`/cluster/jobs/realm-sync/${this.#id}`, parameters);
+  }
+  /**
+  * Update realm-sync job definition.
+  * @param {string} schedule Backup schedule. The format is a subset of `systemd` calendar events.
+  * @param {string} comment Description for the Job.
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {bool} enable_new Enable newly synced users immediately.
+  * @param {bool} enabled Determines if the job is enabled.
+  * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
+  * @param {string} scope Select what to sync.
+  *   Enum: users,groups,both
+  * @returns {Result}
+  */
+  async updateJob(schedule, comment, delete_, enable_new, enabled, remove_vanished, scope) {
+    const parameters = {
+      'schedule': schedule,
+      'comment': comment,
+      'delete': delete_,
+      'enable-new': enable_new,
+      'enabled': enabled,
+      'remove-vanished': remove_vanished,
+      'scope': scope
+    };
+    return await this.#client.set(`/cluster/jobs/realm-sync/${this.#id}`, parameters);
+  }
+
+}
+
 /**
  * Class PVEJobsClusterScheduleAnalyze
  */
@@ -3263,6 +3385,238 @@ class PVEJobsClusterScheduleAnalyze {
       'starttime': starttime
     };
     return await this.#client.get(`/cluster/jobs/schedule-analyze`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEClusterMapping
+ */
+class PVEClusterMapping {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+  #pci;
+  /**
+   * Get MappingClusterPci
+   * @returns {PVEMappingClusterPci}
+   */
+  get pci() { return this.#pci == null ? (this.#pci = new PVEMappingClusterPci(this.#client)) : this.#pci; }
+  #usb;
+  /**
+   * Get MappingClusterUsb
+   * @returns {PVEMappingClusterUsb}
+   */
+  get usb() { return this.#usb == null ? (this.#usb = new PVEMappingClusterUsb(this.#client)) : this.#usb; }
+
+
+  /**
+  * List resource types.
+  * @returns {Result}
+  */
+  async index() {
+    return await this.#client.get(`/cluster/mapping`);
+  }
+
+}
+/**
+ * Class PVEMappingClusterPci
+ */
+class PVEMappingClusterPci {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemPciMappingClusterId
+   * @param id
+   * @returns {PVEItemPciMappingClusterId}
+   */
+  get(id) { return new PVEItemPciMappingClusterId(this.#client, id); }
+
+  /**
+  * List PCI Hardware Mapping
+  * @param {string} check_node If given, checks the configurations on the given node for correctness, and adds relevant diagnostics for the devices to the response.
+  * @returns {Result}
+  */
+  async index(check_node) {
+    const parameters = { 'check-node': check_node };
+    return await this.#client.get(`/cluster/mapping/pci`, parameters);
+  }
+  /**
+  * Create a new hardware mapping.
+  * @param {string} id The ID of the logical PCI mapping.
+  * @param {string} map A list of maps for the cluster nodes.
+  * @param {string} description Description of the logical PCI device.
+  * @param {bool} mdev
+  * @returns {Result}
+  */
+  async create(id, map, description, mdev) {
+    const parameters = {
+      'id': id,
+      'map': map,
+      'description': description,
+      'mdev': mdev
+    };
+    return await this.#client.create(`/cluster/mapping/pci`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemPciMappingClusterId
+ */
+class PVEItemPciMappingClusterId {
+  #id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, id) {
+    this.#client = client;
+    this.#id = id;
+  }
+
+
+
+  /**
+  * Remove Hardware Mapping.
+  * @returns {Result}
+  */
+  async delete_() {
+    return await this.#client.delete(`/cluster/mapping/pci/${this.#id}`);
+  }
+  /**
+  * Get PCI Mapping.
+  * @returns {Result}
+  */
+  async get() {
+    return await this.#client.get(`/cluster/mapping/pci/${this.#id}`);
+  }
+  /**
+  * Update a hardware mapping.
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {string} description Description of the logical PCI device.
+  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} map A list of maps for the cluster nodes.
+  * @param {bool} mdev
+  * @returns {Result}
+  */
+  async update(delete_, description, digest, map, mdev) {
+    const parameters = {
+      'delete': delete_,
+      'description': description,
+      'digest': digest,
+      'map': map,
+      'mdev': mdev
+    };
+    return await this.#client.set(`/cluster/mapping/pci/${this.#id}`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEMappingClusterUsb
+ */
+class PVEMappingClusterUsb {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemUsbMappingClusterId
+   * @param id
+   * @returns {PVEItemUsbMappingClusterId}
+   */
+  get(id) { return new PVEItemUsbMappingClusterId(this.#client, id); }
+
+  /**
+  * List USB Hardware Mappings
+  * @param {string} check_node If given, checks the configurations on the given node for correctness, and adds relevant errors to the devices.
+  * @returns {Result}
+  */
+  async index(check_node) {
+    const parameters = { 'check-node': check_node };
+    return await this.#client.get(`/cluster/mapping/usb`, parameters);
+  }
+  /**
+  * Create a new hardware mapping.
+  * @param {string} id The ID of the logical PCI mapping.
+  * @param {string} map A list of maps for the cluster nodes.
+  * @param {string} description Description of the logical PCI device.
+  * @returns {Result}
+  */
+  async create(id, map, description) {
+    const parameters = {
+      'id': id,
+      'map': map,
+      'description': description
+    };
+    return await this.#client.create(`/cluster/mapping/usb`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemUsbMappingClusterId
+ */
+class PVEItemUsbMappingClusterId {
+  #id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, id) {
+    this.#client = client;
+    this.#id = id;
+  }
+
+
+
+  /**
+  * Remove Hardware Mapping.
+  * @returns {Result}
+  */
+  async delete_() {
+    return await this.#client.delete(`/cluster/mapping/usb/${this.#id}`);
+  }
+  /**
+  * Get USB Mapping.
+  * @returns {Result}
+  */
+  async get() {
+    return await this.#client.get(`/cluster/mapping/usb/${this.#id}`);
+  }
+  /**
+  * Update a hardware mapping.
+  * @param {string} map A list of maps for the cluster nodes.
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {string} description Description of the logical PCI device.
+  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @returns {Result}
+  */
+  async update(map, delete_, description, digest) {
+    const parameters = {
+      'map': map,
+      'delete': delete_,
+      'description': description,
+      'digest': digest
+    };
+    return await this.#client.set(`/cluster/mapping/usb/${this.#id}`, parameters);
   }
 
 }
@@ -3629,9 +3983,10 @@ class PVESdnClusterZones {
   * @param {string} vlan_protocol
   *   Enum: 802.1q,802.1ad
   * @param {int} vrf_vxlan l3vni.
+  * @param {int} vxlan_port Vxlan tunnel udp port (default 4789).
   * @returns {Result}
   */
-  async create(type, zone, advertise_subnets, bridge, bridge_disable_mac_learning, controller, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan) {
+  async create(type, zone, advertise_subnets, bridge, bridge_disable_mac_learning, controller, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan, vxlan_port) {
     const parameters = {
       'type': type,
       'zone': zone,
@@ -3655,7 +4010,8 @@ class PVESdnClusterZones {
       'rt-import': rt_import,
       'tag': tag,
       'vlan-protocol': vlan_protocol,
-      'vrf-vxlan': vrf_vxlan
+      'vrf-vxlan': vrf_vxlan,
+      'vxlan-port': vxlan_port
     };
     return await this.#client.create(`/cluster/sdn/zones`, parameters);
   }
@@ -3722,9 +4078,10 @@ class PVEItemZonesSdnClusterZone {
   * @param {string} vlan_protocol
   *   Enum: 802.1q,802.1ad
   * @param {int} vrf_vxlan l3vni.
+  * @param {int} vxlan_port Vxlan tunnel udp port (default 4789).
   * @returns {Result}
   */
-  async update(advertise_subnets, bridge, bridge_disable_mac_learning, controller, delete_, digest, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan) {
+  async update(advertise_subnets, bridge, bridge_disable_mac_learning, controller, delete_, digest, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan, vxlan_port) {
     const parameters = {
       'advertise-subnets': advertise_subnets,
       'bridge': bridge,
@@ -3748,7 +4105,8 @@ class PVEItemZonesSdnClusterZone {
       'rt-import': rt_import,
       'tag': tag,
       'vlan-protocol': vlan_protocol,
-      'vrf-vxlan': vrf_vxlan
+      'vrf-vxlan': vrf_vxlan,
+      'vxlan-port': vxlan_port
     };
     return await this.#client.set(`/cluster/sdn/zones/${this.#zone}`, parameters);
   }
@@ -4205,7 +4563,7 @@ class PVEClusterOptions {
   }
   /**
   * Set datacenter options.
-  * @param {string} bwlimit Set bandwidth/io limits various operations.
+  * @param {string} bwlimit Set I/O bandwidth limit for various operations (in KiB/s).
   * @param {string} console Select the default Console viewer. You can either use the builtin java applet (VNC; deprecated and maps to html5), an external virt-viewer comtatible application (SPICE), an HTML5 based vnc viewer (noVNC), or an HTML5 based console client (xtermjs). If the selected viewer is not available (e.g. SPICE not activated for the VM), the fallback is noVNC.
   *   Enum: applet,vv,html5,xtermjs
   * @param {string} crs Cluster resource scheduling settings.
@@ -4668,6 +5026,7 @@ class PVENodeNodesQemu {
   * @param {string} cipassword cloud-init: Password to assign the user. Using this is generally not recommended. Use ssh keys instead. Also note that older cloud-init versions do not support hashed passwords.
   * @param {string} citype Specifies the cloud-init configuration format. The default depends on the configured operating system type (`ostype`. We use the `nocloud` format for Linux, and `configdrive2` for windows.
   *   Enum: configdrive2,nocloud,opennebula
+  * @param {bool} ciupgrade cloud-init: do an automatic package upgrade after the first boot.
   * @param {string} ciuser cloud-init: User name to change ssh keys and password for instead of the image's configured default user.
   * @param {int} cores The number of cores per socket.
   * @param {string} cpu Emulated CPU type.
@@ -4742,7 +5101,7 @@ class PVENodeNodesQemu {
   * @param {string} watchdog Create a virtual hardware watchdog device.
   * @returns {Result}
   */
-  async createVm(vmid, acpi, affinity, agent, arch, archive, args, audio0, autostart, balloon, bios, boot, bootdisk, bwlimit, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, description, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, live_restore, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, pool, protection, reboot, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, smbios1, smp, sockets, spice_enhancements, sshkeys, start, startdate, startup, storage, tablet, tags, tdf, template, tpmstate0, unique, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
+  async createVm(vmid, acpi, affinity, agent, arch, archive, args, audio0, autostart, balloon, bios, boot, bootdisk, bwlimit, cdrom, cicustom, cipassword, citype, ciupgrade, ciuser, cores, cpu, cpulimit, cpuunits, description, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, live_restore, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, pool, protection, reboot, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, smbios1, smp, sockets, spice_enhancements, sshkeys, start, startdate, startup, storage, tablet, tags, tdf, template, tpmstate0, unique, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
     const parameters = {
       'vmid': vmid,
       'acpi': acpi,
@@ -4762,6 +5121,7 @@ class PVENodeNodesQemu {
       'cicustom': cicustom,
       'cipassword': cipassword,
       'citype': citype,
+      'ciupgrade': ciupgrade,
       'ciuser': ciuser,
       'cores': cores,
       'cpu': cpu,
@@ -5127,7 +5487,7 @@ class PVEFirewallVmidQemuNodeNodesRules {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -5204,7 +5564,7 @@ class PVEItemRulesFirewallVmidQemuNodeNodesPos {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -6416,7 +6776,7 @@ class PVEAgentVmidQemuNodeNodesExec {
 
   /**
   * Executes the given command in the vm via the guest-agent and returns an object with the pid.
-  * @param {string} command The command as a list of program + arguments
+  * @param {string} command The command as a list of program + arguments.
   * @param {string} input_data Data to pass as 'input-data' to the guest. Usually treated as STDIN to 'command'.
   * @returns {Result}
   */
@@ -6646,6 +7006,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} cipassword cloud-init: Password to assign the user. Using this is generally not recommended. Use ssh keys instead. Also note that older cloud-init versions do not support hashed passwords.
   * @param {string} citype Specifies the cloud-init configuration format. The default depends on the configured operating system type (`ostype`. We use the `nocloud` format for Linux, and `configdrive2` for windows.
   *   Enum: configdrive2,nocloud,opennebula
+  * @param {bool} ciupgrade cloud-init: do an automatic package upgrade after the first boot.
   * @param {string} ciuser cloud-init: User name to change ssh keys and password for instead of the image's configured default user.
   * @param {int} cores The number of cores per socket.
   * @param {string} cpu Emulated CPU type.
@@ -6719,7 +7080,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} watchdog Create a virtual hardware watchdog device.
   * @returns {Result}
   */
-  async updateVmAsync(acpi, affinity, agent, arch, args, audio0, autostart, background_delay, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
+  async updateVmAsync(acpi, affinity, agent, arch, args, audio0, autostart, background_delay, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciupgrade, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
     const parameters = {
       'acpi': acpi,
       'affinity': affinity,
@@ -6737,6 +7098,7 @@ class PVEVmidQemuNodeNodesConfig {
       'cicustom': cicustom,
       'cipassword': cipassword,
       'citype': citype,
+      'ciupgrade': ciupgrade,
       'ciuser': ciuser,
       'cores': cores,
       'cpu': cpu,
@@ -6826,6 +7188,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} cipassword cloud-init: Password to assign the user. Using this is generally not recommended. Use ssh keys instead. Also note that older cloud-init versions do not support hashed passwords.
   * @param {string} citype Specifies the cloud-init configuration format. The default depends on the configured operating system type (`ostype`. We use the `nocloud` format for Linux, and `configdrive2` for windows.
   *   Enum: configdrive2,nocloud,opennebula
+  * @param {bool} ciupgrade cloud-init: do an automatic package upgrade after the first boot.
   * @param {string} ciuser cloud-init: User name to change ssh keys and password for instead of the image's configured default user.
   * @param {int} cores The number of cores per socket.
   * @param {string} cpu Emulated CPU type.
@@ -6899,7 +7262,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} watchdog Create a virtual hardware watchdog device.
   * @returns {Result}
   */
-  async updateVm(acpi, affinity, agent, arch, args, audio0, autostart, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
+  async updateVm(acpi, affinity, agent, arch, args, audio0, autostart, balloon, bios, boot, bootdisk, cdrom, cicustom, cipassword, citype, ciupgrade, ciuser, cores, cpu, cpulimit, cpuunits, delete_, description, digest, efidisk0, force, freeze, hookscript, hostpciN, hotplug, hugepages, ideN, ipconfigN, ivshmem, keephugepages, keyboard, kvm, localtime, lock, machine, memory, migrate_downtime, migrate_speed, name, nameserver, netN, numa, numaN, onboot, ostype, parallelN, protection, reboot, revert, rng0, sataN, scsiN, scsihw, searchdomain, serialN, shares, skiplock, smbios1, smp, sockets, spice_enhancements, sshkeys, startdate, startup, tablet, tags, tdf, template, tpmstate0, unusedN, usbN, vcpus, vga, virtioN, vmgenid, vmstatestorage, watchdog) {
     const parameters = {
       'acpi': acpi,
       'affinity': affinity,
@@ -6916,6 +7279,7 @@ class PVEVmidQemuNodeNodesConfig {
       'cicustom': cicustom,
       'cipassword': cipassword,
       'citype': citype,
+      'ciupgrade': ciupgrade,
       'ciuser': ciuser,
       'cores': cores,
       'cpu': cpu,
@@ -9118,7 +9482,7 @@ class PVEFirewallVmidLxcNodeNodesRules {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -9195,7 +9559,7 @@ class PVEItemRulesFirewallVmidLxcNodeNodesPos {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -10250,24 +10614,6 @@ class PVENodeNodesCeph {
    * @returns {PVECephNodeNodesPool}
    */
   get pool() { return this.#pool == null ? (this.#pool = new PVECephNodeNodesPool(this.#client, this.#node)) : this.#pool; }
-  #pools;
-  /**
-   * Get CephNodeNodesPools
-   * @returns {PVECephNodeNodesPools}
-   */
-  get pools() { return this.#pools == null ? (this.#pools = new PVECephNodeNodesPools(this.#client, this.#node)) : this.#pools; }
-  #config;
-  /**
-   * Get CephNodeNodesConfig
-   * @returns {PVECephNodeNodesConfig}
-   */
-  get config() { return this.#config == null ? (this.#config = new PVECephNodeNodesConfig(this.#client, this.#node)) : this.#config; }
-  #configdb;
-  /**
-   * Get CephNodeNodesConfigdb
-   * @returns {PVECephNodeNodesConfigdb}
-   */
-  get configdb() { return this.#configdb == null ? (this.#configdb = new PVECephNodeNodesConfigdb(this.#client, this.#node)) : this.#configdb; }
   #init;
   /**
    * Get CephNodeNodesInit
@@ -11107,194 +11453,6 @@ class PVENamePoolCephNodeNodesStatus {
 }
 
 /**
- * Class PVECephNodeNodesPools
- */
-class PVECephNodeNodesPools {
-  #node;
-  /** @type {PveClient} */
-  #client;
-
-  constructor(client, node) {
-    this.#client = client;
-    this.#node = node;
-  }
-
-
-  /**
-   * Get ItemPoolsCephNodeNodesName
-   * @param name
-   * @returns {PVEItemPoolsCephNodeNodesName}
-   */
-  get(name) { return new PVEItemPoolsCephNodeNodesName(this.#client, this.#node, name); }
-
-  /**
-  * List all pools. Deprecated, please use `/nodes/{node}/ceph/pool`.
-  * @returns {Result}
-  */
-  async lspools() {
-    return await this.#client.get(`/nodes/${this.#node}/ceph/pools`);
-  }
-  /**
-  * Create Ceph pool. Deprecated, please use `/nodes/{node}/ceph/pool`.
-  * @param {string} name The name of the pool. It must be unique.
-  * @param {bool} add_storages Configure VM and CT storage using the new pool.
-  * @param {string} application The application of the pool.
-  *   Enum: rbd,cephfs,rgw
-  * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
-  * @param {string} erasure_coding Create an erasure coded pool for RBD with an accompaning replicated pool for metadata storage. With EC, the common ceph options 'size', 'min_size' and 'crush_rule' parameters will be applied to the metadata pool.
-  * @param {int} min_size Minimum number of replicas per object
-  * @param {string} pg_autoscale_mode The automatic PG scaling mode of the pool.
-  *   Enum: on,off,warn
-  * @param {int} pg_num Number of placement groups.
-  * @param {int} pg_num_min Minimal number of placement groups.
-  * @param {int} size Number of replicas per object
-  * @param {string} target_size The estimated target size of the pool for the PG autoscaler.
-  * @param {float} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
-  * @returns {Result}
-  */
-  async createpool(name, add_storages, application, crush_rule, erasure_coding, min_size, pg_autoscale_mode, pg_num, pg_num_min, size, target_size, target_size_ratio) {
-    const parameters = {
-      'name': name,
-      'add_storages': add_storages,
-      'application': application,
-      'crush_rule': crush_rule,
-      'erasure-coding': erasure_coding,
-      'min_size': min_size,
-      'pg_autoscale_mode': pg_autoscale_mode,
-      'pg_num': pg_num,
-      'pg_num_min': pg_num_min,
-      'size': size,
-      'target_size': target_size,
-      'target_size_ratio': target_size_ratio
-    };
-    return await this.#client.create(`/nodes/${this.#node}/ceph/pools`, parameters);
-  }
-
-}
-/**
- * Class PVEItemPoolsCephNodeNodesName
- */
-class PVEItemPoolsCephNodeNodesName {
-  #node;
-  #name;
-  /** @type {PveClient} */
-  #client;
-
-  constructor(client, node, name) {
-    this.#client = client;
-    this.#node = node;
-    this.#name = name;
-  }
-
-
-
-  /**
-  * Destroy pool. Deprecated, please use `/nodes/{node}/ceph/pool/{name}`.
-  * @param {bool} force If true, destroys pool even if in use
-  * @param {bool} remove_ecprofile Remove the erasure code profile. Defaults to true, if applicable.
-  * @param {bool} remove_storages Remove all pveceph-managed storages configured for this pool
-  * @returns {Result}
-  */
-  async destroypool(force, remove_ecprofile, remove_storages) {
-    const parameters = {
-      'force': force,
-      'remove_ecprofile': remove_ecprofile,
-      'remove_storages': remove_storages
-    };
-    return await this.#client.delete(`/nodes/${this.#node}/ceph/pools/${this.#name}`, parameters);
-  }
-  /**
-  * List pool settings. Deprecated, please use `/nodes/{node}/ceph/pool/{pool}/status`.
-  * @param {bool} verbose If enabled, will display additional data(eg. statistics).
-  * @returns {Result}
-  */
-  async getpool(verbose) {
-    const parameters = { 'verbose': verbose };
-    return await this.#client.get(`/nodes/${this.#node}/ceph/pools/${this.#name}`, parameters);
-  }
-  /**
-  * Change POOL settings. Deprecated, please use `/nodes/{node}/ceph/pool/{name}`.
-  * @param {string} application The application of the pool.
-  *   Enum: rbd,cephfs,rgw
-  * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
-  * @param {int} min_size Minimum number of replicas per object
-  * @param {string} pg_autoscale_mode The automatic PG scaling mode of the pool.
-  *   Enum: on,off,warn
-  * @param {int} pg_num Number of placement groups.
-  * @param {int} pg_num_min Minimal number of placement groups.
-  * @param {int} size Number of replicas per object
-  * @param {string} target_size The estimated target size of the pool for the PG autoscaler.
-  * @param {float} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
-  * @returns {Result}
-  */
-  async setpool(application, crush_rule, min_size, pg_autoscale_mode, pg_num, pg_num_min, size, target_size, target_size_ratio) {
-    const parameters = {
-      'application': application,
-      'crush_rule': crush_rule,
-      'min_size': min_size,
-      'pg_autoscale_mode': pg_autoscale_mode,
-      'pg_num': pg_num,
-      'pg_num_min': pg_num_min,
-      'size': size,
-      'target_size': target_size,
-      'target_size_ratio': target_size_ratio
-    };
-    return await this.#client.set(`/nodes/${this.#node}/ceph/pools/${this.#name}`, parameters);
-  }
-
-}
-
-/**
- * Class PVECephNodeNodesConfig
- */
-class PVECephNodeNodesConfig {
-  #node;
-  /** @type {PveClient} */
-  #client;
-
-  constructor(client, node) {
-    this.#client = client;
-    this.#node = node;
-  }
-
-
-
-  /**
-  * Get the Ceph configuration file. Deprecated, please use `/nodes/{node}/ceph/cfg/raw.
-  * @returns {Result}
-  */
-  async config() {
-    return await this.#client.get(`/nodes/${this.#node}/ceph/config`);
-  }
-
-}
-
-/**
- * Class PVECephNodeNodesConfigdb
- */
-class PVECephNodeNodesConfigdb {
-  #node;
-  /** @type {PveClient} */
-  #client;
-
-  constructor(client, node) {
-    this.#client = client;
-    this.#node = node;
-  }
-
-
-
-  /**
-  * Get the Ceph configuration database. Deprecated, please use `/nodes/{node}/ceph/cfg/db.
-  * @returns {Result}
-  */
-  async configdb() {
-    return await this.#client.get(`/nodes/${this.#node}/ceph/configdb`);
-  }
-
-}
-
-/**
  * Class PVECephNodeNodesInit
  */
 class PVECephNodeNodesInit {
@@ -11585,13 +11743,13 @@ class PVENodeNodesVzdump {
   /**
   * Create backup.
   * @param {bool} all Backup all known guest systems on this host.
-  * @param {int} bwlimit Limit I/O bandwidth (KBytes per second).
+  * @param {int} bwlimit Limit I/O bandwidth (in KiB/s).
   * @param {string} compress Compress dump file.
   *   Enum: 0,1,gzip,lzo,zstd
   * @param {string} dumpdir Store resulting files to specified directory.
   * @param {string} exclude Exclude specified guest systems (assumes --all)
   * @param {string} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root,  other paths match relative to each subdirectory.
-  * @param {int} ionice Set CFQ ionice priority.
+  * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
   * @param {string} mailnotification Specify when to send an email
   *   Enum: always,failure
@@ -11960,7 +12118,7 @@ class PVENodeNodesSubscription {
   }
   /**
   * Update subscription info.
-  * @param {bool} force Always connect to server, even if we have up to date info inside local cache.
+  * @param {bool} force Always connect to server, even if local cache is still valid.
   * @returns {Result}
   */
   async update(force) {
@@ -12010,7 +12168,7 @@ class PVENodeNodesNetwork {
   /**
   * List available networks
   * @param {string} type Only list specific interface types.
-  *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,any_bridge
+  *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,any_bridge,any_local_bridge
   * @returns {Result}
   */
   async index(type) {
@@ -14300,7 +14458,7 @@ class PVEFirewallNodeNodesRules {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -14375,7 +14533,7 @@ class PVEItemRulesFirewallNodeNodesPos {
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
-  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp'.
+  * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
   * @param {string} log Log level for firewall rule.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -15141,7 +15299,7 @@ class PVENodeNodesExecute {
 
 
   /**
-  * Execute multiple commands in order.
+  * Execute multiple commands in order, root only.
   * @param {string} commands JSON encoded array of commands.
   * @returns {Result}
   */
@@ -15337,7 +15495,7 @@ class PVENodeNodesVncshell {
   /**
   * Creates a VNC Shell proxy.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,upgrade,login
+  *   Enum: login,ceph_install,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {int} height sets the height of the console in pixels.
   * @param {bool} websocket use websocket instead of standard vnc.
@@ -15375,7 +15533,7 @@ class PVENodeNodesTermproxy {
   /**
   * Creates a VNC Shell proxy.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,upgrade,login
+  *   Enum: login,ceph_install,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @returns {Result}
   */
@@ -15438,7 +15596,7 @@ class PVENodeNodesSpiceshell {
   /**
   * Creates a SPICE shell.
   * @param {string} cmd Run specific command or default to login.
-  *   Enum: ceph_install,upgrade,login
+  *   Enum: login,ceph_install,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {string} proxy SPICE proxy server. This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As reasonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).
   * @returns {Result}
@@ -15800,11 +15958,13 @@ class PVEStorage {
   * @param {string} authsupported Authsupported.
   * @param {string} base Base volume. This volume is automatically activated.
   * @param {string} blocksize block size
-  * @param {string} bwlimit Set bandwidth/io limits various operations.
+  * @param {string} bwlimit Set I/O bandwidth limit for various operations (in KiB/s).
   * @param {string} comstar_hg host group for comstar views
   * @param {string} comstar_tg target group for comstar views
   * @param {string} content Allowed content types.  NOTE: the value 'rootdir' is used for Containers, and value 'images' for VMs.
   * @param {string} content_dirs Overrides for default content type directories.
+  * @param {bool} create_base_path Create the base directory if it doesn't exist.
+  * @param {bool} create_subdirs Populate the directory with the default structure.
   * @param {string} data_pool Data Pool (for erasure coding only)
   * @param {string} datastore Proxmox Backup Server datastore name.
   * @param {bool} disable Flag to disable the storage.
@@ -15823,14 +15983,14 @@ class PVEStorage {
   * @param {string} master_pubkey Base64-encoded, PEM-formatted public RSA key. Used to encrypt a copy of the encryption-key which will be added to each encrypted backup.
   * @param {int} max_protected_backups Maximal number of protected backups per guest. Use '-1' for unlimited.
   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per VM. Use '0' for unlimited.
-  * @param {bool} mkdir Create the directory if it doesn't exist.
+  * @param {bool} mkdir Create the directory if it doesn't exist and populate it with default sub-dirs. NOTE: Deprecated, use the 'create-base-path' and 'create-subdirs' options instead.
   * @param {string} monhost IP addresses of monitors (for external clusters).
   * @param {string} mountpoint mount point
   * @param {string} namespace Namespace.
   * @param {bool} nocow Set the NOCOW flag on files. Disables data checksumming and causes data errors to be unrecoverable from while allowing direct I/O. Only use this if data does not need to be any more safe than on a single ext4 formatted disk with no underlying raid system.
   * @param {string} nodes List of cluster node names.
   * @param {bool} nowritecache disable write caching on the target
-  * @param {string} options NFS mount options (see 'man nfs')
+  * @param {string} options NFS/CIFS mount options (see 'man nfs' or 'man mount.cifs')
   * @param {string} password Password for accessing the share/datastore.
   * @param {string} path File system path.
   * @param {string} pool Pool.
@@ -15859,7 +16019,7 @@ class PVEStorage {
   * @param {string} volume Glusterfs Volume.
   * @returns {Result}
   */
-  async create(storage, type, authsupported, base, blocksize, bwlimit, comstar_hg, comstar_tg, content, content_dirs, data_pool, datastore, disable, domain, encryption_key, export_, fingerprint, format, fs_name, fuse, is_mountpoint, iscsiprovider, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, path, pool, port, portal, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, share, shared, smbversion, sparse, subdir, tagged_only, target, thinpool, transport, username, vgname, volume) {
+  async create(storage, type, authsupported, base, blocksize, bwlimit, comstar_hg, comstar_tg, content, content_dirs, create_base_path, create_subdirs, data_pool, datastore, disable, domain, encryption_key, export_, fingerprint, format, fs_name, fuse, is_mountpoint, iscsiprovider, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, path, pool, port, portal, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, share, shared, smbversion, sparse, subdir, tagged_only, target, thinpool, transport, username, vgname, volume) {
     const parameters = {
       'storage': storage,
       'type': type,
@@ -15871,6 +16031,8 @@ class PVEStorage {
       'comstar_tg': comstar_tg,
       'content': content,
       'content-dirs': content_dirs,
+      'create-base-path': create_base_path,
+      'create-subdirs': create_subdirs,
       'data-pool': data_pool,
       'datastore': datastore,
       'disable': disable,
@@ -15957,11 +16119,13 @@ class PVEItemStorageStorage {
   /**
   * Update storage configuration.
   * @param {string} blocksize block size
-  * @param {string} bwlimit Set bandwidth/io limits various operations.
+  * @param {string} bwlimit Set I/O bandwidth limit for various operations (in KiB/s).
   * @param {string} comstar_hg host group for comstar views
   * @param {string} comstar_tg target group for comstar views
   * @param {string} content Allowed content types.  NOTE: the value 'rootdir' is used for Containers, and value 'images' for VMs.
   * @param {string} content_dirs Overrides for default content type directories.
+  * @param {bool} create_base_path Create the base directory if it doesn't exist.
+  * @param {bool} create_subdirs Populate the directory with the default structure.
   * @param {string} data_pool Data Pool (for erasure coding only)
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -15979,14 +16143,14 @@ class PVEItemStorageStorage {
   * @param {string} master_pubkey Base64-encoded, PEM-formatted public RSA key. Used to encrypt a copy of the encryption-key which will be added to each encrypted backup.
   * @param {int} max_protected_backups Maximal number of protected backups per guest. Use '-1' for unlimited.
   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per VM. Use '0' for unlimited.
-  * @param {bool} mkdir Create the directory if it doesn't exist.
+  * @param {bool} mkdir Create the directory if it doesn't exist and populate it with default sub-dirs. NOTE: Deprecated, use the 'create-base-path' and 'create-subdirs' options instead.
   * @param {string} monhost IP addresses of monitors (for external clusters).
   * @param {string} mountpoint mount point
   * @param {string} namespace Namespace.
   * @param {bool} nocow Set the NOCOW flag on files. Disables data checksumming and causes data errors to be unrecoverable from while allowing direct I/O. Only use this if data does not need to be any more safe than on a single ext4 formatted disk with no underlying raid system.
   * @param {string} nodes List of cluster node names.
   * @param {bool} nowritecache disable write caching on the target
-  * @param {string} options NFS mount options (see 'man nfs')
+  * @param {string} options NFS/CIFS mount options (see 'man nfs' or 'man mount.cifs')
   * @param {string} password Password for accessing the share/datastore.
   * @param {string} pool Pool.
   * @param {int} port For non default port.
@@ -16008,7 +16172,7 @@ class PVEItemStorageStorage {
   * @param {string} username RBD Id.
   * @returns {Result}
   */
-  async update(blocksize, bwlimit, comstar_hg, comstar_tg, content, content_dirs, data_pool, delete_, digest, disable, domain, encryption_key, fingerprint, format, fs_name, fuse, is_mountpoint, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, pool, port, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, shared, smbversion, sparse, subdir, tagged_only, transport, username) {
+  async update(blocksize, bwlimit, comstar_hg, comstar_tg, content, content_dirs, create_base_path, create_subdirs, data_pool, delete_, digest, disable, domain, encryption_key, fingerprint, format, fs_name, fuse, is_mountpoint, keyring, krbd, lio_tpg, master_pubkey, max_protected_backups, maxfiles, mkdir, monhost, mountpoint, namespace, nocow, nodes, nowritecache, options, password, pool, port, preallocation, prune_backups, saferemove, saferemove_throughput, server, server2, shared, smbversion, sparse, subdir, tagged_only, transport, username) {
     const parameters = {
       'blocksize': blocksize,
       'bwlimit': bwlimit,
@@ -16016,6 +16180,8 @@ class PVEItemStorageStorage {
       'comstar_tg': comstar_tg,
       'content': content,
       'content-dirs': content_dirs,
+      'create-base-path': create_base_path,
+      'create-subdirs': create_subdirs,
       'data-pool': data_pool,
       'delete': delete_,
       'digest': digest,
@@ -16231,6 +16397,12 @@ class PVEItemUsersAccessUserid {
    * @returns {PVEUseridUsersAccessTfa}
    */
   get tfa() { return this.#tfa == null ? (this.#tfa = new PVEUseridUsersAccessTfa(this.#client, this.#userid)) : this.#tfa; }
+  #unlockTfa;
+  /**
+   * Get UseridUsersAccessUnlockTfa
+   * @returns {PVEUseridUsersAccessUnlockTfa}
+   */
+  get unlockTfa() { return this.#unlockTfa == null ? (this.#unlockTfa = new PVEUseridUsersAccessUnlockTfa(this.#client, this.#userid)) : this.#unlockTfa; }
   #token;
   /**
    * Get UseridUsersAccessToken
@@ -16305,6 +16477,31 @@ class PVEUseridUsersAccessTfa {
   async readUserTfaType(multiple) {
     const parameters = { 'multiple': multiple };
     return await this.#client.get(`/access/users/${this.#userid}/tfa`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEUseridUsersAccessUnlockTfa
+ */
+class PVEUseridUsersAccessUnlockTfa {
+  #userid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, userid) {
+    this.#client = client;
+    this.#userid = userid;
+  }
+
+
+
+  /**
+  * Unlock a user's TFA authentication.
+  * @returns {Result}
+  */
+  async unlockTfa() {
+    return await this.#client.set(`/access/users/${this.#userid}/unlock-tfa`);
   }
 
 }
@@ -17027,15 +17224,6 @@ class PVEAccessTfa {
   async listTfa() {
     return await this.#client.get(`/access/tfa`);
   }
-  /**
-  * Finish a u2f challenge.
-  * @param {string} response The response to the current authentication challenge.
-  * @returns {Result}
-  */
-  async verifyTfa(response) {
-    const parameters = { 'response': response };
-    return await this.#client.create(`/access/tfa`, parameters);
-  }
 
 }
 /**
@@ -17167,7 +17355,7 @@ class PVEAccessTicket {
   * Create or verify authentication ticket.
   * @param {string} password The secret password. This can also be a valid ticket.
   * @param {string} username User name
-  * @param {bool} new_format With webauthn the format of half-authenticated tickts changed. New clients should pass 1 here and not worry about the old format. The old format is deprecated and will be retired with PVE-8.0
+  * @param {bool} new_format This parameter is now ignored and assumed to be 1.
   * @param {string} otp One-time password for Two-factor authentication.
   * @param {string} path Verify ticket, and check if user have access 'privs' on 'path'
   * @param {string} privs Verify ticket, and check if user have access 'privs' on 'path'
