@@ -17,8 +17,13 @@ class Result {
    * @param {string} methodType
    * @param {string} responseType
    */
-  constructor(response, statusCode, reasonPhrase, requestResource,
-    requestParameters, methodType, responseType) {
+  constructor(response,
+              statusCode,
+              reasonPhrase,
+              requestResource,
+              requestParameters,
+              methodType,
+              responseType) {
 
     this.#response = response;
     this.#statusCode = statusCode;
@@ -198,8 +203,7 @@ class PveClientBase {
       if (value != null && value != undefined) {
         if (typeof value == "boolean") {
           tmpParameters[key] = value ? 1 : 0;
-        }
-        else {
+        } else {
           tmpParameters[key] = value;
         }
       }
@@ -252,8 +256,7 @@ class PveClientBase {
 
           if (ref.responseType == ResponseType.JSON) {
             data = JSON.parse(chunks);
-          }
-          else if (ref.responseType == ResponseType.PNG) {
+          } else if (ref.responseType == ResponseType.PNG) {
             data = "data:image/png;base64," + chunks;
           }
 
@@ -290,14 +293,15 @@ class PveClientBase {
    *
    * @param {string} username
    * @param {string} password
-   * @param {string} realm
+   * @param {string} realm pam/pve or custom
+   * @param {string} otp One-time password for Two-factor authentication.
    * @returns {Promise<boolean>}
    */
-  login(username, password, realm = 'pam') {
+  login(username, password, realm = 'pam', otp = null) {
     const ref = this;
 
     return new Promise((resolve, reject) => {
-      this.create("/access/ticket", { password: password, username: username, realm: realm })
+      this.create("/access/ticket", { password: password, username: username, realm: realm, otp: otp })
         .then((result) => {
           if (result.isSuccessStatusCode) {
             ref.#ticketCSRFPreventionToken = result.response.data.CSRFPreventionToken;

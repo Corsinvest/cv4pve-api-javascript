@@ -7,7 +7,7 @@ async function foo() {
     //client.logEnabled = true;
     //client.apiToken = '';
 
-    const login = await client.login('root', process.env.PVE_PASSWORD, 'pam');
+    const login = await client.login('root', process.env.PVE_PASSWORD, process.env.PVE_REALM, process.env.PVE_OTP);
     if (login) {
         console.log((await client.get('/version')).response);
         console.log((await client.version.version()).response);

@@ -1,10 +1,8 @@
 # cv4pve-api-javascript
 
-Proxmox VE Client API Javascript
+Proxmox VE Client API JavaScript
 
-[![License](https://img.shields.io/github/license/Corsinvest/cv4pve-api-javascript.svg)](LICENSE.md) ![GitHub release](https://img.shields.io/github/release/Corsinvest/cv4pve-api-javascript.svg)
-
-[![npm](https://img.shields.io/npm/dw/@corsinvest/cv4pve-api-javascript?logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
+![GitHub release](https://img.shields.io/github/release/Corsinvest/cv4pve-api-javascript.svg) [![npm](https://img.shields.io/npm/dw/@corsinvest/cv4pve-api-javascript?logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
 
 [Proxmox VE Api](https://pve.proxmox.com/pve-docs/api-viewer/)
 
@@ -21,7 +19,7 @@ Corsinvest for Proxmox VE Api Client  (Made in Italy)
 ## Copyright and License
 
 Copyright: Corsinvest Srl
-For licensing details please visit [LICENSE.md](LICENSE.md)
+For licensing details please visit [LICENSE](LICENSE)
 
 ## Commercial Support
 
@@ -72,6 +70,7 @@ The result is class **Result** and contain methods:
 * Minimal dependency library
 * ClientBase lite function
 * Form Proxmox VE 6.2 support Api Token for user
+* Login with One-time password for Two-factor authentication
 
 ## Api token
 
