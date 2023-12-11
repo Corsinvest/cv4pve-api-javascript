@@ -516,6 +516,12 @@ class PVECluster {
    * @returns {PVEClusterMetrics}
    */
   get metrics() { return this.#metrics == null ? (this.#metrics = new PVEClusterMetrics(this.#client)) : this.#metrics; }
+  #notifications;
+  /**
+   * Get ClusterNotifications
+   * @returns {PVEClusterNotifications}
+   */
+  get notifications() { return this.#notifications == null ? (this.#notifications = new PVEClusterNotifications(this.#client)) : this.#notifications; }
   #config;
   /**
    * Get ClusterConfig
@@ -721,7 +727,7 @@ class PVEItemReplicationClusterId {
   * Update replication job configuration.
   * @param {string} comment Description.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} disable Flag to disable/deactivate the entry.
   * @param {float} rate Rate limit in mbps (megabytes per second) as floating point number.
   * @param {string} remove_job Mark the replication job for removal. The job will remove all local replication snapshots. When set to 'full', it also tries to remove replicated volumes on the target. The job then removes itself from the configuration file.
@@ -884,7 +890,7 @@ class PVEItemServerMetricsClusterId {
   * @param {string} api_path_prefix An API path prefix inserted between '&amp;lt;host&amp;gt;:&amp;lt;port&amp;gt;/' and '/api2/'. Can be useful if the InfluxDB service runs behind a reverse proxy.
   * @param {string} bucket The InfluxDB bucket/db. Only necessary when using the http v2 api.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} disable Flag to disable the plugin.
   * @param {string} influxdbproto
   *   Enum: udp,http,https
@@ -919,6 +925,632 @@ class PVEItemServerMetricsClusterId {
       'verify-certificate': verify_certificate
     };
     return await this.#client.set(`/cluster/metrics/server/${this.#id}`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEClusterNotifications
+ */
+class PVEClusterNotifications {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+  #endpoints;
+  /**
+   * Get NotificationsClusterEndpoints
+   * @returns {PVENotificationsClusterEndpoints}
+   */
+  get endpoints() { return this.#endpoints == null ? (this.#endpoints = new PVENotificationsClusterEndpoints(this.#client)) : this.#endpoints; }
+  #targets;
+  /**
+   * Get NotificationsClusterTargets
+   * @returns {PVENotificationsClusterTargets}
+   */
+  get targets() { return this.#targets == null ? (this.#targets = new PVENotificationsClusterTargets(this.#client)) : this.#targets; }
+  #matchers;
+  /**
+   * Get NotificationsClusterMatchers
+   * @returns {PVENotificationsClusterMatchers}
+   */
+  get matchers() { return this.#matchers == null ? (this.#matchers = new PVENotificationsClusterMatchers(this.#client)) : this.#matchers; }
+
+
+  /**
+  * Index for notification-related API endpoints.
+  * @returns {Result}
+  */
+  async index() {
+    return await this.#client.get(`/cluster/notifications`);
+  }
+
+}
+/**
+ * Class PVENotificationsClusterEndpoints
+ */
+class PVENotificationsClusterEndpoints {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+  #sendmail;
+  /**
+   * Get EndpointsNotificationsClusterSendmail
+   * @returns {PVEEndpointsNotificationsClusterSendmail}
+   */
+  get sendmail() { return this.#sendmail == null ? (this.#sendmail = new PVEEndpointsNotificationsClusterSendmail(this.#client)) : this.#sendmail; }
+  #gotify;
+  /**
+   * Get EndpointsNotificationsClusterGotify
+   * @returns {PVEEndpointsNotificationsClusterGotify}
+   */
+  get gotify() { return this.#gotify == null ? (this.#gotify = new PVEEndpointsNotificationsClusterGotify(this.#client)) : this.#gotify; }
+  #smtp;
+  /**
+   * Get EndpointsNotificationsClusterSmtp
+   * @returns {PVEEndpointsNotificationsClusterSmtp}
+   */
+  get smtp() { return this.#smtp == null ? (this.#smtp = new PVEEndpointsNotificationsClusterSmtp(this.#client)) : this.#smtp; }
+
+
+  /**
+  * Index for all available endpoint types.
+  * @returns {Result}
+  */
+  async endpointsIndex() {
+    return await this.#client.get(`/cluster/notifications/endpoints`);
+  }
+
+}
+/**
+ * Class PVEEndpointsNotificationsClusterSendmail
+ */
+class PVEEndpointsNotificationsClusterSendmail {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemSendmailEndpointsNotificationsClusterName
+   * @param name
+   * @returns {PVEItemSendmailEndpointsNotificationsClusterName}
+   */
+  get(name) { return new PVEItemSendmailEndpointsNotificationsClusterName(this.#client, name); }
+
+  /**
+  * Returns a list of all sendmail endpoints
+  * @returns {Result}
+  */
+  async getSendmailEndpoints() {
+    return await this.#client.get(`/cluster/notifications/endpoints/sendmail`);
+  }
+  /**
+  * Create a new sendmail endpoint
+  * @param {string} name The name of the endpoint.
+  * @param {string} author Author of the mail
+  * @param {string} comment Comment
+  * @param {bool} disable Disable this target
+  * @param {string} from_address `From` address for the mail
+  * @param {string} mailto List of email recipients
+  * @param {string} mailto_user List of users
+  * @returns {Result}
+  */
+  async createSendmailEndpoint(name, author, comment, disable, from_address, mailto, mailto_user) {
+    const parameters = {
+      'name': name,
+      'author': author,
+      'comment': comment,
+      'disable': disable,
+      'from-address': from_address,
+      'mailto': mailto,
+      'mailto-user': mailto_user
+    };
+    return await this.#client.create(`/cluster/notifications/endpoints/sendmail`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemSendmailEndpointsNotificationsClusterName
+ */
+class PVEItemSendmailEndpointsNotificationsClusterName {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+
+
+  /**
+  * Remove sendmail endpoint
+  * @returns {Result}
+  */
+  async deleteSendmailEndpoint() {
+    return await this.#client.delete(`/cluster/notifications/endpoints/sendmail/${this.#name}`);
+  }
+  /**
+  * Return a specific sendmail endpoint
+  * @returns {Result}
+  */
+  async getSendmailEndpoint() {
+    return await this.#client.get(`/cluster/notifications/endpoints/sendmail/${this.#name}`);
+  }
+  /**
+  * Update existing sendmail endpoint
+  * @param {string} author Author of the mail
+  * @param {string} comment Comment
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+  * @param {bool} disable Disable this target
+  * @param {string} from_address `From` address for the mail
+  * @param {string} mailto List of email recipients
+  * @param {string} mailto_user List of users
+  * @returns {Result}
+  */
+  async updateSendmailEndpoint(author, comment, delete_, digest, disable, from_address, mailto, mailto_user) {
+    const parameters = {
+      'author': author,
+      'comment': comment,
+      'delete': delete_,
+      'digest': digest,
+      'disable': disable,
+      'from-address': from_address,
+      'mailto': mailto,
+      'mailto-user': mailto_user
+    };
+    return await this.#client.set(`/cluster/notifications/endpoints/sendmail/${this.#name}`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEEndpointsNotificationsClusterGotify
+ */
+class PVEEndpointsNotificationsClusterGotify {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemGotifyEndpointsNotificationsClusterName
+   * @param name
+   * @returns {PVEItemGotifyEndpointsNotificationsClusterName}
+   */
+  get(name) { return new PVEItemGotifyEndpointsNotificationsClusterName(this.#client, name); }
+
+  /**
+  * Returns a list of all gotify endpoints
+  * @returns {Result}
+  */
+  async getGotifyEndpoints() {
+    return await this.#client.get(`/cluster/notifications/endpoints/gotify`);
+  }
+  /**
+  * Create a new gotify endpoint
+  * @param {string} name The name of the endpoint.
+  * @param {string} server Server URL
+  * @param {string} token Secret token
+  * @param {string} comment Comment
+  * @param {bool} disable Disable this target
+  * @returns {Result}
+  */
+  async createGotifyEndpoint(name, server, token, comment, disable) {
+    const parameters = {
+      'name': name,
+      'server': server,
+      'token': token,
+      'comment': comment,
+      'disable': disable
+    };
+    return await this.#client.create(`/cluster/notifications/endpoints/gotify`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemGotifyEndpointsNotificationsClusterName
+ */
+class PVEItemGotifyEndpointsNotificationsClusterName {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+
+
+  /**
+  * Remove gotify endpoint
+  * @returns {Result}
+  */
+  async deleteGotifyEndpoint() {
+    return await this.#client.delete(`/cluster/notifications/endpoints/gotify/${this.#name}`);
+  }
+  /**
+  * Return a specific gotify endpoint
+  * @returns {Result}
+  */
+  async getGotifyEndpoint() {
+    return await this.#client.get(`/cluster/notifications/endpoints/gotify/${this.#name}`);
+  }
+  /**
+  * Update existing gotify endpoint
+  * @param {string} comment Comment
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+  * @param {bool} disable Disable this target
+  * @param {string} server Server URL
+  * @param {string} token Secret token
+  * @returns {Result}
+  */
+  async updateGotifyEndpoint(comment, delete_, digest, disable, server, token) {
+    const parameters = {
+      'comment': comment,
+      'delete': delete_,
+      'digest': digest,
+      'disable': disable,
+      'server': server,
+      'token': token
+    };
+    return await this.#client.set(`/cluster/notifications/endpoints/gotify/${this.#name}`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEEndpointsNotificationsClusterSmtp
+ */
+class PVEEndpointsNotificationsClusterSmtp {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemSmtpEndpointsNotificationsClusterName
+   * @param name
+   * @returns {PVEItemSmtpEndpointsNotificationsClusterName}
+   */
+  get(name) { return new PVEItemSmtpEndpointsNotificationsClusterName(this.#client, name); }
+
+  /**
+  * Returns a list of all smtp endpoints
+  * @returns {Result}
+  */
+  async getSmtpEndpoints() {
+    return await this.#client.get(`/cluster/notifications/endpoints/smtp`);
+  }
+  /**
+  * Create a new smtp endpoint
+  * @param {string} from_address `From` address for the mail
+  * @param {string} name The name of the endpoint.
+  * @param {string} server The address of the SMTP server.
+  * @param {string} author Author of the mail. Defaults to 'Proxmox VE'.
+  * @param {string} comment Comment
+  * @param {bool} disable Disable this target
+  * @param {string} mailto List of email recipients
+  * @param {string} mailto_user List of users
+  * @param {string} mode Determine which encryption method shall be used for the connection.
+  *   Enum: insecure,starttls,tls
+  * @param {string} password Password for SMTP authentication
+  * @param {int} port The port to be used. Defaults to 465 for TLS based connections, 587 for STARTTLS based connections and port 25 for insecure plain-text connections.
+  * @param {string} username Username for SMTP authentication
+  * @returns {Result}
+  */
+  async createSmtpEndpoint(from_address, name, server, author, comment, disable, mailto, mailto_user, mode, password, port, username) {
+    const parameters = {
+      'from-address': from_address,
+      'name': name,
+      'server': server,
+      'author': author,
+      'comment': comment,
+      'disable': disable,
+      'mailto': mailto,
+      'mailto-user': mailto_user,
+      'mode': mode,
+      'password': password,
+      'port': port,
+      'username': username
+    };
+    return await this.#client.create(`/cluster/notifications/endpoints/smtp`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemSmtpEndpointsNotificationsClusterName
+ */
+class PVEItemSmtpEndpointsNotificationsClusterName {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+
+
+  /**
+  * Remove smtp endpoint
+  * @returns {Result}
+  */
+  async deleteSmtpEndpoint() {
+    return await this.#client.delete(`/cluster/notifications/endpoints/smtp/${this.#name}`);
+  }
+  /**
+  * Return a specific smtp endpoint
+  * @returns {Result}
+  */
+  async getSmtpEndpoint() {
+    return await this.#client.get(`/cluster/notifications/endpoints/smtp/${this.#name}`);
+  }
+  /**
+  * Update existing smtp endpoint
+  * @param {string} author Author of the mail. Defaults to 'Proxmox VE'.
+  * @param {string} comment Comment
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+  * @param {bool} disable Disable this target
+  * @param {string} from_address `From` address for the mail
+  * @param {string} mailto List of email recipients
+  * @param {string} mailto_user List of users
+  * @param {string} mode Determine which encryption method shall be used for the connection.
+  *   Enum: insecure,starttls,tls
+  * @param {string} password Password for SMTP authentication
+  * @param {int} port The port to be used. Defaults to 465 for TLS based connections, 587 for STARTTLS based connections and port 25 for insecure plain-text connections.
+  * @param {string} server The address of the SMTP server.
+  * @param {string} username Username for SMTP authentication
+  * @returns {Result}
+  */
+  async updateSmtpEndpoint(author, comment, delete_, digest, disable, from_address, mailto, mailto_user, mode, password, port, server, username) {
+    const parameters = {
+      'author': author,
+      'comment': comment,
+      'delete': delete_,
+      'digest': digest,
+      'disable': disable,
+      'from-address': from_address,
+      'mailto': mailto,
+      'mailto-user': mailto_user,
+      'mode': mode,
+      'password': password,
+      'port': port,
+      'server': server,
+      'username': username
+    };
+    return await this.#client.set(`/cluster/notifications/endpoints/smtp/${this.#name}`, parameters);
+  }
+
+}
+
+/**
+ * Class PVENotificationsClusterTargets
+ */
+class PVENotificationsClusterTargets {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemTargetsNotificationsClusterName
+   * @param name
+   * @returns {PVEItemTargetsNotificationsClusterName}
+   */
+  get(name) { return new PVEItemTargetsNotificationsClusterName(this.#client, name); }
+
+  /**
+  * Returns a list of all entities that can be used as notification targets.
+  * @returns {Result}
+  */
+  async getAllTargets() {
+    return await this.#client.get(`/cluster/notifications/targets`);
+  }
+
+}
+/**
+ * Class PVEItemTargetsNotificationsClusterName
+ */
+class PVEItemTargetsNotificationsClusterName {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+  #test;
+  /**
+   * Get NameTargetsNotificationsClusterTest
+   * @returns {PVENameTargetsNotificationsClusterTest}
+   */
+  get test() { return this.#test == null ? (this.#test = new PVENameTargetsNotificationsClusterTest(this.#client, this.#name)) : this.#test; }
+
+
+
+}
+/**
+ * Class PVENameTargetsNotificationsClusterTest
+ */
+class PVENameTargetsNotificationsClusterTest {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+
+
+  /**
+  * Send a test notification to a provided target.
+  * @returns {Result}
+  */
+  async testTarget() {
+    return await this.#client.create(`/cluster/notifications/targets/${this.#name}/test`);
+  }
+
+}
+
+/**
+ * Class PVENotificationsClusterMatchers
+ */
+class PVENotificationsClusterMatchers {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+  /**
+   * Get ItemMatchersNotificationsClusterName
+   * @param name
+   * @returns {PVEItemMatchersNotificationsClusterName}
+   */
+  get(name) { return new PVEItemMatchersNotificationsClusterName(this.#client, name); }
+
+  /**
+  * Returns a list of all matchers
+  * @returns {Result}
+  */
+  async getMatchers() {
+    return await this.#client.get(`/cluster/notifications/matchers`);
+  }
+  /**
+  * Create a new matcher
+  * @param {string} name Name of the matcher.
+  * @param {string} comment Comment
+  * @param {bool} disable Disable this matcher
+  * @param {bool} invert_match Invert match of the whole matcher
+  * @param {string} match_calendar Match notification timestamp
+  * @param {string} match_field Metadata fields to match (regex or exact match). Must be in the form (regex|exact):&amp;lt;field&amp;gt;=&amp;lt;value&amp;gt;
+  * @param {string} match_severity Notification severities to match
+  * @param {string} mode Choose between 'all' and 'any' for when multiple properties are specified
+  *   Enum: all,any
+  * @param {string} target Targets to notify on match
+  * @returns {Result}
+  */
+  async createMatcher(name, comment, disable, invert_match, match_calendar, match_field, match_severity, mode, target) {
+    const parameters = {
+      'name': name,
+      'comment': comment,
+      'disable': disable,
+      'invert-match': invert_match,
+      'match-calendar': match_calendar,
+      'match-field': match_field,
+      'match-severity': match_severity,
+      'mode': mode,
+      'target': target
+    };
+    return await this.#client.create(`/cluster/notifications/matchers`, parameters);
+  }
+
+}
+/**
+ * Class PVEItemMatchersNotificationsClusterName
+ */
+class PVEItemMatchersNotificationsClusterName {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+
+
+  /**
+  * Remove matcher
+  * @returns {Result}
+  */
+  async deleteMatcher() {
+    return await this.#client.delete(`/cluster/notifications/matchers/${this.#name}`);
+  }
+  /**
+  * Return a specific matcher
+  * @returns {Result}
+  */
+  async getMatcher() {
+    return await this.#client.get(`/cluster/notifications/matchers/${this.#name}`);
+  }
+  /**
+  * Update existing matcher
+  * @param {string} comment Comment
+  * @param {string} delete_ A list of settings you want to delete.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+  * @param {bool} disable Disable this matcher
+  * @param {bool} invert_match Invert match of the whole matcher
+  * @param {string} match_calendar Match notification timestamp
+  * @param {string} match_field Metadata fields to match (regex or exact match). Must be in the form (regex|exact):&amp;lt;field&amp;gt;=&amp;lt;value&amp;gt;
+  * @param {string} match_severity Notification severities to match
+  * @param {string} mode Choose between 'all' and 'any' for when multiple properties are specified
+  *   Enum: all,any
+  * @param {string} target Targets to notify on match
+  * @returns {Result}
+  */
+  async updateMatcher(comment, delete_, digest, disable, invert_match, match_calendar, match_field, match_severity, mode, target) {
+    const parameters = {
+      'comment': comment,
+      'delete': delete_,
+      'digest': digest,
+      'disable': disable,
+      'invert-match': invert_match,
+      'match-calendar': match_calendar,
+      'match-field': match_field,
+      'match-severity': match_severity,
+      'mode': mode,
+      'target': target
+    };
+    return await this.#client.set(`/cluster/notifications/matchers/${this.#name}`, parameters);
   }
 
 }
@@ -1293,7 +1925,7 @@ class PVEFirewallClusterGroups {
   * Create new security group.
   * @param {string} group Security Group name.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename/update an existing security group. You can set 'rename' to the same value as 'name' to update the 'comment' of an existing group.
   * @returns {Result}
   */
@@ -1350,7 +1982,7 @@ class PVEItemGroupsFirewallClusterGroup {
   *   Enum: in,out,group
   * @param {string} comment Descriptive comment.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -1405,7 +2037,7 @@ class PVEItemGroupGroupsFirewallClusterPos {
 
   /**
   * Delete rule.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async deleteRule(digest) {
@@ -1425,7 +2057,7 @@ class PVEItemGroupGroupsFirewallClusterPos {
   * @param {string} comment Descriptive comment.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -1500,7 +2132,7 @@ class PVEFirewallClusterRules {
   *   Enum: in,out,group
   * @param {string} comment Descriptive comment.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -1553,7 +2185,7 @@ class PVEItemRulesFirewallClusterPos {
 
   /**
   * Delete rule.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async deleteRule(digest) {
@@ -1573,7 +2205,7 @@ class PVEItemRulesFirewallClusterPos {
   * @param {string} comment Descriptive comment.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -1645,7 +2277,7 @@ class PVEFirewallClusterIpset {
   * Create new IPSet
   * @param {string} name IP set name.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename an existing IPSet. You can set 'rename' to the same value as 'name' to update the 'comment' of an existing IPSet.
   * @returns {Result}
   */
@@ -1733,7 +2365,7 @@ class PVEItemNameIpsetFirewallClusterCidr {
 
   /**
   * Remove IP or Network from IPSet.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async removeIp(digest) {
@@ -1750,7 +2382,7 @@ class PVEItemNameIpsetFirewallClusterCidr {
   /**
   * Update IP or Network settings
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} nomatch
   * @returns {Result}
   */
@@ -1827,7 +2459,7 @@ class PVEItemAliasesFirewallClusterName {
 
   /**
   * Remove IP or Network alias.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async removeAlias(digest) {
@@ -1845,7 +2477,7 @@ class PVEItemAliasesFirewallClusterName {
   * Update IP or Network alias.
   * @param {string} cidr Network/IP specification in CIDR format.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename an existing alias.
   * @returns {Result}
   */
@@ -1886,7 +2518,7 @@ class PVEFirewallClusterOptions {
   /**
   * Set Firewall options.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} ebtables Enable ebtables rules cluster wide.
   * @param {int} enable Enable or disable the firewall cluster wide.
   * @param {string} log_ratelimit Log ratelimiting settings
@@ -2007,14 +2639,17 @@ class PVEClusterBackup {
   * @param {string} id Job ID (will be autogenerated).
   * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
-  * @param {string} mailnotification Specify when to send an email
+  * @param {string} mailnotification Deprecated: use 'notification-policy' instead.
   *   Enum: always,failure
-  * @param {string} mailto Comma-separated list of email addresses or users that should receive email notifications.
+  * @param {string} mailto Comma-separated list of email addresses or users that should receive email notifications. Has no effect if the 'notification-target' option  is set at the same time.
   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
   * @param {string} mode Backup mode.
   *   Enum: snapshot,suspend,stop
   * @param {string} node Only run if executed on this node.
   * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
+  * @param {string} notification_policy Specify when to send a notification
+  *   Enum: always,failure,never
+  * @param {string} notification_target Determine the target to which notifications should be sent. Can either be a notification endpoint or a notification group. This option takes precedence over 'mailto', meaning that if both are  set, the 'mailto' option will be ignored.
   * @param {string} performance Other performance-related settings.
   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
   * @param {string} pool Backup all known guest systems included in the specified pool.
@@ -2035,7 +2670,7 @@ class PVEClusterBackup {
   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, N&amp;gt;0 uses N as thread count.
   * @returns {Result}
   */
-  async createJob(all, bwlimit, comment, compress, dow, dumpdir, enabled, exclude, exclude_path, id, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, performance, pigz, pool, protected_, prune_backups, quiet, remove, repeat_missed, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
+  async createJob(all, bwlimit, comment, compress, dow, dumpdir, enabled, exclude, exclude_path, id, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, notification_policy, notification_target, performance, pigz, pool, protected_, prune_backups, quiet, remove, repeat_missed, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
     const parameters = {
       'all': all,
       'bwlimit': bwlimit,
@@ -2055,6 +2690,8 @@ class PVEClusterBackup {
       'mode': mode,
       'node': node,
       'notes-template': notes_template,
+      'notification-policy': notification_policy,
+      'notification-target': notification_target,
       'performance': performance,
       'pigz': pigz,
       'pool': pool,
@@ -2128,14 +2765,17 @@ class PVEItemBackupClusterId {
   * @param {string} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root,  other paths match relative to each subdirectory.
   * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
-  * @param {string} mailnotification Specify when to send an email
+  * @param {string} mailnotification Deprecated: use 'notification-policy' instead.
   *   Enum: always,failure
-  * @param {string} mailto Comma-separated list of email addresses or users that should receive email notifications.
+  * @param {string} mailto Comma-separated list of email addresses or users that should receive email notifications. Has no effect if the 'notification-target' option  is set at the same time.
   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
   * @param {string} mode Backup mode.
   *   Enum: snapshot,suspend,stop
   * @param {string} node Only run if executed on this node.
   * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
+  * @param {string} notification_policy Specify when to send a notification
+  *   Enum: always,failure,never
+  * @param {string} notification_target Determine the target to which notifications should be sent. Can either be a notification endpoint or a notification group. This option takes precedence over 'mailto', meaning that if both are  set, the 'mailto' option will be ignored.
   * @param {string} performance Other performance-related settings.
   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
   * @param {string} pool Backup all known guest systems included in the specified pool.
@@ -2156,7 +2796,7 @@ class PVEItemBackupClusterId {
   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, N&amp;gt;0 uses N as thread count.
   * @returns {Result}
   */
-  async updateJob(all, bwlimit, comment, compress, delete_, dow, dumpdir, enabled, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, performance, pigz, pool, protected_, prune_backups, quiet, remove, repeat_missed, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
+  async updateJob(all, bwlimit, comment, compress, delete_, dow, dumpdir, enabled, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, node, notes_template, notification_policy, notification_target, performance, pigz, pool, protected_, prune_backups, quiet, remove, repeat_missed, schedule, script, starttime, stdexcludes, stop, stopwait, storage, tmpdir, vmid, zstd) {
     const parameters = {
       'all': all,
       'bwlimit': bwlimit,
@@ -2176,6 +2816,8 @@ class PVEItemBackupClusterId {
       'mode': mode,
       'node': node,
       'notes-template': notes_template,
+      'notification-policy': notification_policy,
+      'notification-target': notification_target,
       'performance': performance,
       'pigz': pigz,
       'pool': pool,
@@ -2424,7 +3066,7 @@ class PVEItemResourcesHaClusterSid {
   * Update resource configuration.
   * @param {string} comment Description.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} group The HA group identifier.
   * @param {int} max_relocate Maximal number of service relocate tries when a service failes to start.
   * @param {int} max_restart Maximal number of tries to restart the service on a node after its start failed.
@@ -2585,7 +3227,7 @@ class PVEItemGroupsHaClusterGroup {
   * Update ha group configuration.
   * @param {string} comment Description.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} nodes List of cluster node names with optional priority.
   * @param {bool} nofailback The CRM tries to run services on the node with the highest priority. If a node with higher priority comes online, the CRM migrates the service to that node. Enabling nofailback prevents that behavior.
   * @param {bool} restricted Resources bound to restricted groups may only run on nodes defined by the group.
@@ -2722,6 +3364,12 @@ class PVEClusterAcme {
    * @returns {PVEAcmeClusterTos}
    */
   get tos() { return this.#tos == null ? (this.#tos = new PVEAcmeClusterTos(this.#client)) : this.#tos; }
+  #meta;
+  /**
+   * Get AcmeClusterMeta
+   * @returns {PVEAcmeClusterMeta}
+   */
+  get meta() { return this.#meta == null ? (this.#meta = new PVEAcmeClusterMeta(this.#client)) : this.#meta; }
   #directories;
   /**
    * Get AcmeClusterDirectories
@@ -2782,7 +3430,7 @@ class PVEAcmeClusterPlugins {
   * @param {string} type ACME challenge type.
   *   Enum: dns,standalone
   * @param {string} api API plugin name
-  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
+  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,tencent,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
   * @param {string} data DNS plugin data. (base64 encoded)
   * @param {bool} disable Flag to disable the config.
   * @param {string} nodes List of cluster node names.
@@ -2835,10 +3483,10 @@ class PVEItemPluginsAcmeClusterId {
   /**
   * Update ACME plugin configuration.
   * @param {string} api API plugin name
-  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,arvan,aurora,autodns,aws,azion,azure,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
+  *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,tencent,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
   * @param {string} data DNS plugin data. (base64 encoded)
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} disable Flag to disable the config.
   * @param {string} nodes List of cluster node names.
   * @param {int} validation_delay Extra delay in seconds to wait before requesting validation. Allows to cope with a long TTL of DNS records.
@@ -2891,14 +3539,18 @@ class PVEAcmeClusterAccount {
   * Register a new ACME account with CA.
   * @param {string} contact Contact email addresses.
   * @param {string} directory URL of ACME CA directory endpoint.
+  * @param {string} eab_hmac_key HMAC key for External Account Binding.
+  * @param {string} eab_kid Key Identifier for External Account Binding.
   * @param {string} name ACME account config file name.
   * @param {string} tos_url URL of CA TermsOfService - setting this indicates agreement.
   * @returns {Result}
   */
-  async registerAccount(contact, directory, name, tos_url) {
+  async registerAccount(contact, directory, eab_hmac_key, eab_kid, name, tos_url) {
     const parameters = {
       'contact': contact,
       'directory': directory,
+      'eab-hmac-key': eab_hmac_key,
+      'eab-kid': eab_kid,
       'name': name,
       'tos_url': tos_url
     };
@@ -2963,13 +3615,40 @@ class PVEAcmeClusterTos {
 
 
   /**
-  * Retrieve ACME TermsOfService URL from CA.
+  * Retrieve ACME TermsOfService URL from CA. Deprecated, please use /cluster/acme/meta.
   * @param {string} directory URL of ACME CA directory endpoint.
   * @returns {Result}
   */
   async getTos(directory) {
     const parameters = { 'directory': directory };
     return await this.#client.get(`/cluster/acme/tos`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEAcmeClusterMeta
+ */
+class PVEAcmeClusterMeta {
+
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+
+  }
+
+
+
+  /**
+  * Retrieve ACME Directory Meta Information
+  * @param {string} directory URL of ACME CA directory endpoint.
+  * @returns {Result}
+  */
+  async getMeta(directory) {
+    const parameters = { 'directory': directory };
+    return await this.#client.get(`/cluster/acme/meta`, parameters);
   }
 
 }
@@ -3511,7 +4190,7 @@ class PVEItemPciMappingClusterId {
   * Update a hardware mapping.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} description Description of the logical PCI device.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} map A list of maps for the cluster nodes.
   * @param {bool} mdev
   * @returns {Result}
@@ -3561,9 +4240,9 @@ class PVEMappingClusterUsb {
   }
   /**
   * Create a new hardware mapping.
-  * @param {string} id The ID of the logical PCI mapping.
+  * @param {string} id The ID of the logical USB mapping.
   * @param {string} map A list of maps for the cluster nodes.
-  * @param {string} description Description of the logical PCI device.
+  * @param {string} description Description of the logical USB device.
   * @returns {Result}
   */
   async create(id, map, description) {
@@ -3609,8 +4288,8 @@ class PVEItemUsbMappingClusterId {
   * Update a hardware mapping.
   * @param {string} map A list of maps for the cluster nodes.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} description Description of the logical PCI device.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} description Description of the logical USB device.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async update(map, delete_, description, digest) {
@@ -3763,6 +4442,12 @@ class PVEItemVnetsSdnClusterVnet {
    * @returns {PVEVnetVnetsSdnClusterSubnets}
    */
   get subnets() { return this.#subnets == null ? (this.#subnets = new PVEVnetVnetsSdnClusterSubnets(this.#client, this.#vnet)) : this.#subnets; }
+  #ips;
+  /**
+   * Get VnetVnetsSdnClusterIps
+   * @returns {PVEVnetVnetsSdnClusterIps}
+   */
+  get ips() { return this.#ips == null ? (this.#ips = new PVEVnetVnetsSdnClusterIps(this.#client, this.#vnet)) : this.#ips; }
 
 
   /**
@@ -3789,7 +4474,7 @@ class PVEItemVnetsSdnClusterVnet {
   * Update sdn vnet object configuration.
   * @param {string} alias alias name of the vnet
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {int} tag vlan or vxlan id
   * @param {bool} vlanaware Allow vm VLANs to pass through this vnet.
   * @param {string} zone zone id
@@ -3847,15 +4532,19 @@ class PVEVnetVnetsSdnClusterSubnets {
   * @param {string} subnet The SDN subnet object identifier.
   * @param {string} type
   *   Enum: subnet
+  * @param {string} dhcp_dns_server IP address for the DNS server
+  * @param {string} dhcp_range A list of DHCP ranges for this subnet
   * @param {string} dnszoneprefix dns domain zone prefix  ex: 'adm' -&amp;gt; &amp;lt;hostname&amp;gt;.adm.mydomain.com
   * @param {string} gateway Subnet Gateway: Will be assign on vnet for layer3 zones
   * @param {bool} snat enable masquerade for this subnet if pve-firewall
   * @returns {Result}
   */
-  async create(subnet, type, dnszoneprefix, gateway, snat) {
+  async create(subnet, type, dhcp_dns_server, dhcp_range, dnszoneprefix, gateway, snat) {
     const parameters = {
       'subnet': subnet,
       'type': type,
+      'dhcp-dns-server': dhcp_dns_server,
+      'dhcp-range': dhcp_range,
       'dnszoneprefix': dnszoneprefix,
       'gateway': gateway,
       'snat': snat
@@ -3904,21 +4593,90 @@ class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
   /**
   * Update sdn subnet object configuration.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} dhcp_dns_server IP address for the DNS server
+  * @param {string} dhcp_range A list of DHCP ranges for this subnet
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dnszoneprefix dns domain zone prefix  ex: 'adm' -&amp;gt; &amp;lt;hostname&amp;gt;.adm.mydomain.com
   * @param {string} gateway Subnet Gateway: Will be assign on vnet for layer3 zones
   * @param {bool} snat enable masquerade for this subnet if pve-firewall
   * @returns {Result}
   */
-  async update(delete_, digest, dnszoneprefix, gateway, snat) {
+  async update(delete_, dhcp_dns_server, dhcp_range, digest, dnszoneprefix, gateway, snat) {
     const parameters = {
       'delete': delete_,
+      'dhcp-dns-server': dhcp_dns_server,
+      'dhcp-range': dhcp_range,
       'digest': digest,
       'dnszoneprefix': dnszoneprefix,
       'gateway': gateway,
       'snat': snat
     };
     return await this.#client.set(`/cluster/sdn/vnets/${this.#vnet}/subnets/${this.#subnet}`, parameters);
+  }
+
+}
+
+/**
+ * Class PVEVnetVnetsSdnClusterIps
+ */
+class PVEVnetVnetsSdnClusterIps {
+  #vnet;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, vnet) {
+    this.#client = client;
+    this.#vnet = vnet;
+  }
+
+
+
+  /**
+  * Delete IP Mappings in a VNet
+  * @param {string} ip The IP address to delete
+  * @param {string} zone The SDN zone object identifier.
+  * @param {string} mac Unicast MAC address.
+  * @returns {Result}
+  */
+  async ipdelete(ip, zone, mac) {
+    const parameters = {
+      'ip': ip,
+      'zone': zone,
+      'mac': mac
+    };
+    return await this.#client.delete(`/cluster/sdn/vnets/${this.#vnet}/ips`, parameters);
+  }
+  /**
+  * Create IP Mapping in a VNet
+  * @param {string} ip The IP address to associate with the given MAC address
+  * @param {string} zone The SDN zone object identifier.
+  * @param {string} mac Unicast MAC address.
+  * @returns {Result}
+  */
+  async ipcreate(ip, zone, mac) {
+    const parameters = {
+      'ip': ip,
+      'zone': zone,
+      'mac': mac
+    };
+    return await this.#client.create(`/cluster/sdn/vnets/${this.#vnet}/ips`, parameters);
+  }
+  /**
+  * Update IP Mapping in a VNet
+  * @param {string} ip The IP address to associate with the given MAC address
+  * @param {string} zone The SDN zone object identifier.
+  * @param {string} mac Unicast MAC address.
+  * @param {int} vmid The (unique) ID of the VM.
+  * @returns {Result}
+  */
+  async ipupdate(ip, zone, mac, vmid) {
+    const parameters = {
+      'ip': ip,
+      'zone': zone,
+      'mac': mac,
+      'vmid': vmid
+    };
+    return await this.#client.set(`/cluster/sdn/vnets/${this.#vnet}/ips`, parameters);
   }
 
 }
@@ -3969,6 +4727,8 @@ class PVESdnClusterZones {
   * @param {string} bridge
   * @param {bool} bridge_disable_mac_learning Disable auto mac learning.
   * @param {string} controller Frr router name
+  * @param {string} dhcp Type of the DHCP backend for this zone
+  *   Enum: dnsmasq
   * @param {bool} disable_arp_nd_suppression Disable ipv4 arp &amp;&amp; ipv6 neighbour discovery suppression
   * @param {string} dns dns api server
   * @param {string} dnszone dns domain zone  ex: mydomain.com
@@ -3990,7 +4750,7 @@ class PVESdnClusterZones {
   * @param {int} vxlan_port Vxlan tunnel udp port (default 4789).
   * @returns {Result}
   */
-  async create(type, zone, advertise_subnets, bridge, bridge_disable_mac_learning, controller, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan, vxlan_port) {
+  async create(type, zone, advertise_subnets, bridge, bridge_disable_mac_learning, controller, dhcp, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan, vxlan_port) {
     const parameters = {
       'type': type,
       'zone': zone,
@@ -3998,6 +4758,7 @@ class PVESdnClusterZones {
       'bridge': bridge,
       'bridge-disable-mac-learning': bridge_disable_mac_learning,
       'controller': controller,
+      'dhcp': dhcp,
       'disable-arp-nd-suppression': disable_arp_nd_suppression,
       'dns': dns,
       'dnszone': dnszone,
@@ -4063,7 +4824,9 @@ class PVEItemZonesSdnClusterZone {
   * @param {bool} bridge_disable_mac_learning Disable auto mac learning.
   * @param {string} controller Frr router name
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} dhcp Type of the DHCP backend for this zone
+  *   Enum: dnsmasq
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} disable_arp_nd_suppression Disable ipv4 arp &amp;&amp; ipv6 neighbour discovery suppression
   * @param {string} dns dns api server
   * @param {string} dnszone dns domain zone  ex: mydomain.com
@@ -4085,13 +4848,14 @@ class PVEItemZonesSdnClusterZone {
   * @param {int} vxlan_port Vxlan tunnel udp port (default 4789).
   * @returns {Result}
   */
-  async update(advertise_subnets, bridge, bridge_disable_mac_learning, controller, delete_, digest, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan, vxlan_port) {
+  async update(advertise_subnets, bridge, bridge_disable_mac_learning, controller, delete_, dhcp, digest, disable_arp_nd_suppression, dns, dnszone, dp_id, exitnodes, exitnodes_local_routing, exitnodes_primary, ipam, mac, mtu, nodes, peers, reversedns, rt_import, tag, vlan_protocol, vrf_vxlan, vxlan_port) {
     const parameters = {
       'advertise-subnets': advertise_subnets,
       'bridge': bridge,
       'bridge-disable-mac-learning': bridge_disable_mac_learning,
       'controller': controller,
       'delete': delete_,
+      'dhcp': dhcp,
       'digest': digest,
       'disable-arp-nd-suppression': disable_arp_nd_suppression,
       'dns': dns,
@@ -4143,7 +4907,7 @@ class PVESdnClusterControllers {
   * @param {bool} pending Display pending config.
   * @param {bool} running Display running config.
   * @param {string} type Only list sdn controllers of specific type
-  *   Enum: bgp,evpn,faucet
+  *   Enum: bgp,evpn,faucet,isis
   * @returns {Result}
   */
   async index(pending, running, type) {
@@ -4158,17 +4922,20 @@ class PVESdnClusterControllers {
   * Create a new sdn controller object.
   * @param {string} controller The SDN controller object identifier.
   * @param {string} type Plugin type.
-  *   Enum: bgp,evpn,faucet
+  *   Enum: bgp,evpn,faucet,isis
   * @param {int} asn autonomous system number
   * @param {bool} bgp_multipath_as_path_relax
   * @param {bool} ebgp Enable ebgp. (remote-as external)
   * @param {int} ebgp_multihop
+  * @param {string} isis_domain ISIS domain.
+  * @param {string} isis_ifaces ISIS interface.
+  * @param {string} isis_net ISIS network entity title.
   * @param {string} loopback source loopback interface.
   * @param {string} node The cluster node name.
   * @param {string} peers peers address list.
   * @returns {Result}
   */
-  async create(controller, type, asn, bgp_multipath_as_path_relax, ebgp, ebgp_multihop, loopback, node, peers) {
+  async create(controller, type, asn, bgp_multipath_as_path_relax, ebgp, ebgp_multihop, isis_domain, isis_ifaces, isis_net, loopback, node, peers) {
     const parameters = {
       'controller': controller,
       'type': type,
@@ -4176,6 +4943,9 @@ class PVESdnClusterControllers {
       'bgp-multipath-as-path-relax': bgp_multipath_as_path_relax,
       'ebgp': ebgp,
       'ebgp-multihop': ebgp_multihop,
+      'isis-domain': isis_domain,
+      'isis-ifaces': isis_ifaces,
+      'isis-net': isis_net,
       'loopback': loopback,
       'node': node,
       'peers': peers
@@ -4224,15 +4994,18 @@ class PVEItemControllersSdnClusterController {
   * @param {int} asn autonomous system number
   * @param {bool} bgp_multipath_as_path_relax
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} ebgp Enable ebgp. (remote-as external)
   * @param {int} ebgp_multihop
+  * @param {string} isis_domain ISIS domain.
+  * @param {string} isis_ifaces ISIS interface.
+  * @param {string} isis_net ISIS network entity title.
   * @param {string} loopback source loopback interface.
   * @param {string} node The cluster node name.
   * @param {string} peers peers address list.
   * @returns {Result}
   */
-  async update(asn, bgp_multipath_as_path_relax, delete_, digest, ebgp, ebgp_multihop, loopback, node, peers) {
+  async update(asn, bgp_multipath_as_path_relax, delete_, digest, ebgp, ebgp_multihop, isis_domain, isis_ifaces, isis_net, loopback, node, peers) {
     const parameters = {
       'asn': asn,
       'bgp-multipath-as-path-relax': bgp_multipath_as_path_relax,
@@ -4240,6 +5013,9 @@ class PVEItemControllersSdnClusterController {
       'digest': digest,
       'ebgp': ebgp,
       'ebgp-multihop': ebgp_multihop,
+      'isis-domain': isis_domain,
+      'isis-ifaces': isis_ifaces,
+      'isis-net': isis_net,
       'loopback': loopback,
       'node': node,
       'peers': peers
@@ -4315,6 +5091,12 @@ class PVEItemIpamsSdnClusterIpam {
     this.#ipam = ipam;
   }
 
+  #status;
+  /**
+   * Get IpamIpamsSdnClusterStatus
+   * @returns {PVEIpamIpamsSdnClusterStatus}
+   */
+  get status() { return this.#status == null ? (this.#status = new PVEIpamIpamsSdnClusterStatus(this.#client, this.#ipam)) : this.#status; }
 
 
   /**
@@ -4334,7 +5116,7 @@ class PVEItemIpamsSdnClusterIpam {
   /**
   * Update sdn ipam object configuration.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {int} section
   * @param {string} token
   * @param {string} url
@@ -4349,6 +5131,30 @@ class PVEItemIpamsSdnClusterIpam {
       'url': url
     };
     return await this.#client.set(`/cluster/sdn/ipams/${this.#ipam}`, parameters);
+  }
+
+}
+/**
+ * Class PVEIpamIpamsSdnClusterStatus
+ */
+class PVEIpamIpamsSdnClusterStatus {
+  #ipam;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, ipam) {
+    this.#client = client;
+    this.#ipam = ipam;
+  }
+
+
+
+  /**
+  * List PVE IPAM Entries
+  * @returns {Result}
+  */
+  async ipamindex() {
+    return await this.#client.get(`/cluster/sdn/ipams/${this.#ipam}/status`);
   }
 
 }
@@ -4442,7 +5248,7 @@ class PVEItemDnsSdnClusterDns {
   /**
   * Update sdn dns object configuration.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} key
   * @param {int} reversemaskv6
   * @param {int} ttl
@@ -4581,8 +5387,8 @@ class PVEClusterOptions {
   * @param {string} keyboard Default keybord layout for vnc server.
   *   Enum: de,de-ch,da,en-gb,en-us,es,fi,fr,fr-be,fr-ca,fr-ch,hu,is,it,ja,lt,mk,nl,no,pl,pt,pt-br,sv,sl,tr
   * @param {string} language Default GUI language.
-  *   Enum: ca,da,de,en,es,eu,fa,fr,he,it,ja,nb,nn,pl,pt_BR,ru,sl,sv,tr,zh_CN,zh_TW
-  * @param {string} mac_prefix Prefix for autogenerated MAC addresses.
+  *   Enum: ar,ca,da,de,en,es,eu,fa,fr,hr,he,it,ja,ka,kr,nb,nl,nn,pl,pt_BR,ru,sl,sv,tr,ukr,zh_CN,zh_TW
+  * @param {string} mac_prefix Prefix for the auto-generated MAC addresses of virtual guests. The default 'BC:24:11' is the OUI assigned by the IEEE to Proxmox Server Solutions GmbH for a 24-bit large MAC block. You're allowed to use this in local networks, i.e., those not directly reachable by the public (e.g., in a LAN or behind NAT).
   * @param {int} max_workers Defines how many workers (per node) are maximal started  on actions like 'stopall VMs' or task from the ha-manager.
   * @param {string} migration For cluster wide migration settings.
   * @param {bool} migration_unsecure Migration is secure using SSH tunnel by default. For secure private networks you can disable it to speed up migration. Deprecated, use the 'migration' property instead!
@@ -4954,6 +5760,12 @@ class PVEItemNodesNode {
    * @returns {PVENodeNodesStopall}
    */
   get stopall() { return this.#stopall == null ? (this.#stopall = new PVENodeNodesStopall(this.#client, this.#node)) : this.#stopall; }
+  #suspendall;
+  /**
+   * Get NodeNodesSuspendall
+   * @returns {PVENodeNodesSuspendall}
+   */
+  get suspendall() { return this.#suspendall == null ? (this.#suspendall = new PVENodeNodesSuspendall(this.#client, this.#node)) : this.#suspendall; }
   #migrateall;
   /**
    * Get NodeNodesMigrateall
@@ -5057,7 +5869,7 @@ class PVENodeNodesQemu {
   * @param {string} lock Lock/unlock the VM.
   *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
   * @param {string} machine Specifies the QEMU machine type.
-  * @param {int} memory Amount of RAM for the VM in MiB. This is the maximum available memory when you use the balloon device.
+  * @param {string} memory Memory properties.
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
@@ -5488,7 +6300,7 @@ class PVEFirewallVmidQemuNodeNodesRules {
   *   Enum: in,out,group
   * @param {string} comment Descriptive comment.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -5545,7 +6357,7 @@ class PVEItemRulesFirewallVmidQemuNodeNodesPos {
 
   /**
   * Delete rule.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async deleteRule(digest) {
@@ -5565,7 +6377,7 @@ class PVEItemRulesFirewallVmidQemuNodeNodesPos {
   * @param {string} comment Descriptive comment.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -5673,7 +6485,7 @@ class PVEItemAliasesFirewallVmidQemuNodeNodesName {
 
   /**
   * Remove IP or Network alias.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async removeAlias(digest) {
@@ -5691,7 +6503,7 @@ class PVEItemAliasesFirewallVmidQemuNodeNodesName {
   * Update IP or Network alias.
   * @param {string} cidr Network/IP specification in CIDR format.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename an existing alias.
   * @returns {Result}
   */
@@ -5741,7 +6553,7 @@ class PVEFirewallVmidQemuNodeNodesIpset {
   * Create new IPSet
   * @param {string} name IP set name.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename an existing IPSet. You can set 'rename' to the same value as 'name' to update the 'comment' of an existing IPSet.
   * @returns {Result}
   */
@@ -5837,7 +6649,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
 
   /**
   * Remove IP or Network from IPSet.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async removeIp(digest) {
@@ -5854,7 +6666,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
   /**
   * Update IP or Network settings
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} nomatch
   * @returns {Result}
   */
@@ -5897,7 +6709,7 @@ class PVEFirewallVmidQemuNodeNodesOptions {
   * Set Firewall options.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {bool} dhcp Enable DHCP.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} enable Enable/disable firewall rules.
   * @param {bool} ipfilter Enable default IP filters. This is equivalent to adding an empty ipfilter-net&amp;lt;id&amp;gt; ipset for every interface. Such ipsets implicitly contain sane default restrictions such as restricting IPv6 link local addresses to the one derived from the interface's MAC address. For containers the configured IP addresses will be implicitly added.
   * @param {string} log_level_in Log level for incoming traffic.
@@ -7038,7 +7850,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} lock Lock/unlock the VM.
   *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
   * @param {string} machine Specifies the QEMU machine type.
-  * @param {int} memory Amount of RAM for the VM in MiB. This is the maximum available memory when you use the balloon device.
+  * @param {string} memory Memory properties.
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
@@ -7220,7 +8032,7 @@ class PVEVmidQemuNodeNodesConfig {
   * @param {string} lock Lock/unlock the VM.
   *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
   * @param {string} machine Specifies the QEMU machine type.
-  * @param {int} memory Amount of RAM for the VM in MiB. This is the maximum available memory when you use the balloon device.
+  * @param {string} memory Memory properties.
   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
   * @param {string} name Set a name for the VM. Only used on the configuration web interface.
@@ -7505,7 +8317,7 @@ class PVEVmidQemuNodeNodesVncproxy {
   /**
   * Creates a TCP VNC proxy connections.
   * @param {bool} generate_password Generates a random password to be used as ticket instead of the API ticket.
-  * @param {bool} websocket starts websockify instead of vncproxy
+  * @param {bool} websocket Prepare for websocket upgrade (only required when using serial terminal, otherwise upgrade is always possible).
   * @returns {Result}
   */
   async vncproxy(generate_password, websocket) {
@@ -8595,6 +9407,7 @@ class PVENodeNodesLxc {
   * @param {int} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
   * @param {bool} debug Try to be more verbose. For now this only enables debug log-level on start.
   * @param {string} description Description for the Container. Shown in the web-interface CT's summary. This is saved as comment inside the configuration file.
+  * @param {array} devN Device to pass through to the container
   * @param {string} features Allow containers access to advanced features.
   * @param {bool} force Allow to overwrite existing container.
   * @param {string} hookscript Script that will be exectued during various steps in the containers lifetime.
@@ -8629,7 +9442,7 @@ class PVENodeNodesLxc {
   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
   * @returns {Result}
   */
-  async createVm(ostemplate, vmid, arch, bwlimit, cmode, console, cores, cpulimit, cpuunits, debug, description, features, force, hookscript, hostname, ignore_unpack_errors, lock, memory, mpN, nameserver, netN, onboot, ostype, password, pool, protection, restore, rootfs, searchdomain, ssh_public_keys, start, startup, storage, swap, tags, template, timezone, tty, unique, unprivileged, unusedN) {
+  async createVm(ostemplate, vmid, arch, bwlimit, cmode, console, cores, cpulimit, cpuunits, debug, description, devN, features, force, hookscript, hostname, ignore_unpack_errors, lock, memory, mpN, nameserver, netN, onboot, ostype, password, pool, protection, restore, rootfs, searchdomain, ssh_public_keys, start, startup, storage, swap, tags, template, timezone, tty, unique, unprivileged, unusedN) {
     const parameters = {
       'ostemplate': ostemplate,
       'vmid': vmid,
@@ -8670,6 +9483,7 @@ class PVENodeNodesLxc {
       'unique': unique,
       'unprivileged': unprivileged
     };
+    this.#client.addIndexedParameter(parameters, 'dev', devN);
     this.#client.addIndexedParameter(parameters, 'mp', mpN);
     this.#client.addIndexedParameter(parameters, 'net', netN);
     this.#client.addIndexedParameter(parameters, 'unused', unusedN);
@@ -8800,6 +9614,12 @@ class PVEItemLxcNodeNodesVmid {
    * @returns {PVEVmidLxcNodeNodesPending}
    */
   get pending() { return this.#pending == null ? (this.#pending = new PVEVmidLxcNodeNodesPending(this.#client, this.#node, this.#vmid)) : this.#pending; }
+  #interfaces;
+  /**
+   * Get VmidLxcNodeNodesInterfaces
+   * @returns {PVEVmidLxcNodeNodesInterfaces}
+   */
+  get interfaces() { return this.#interfaces == null ? (this.#interfaces = new PVEVmidLxcNodeNodesInterfaces(this.#client, this.#node, this.#vmid)) : this.#interfaces; }
   #mtunnel;
   /**
    * Get VmidLxcNodeNodesMtunnel
@@ -8881,6 +9701,7 @@ class PVEVmidLxcNodeNodesConfig {
   * @param {bool} debug Try to be more verbose. For now this only enables debug log-level on start.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} description Description for the Container. Shown in the web-interface CT's summary. This is saved as comment inside the configuration file.
+  * @param {array} devN Device to pass through to the container
   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
   * @param {string} features Allow containers access to advanced features.
   * @param {string} hookscript Script that will be exectued during various steps in the containers lifetime.
@@ -8908,7 +9729,7 @@ class PVEVmidLxcNodeNodesConfig {
   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
   * @returns {Result}
   */
-  async updateVm(arch, cmode, console, cores, cpulimit, cpuunits, debug, delete_, description, digest, features, hookscript, hostname, lock, memory, mpN, nameserver, netN, onboot, ostype, protection, revert, rootfs, searchdomain, startup, swap, tags, template, timezone, tty, unprivileged, unusedN) {
+  async updateVm(arch, cmode, console, cores, cpulimit, cpuunits, debug, delete_, description, devN, digest, features, hookscript, hostname, lock, memory, mpN, nameserver, netN, onboot, ostype, protection, revert, rootfs, searchdomain, startup, swap, tags, template, timezone, tty, unprivileged, unusedN) {
     const parameters = {
       'arch': arch,
       'cmode': cmode,
@@ -8940,6 +9761,7 @@ class PVEVmidLxcNodeNodesConfig {
       'tty': tty,
       'unprivileged': unprivileged
     };
+    this.#client.addIndexedParameter(parameters, 'dev', devN);
     this.#client.addIndexedParameter(parameters, 'mp', mpN);
     this.#client.addIndexedParameter(parameters, 'net', netN);
     this.#client.addIndexedParameter(parameters, 'unused', unusedN);
@@ -9483,7 +10305,7 @@ class PVEFirewallVmidLxcNodeNodesRules {
   *   Enum: in,out,group
   * @param {string} comment Descriptive comment.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -9540,7 +10362,7 @@ class PVEItemRulesFirewallVmidLxcNodeNodesPos {
 
   /**
   * Delete rule.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async deleteRule(digest) {
@@ -9560,7 +10382,7 @@ class PVEItemRulesFirewallVmidLxcNodeNodesPos {
   * @param {string} comment Descriptive comment.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -9668,7 +10490,7 @@ class PVEItemAliasesFirewallVmidLxcNodeNodesName {
 
   /**
   * Remove IP or Network alias.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async removeAlias(digest) {
@@ -9686,7 +10508,7 @@ class PVEItemAliasesFirewallVmidLxcNodeNodesName {
   * Update IP or Network alias.
   * @param {string} cidr Network/IP specification in CIDR format.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename an existing alias.
   * @returns {Result}
   */
@@ -9736,7 +10558,7 @@ class PVEFirewallVmidLxcNodeNodesIpset {
   * Create new IPSet
   * @param {string} name IP set name.
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} rename Rename an existing IPSet. You can set 'rename' to the same value as 'name' to update the 'comment' of an existing IPSet.
   * @returns {Result}
   */
@@ -9832,7 +10654,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
 
   /**
   * Remove IP or Network from IPSet.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async removeIp(digest) {
@@ -9849,7 +10671,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
   /**
   * Update IP or Network settings
   * @param {string} comment
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} nomatch
   * @returns {Result}
   */
@@ -9892,7 +10714,7 @@ class PVEFirewallVmidLxcNodeNodesOptions {
   * Set Firewall options.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {bool} dhcp Enable DHCP.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} enable Enable/disable firewall rules.
   * @param {bool} ipfilter Enable default IP filters. This is equivalent to adding an empty ipfilter-net&amp;lt;id&amp;gt; ipset for every interface. Such ipsets implicitly contain sane default restrictions such as restricting IPv6 link local addresses to the one derived from the interface's MAC address. For containers the configured IP addresses will be implicitly added.
   * @param {string} log_level_in Log level for incoming traffic.
@@ -10498,6 +11320,33 @@ class PVEVmidLxcNodeNodesPending {
 }
 
 /**
+ * Class PVEVmidLxcNodeNodesInterfaces
+ */
+class PVEVmidLxcNodeNodesInterfaces {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+
+
+  /**
+  * Get IP addresses of the specified container interface.
+  * @returns {Result}
+  */
+  async ip() {
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/interfaces`);
+  }
+
+}
+
+/**
  * Class PVEVmidLxcNodeNodesMtunnel
  */
 class PVEVmidLxcNodeNodesMtunnel {
@@ -10708,6 +11557,12 @@ class PVECephNodeNodesCfg {
    * @returns {PVECfgCephNodeNodesDb}
    */
   get db() { return this.#db == null ? (this.#db = new PVECfgCephNodeNodesDb(this.#client, this.#node)) : this.#db; }
+  #value;
+  /**
+   * Get CfgCephNodeNodesValue
+   * @returns {PVECfgCephNodeNodesValue}
+   */
+  get value() { return this.#value == null ? (this.#value = new PVECfgCephNodeNodesValue(this.#client, this.#node)) : this.#value; }
 
 
   /**
@@ -10770,6 +11625,33 @@ class PVECfgCephNodeNodesDb {
 }
 
 /**
+ * Class PVECfgCephNodeNodesValue
+ */
+class PVECfgCephNodeNodesValue {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+
+
+  /**
+  * Get configured values from either the config file or config DB.
+  * @param {string} config_keys List of &amp;lt;section&amp;gt;:&amp;lt;config key&amp;gt; items.
+  * @returns {Result}
+  */
+  async value(config_keys) {
+    const parameters = { 'config-keys': config_keys };
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cfg/value`, parameters);
+  }
+
+}
+
+/**
  * Class PVECephNodeNodesOsd
  */
 class PVECephNodeNodesOsd {
@@ -10804,17 +11686,19 @@ class PVECephNodeNodesOsd {
   * @param {string} db_dev Block device name for block.db.
   * @param {float} db_dev_size Size in GiB for block.db.
   * @param {bool} encrypted Enables encryption of the OSD.
+  * @param {int} osds_per_device OSD services per physical device. Only useful for fast NVMe devices" 		    ." to utilize their performance better.
   * @param {string} wal_dev Block device name for block.wal.
   * @param {float} wal_dev_size Size in GiB for block.wal.
   * @returns {Result}
   */
-  async createosd(dev, crush_device_class, db_dev, db_dev_size, encrypted, wal_dev, wal_dev_size) {
+  async createosd(dev, crush_device_class, db_dev, db_dev_size, encrypted, osds_per_device, wal_dev, wal_dev_size) {
     const parameters = {
       'dev': dev,
       'crush-device-class': crush_device_class,
       'db_dev': db_dev,
       'db_dev_size': db_dev_size,
       'encrypted': encrypted,
+      'osds-per-device': osds_per_device,
       'wal_dev': wal_dev,
       'wal_dev_size': wal_dev_size
     };
@@ -11477,7 +12361,7 @@ class PVECephNodeNodesInit {
   * @param {bool} disable_cephx Disable cephx authentication.  WARNING: cephx is a security feature protecting against man-in-the-middle attacks. Only consider disabling cephx if your network is private!
   * @param {int} min_size Minimum number of available replicas per object to allow I/O
   * @param {string} network Use specific network for all ceph related traffic
-  * @param {int} pg_bits Placement group bits, used to specify the default number of placement groups.  NOTE: 'osd pool default pg num' does not work for default pools.
+  * @param {int} pg_bits Placement group bits, used to specify the default number of placement groups.  Depreacted. This setting was deprecated in recent Ceph versions.
   * @param {int} size Targeted number of replicas per object
   * @returns {Result}
   */
@@ -11755,13 +12639,16 @@ class PVENodeNodesVzdump {
   * @param {string} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root,  other paths match relative to each subdirectory.
   * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
-  * @param {string} mailnotification Specify when to send an email
+  * @param {string} mailnotification Deprecated: use 'notification-policy' instead.
   *   Enum: always,failure
-  * @param {string} mailto Comma-separated list of email addresses or users that should receive email notifications.
+  * @param {string} mailto Comma-separated list of email addresses or users that should receive email notifications. Has no effect if the 'notification-target' option  is set at the same time.
   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
   * @param {string} mode Backup mode.
   *   Enum: snapshot,suspend,stop
   * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
+  * @param {string} notification_policy Specify when to send a notification
+  *   Enum: always,failure,never
+  * @param {string} notification_target Determine the target to which notifications should be sent. Can either be a notification endpoint or a notification group. This option takes precedence over 'mailto', meaning that if both are  set, the 'mailto' option will be ignored.
   * @param {string} performance Other performance-related settings.
   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
   * @param {string} pool Backup all known guest systems included in the specified pool.
@@ -11780,7 +12667,7 @@ class PVENodeNodesVzdump {
   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, N&amp;gt;0 uses N as thread count.
   * @returns {Result}
   */
-  async vzdump(all, bwlimit, compress, dumpdir, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, notes_template, performance, pigz, pool, protected_, prune_backups, quiet, remove, script, stdexcludes, stdout, stop, stopwait, storage, tmpdir, vmid, zstd) {
+  async vzdump(all, bwlimit, compress, dumpdir, exclude, exclude_path, ionice, lockwait, mailnotification, mailto, maxfiles, mode, notes_template, notification_policy, notification_target, performance, pigz, pool, protected_, prune_backups, quiet, remove, script, stdexcludes, stdout, stop, stopwait, storage, tmpdir, vmid, zstd) {
     const parameters = {
       'all': all,
       'bwlimit': bwlimit,
@@ -11795,6 +12682,8 @@ class PVENodeNodesVzdump {
       'maxfiles': maxfiles,
       'mode': mode,
       'notes-template': notes_template,
+      'notification-policy': notification_policy,
+      'notification-target': notification_target,
       'performance': performance,
       'pigz': pigz,
       'pool': pool,
@@ -13461,12 +14350,14 @@ class PVEFileRestoreStorageStorageNodeNodesDownload {
   * Extract a file or directory (as zip archive) from a PBS backup.
   * @param {string} filepath base64-path to the directory or file to download.
   * @param {string} volume Backup volume ID or name. Currently only PBS snapshots are supported.
+  * @param {bool} tar Download dirs as 'tar.zst' instead of 'zip'.
   * @returns {Result}
   */
-  async download(filepath, volume) {
+  async download(filepath, volume, tar) {
     const parameters = {
       'filepath': filepath,
-      'volume': volume
+      'volume': volume,
+      'tar': tar
     };
     return await this.#client.get(`/nodes/${this.#node}/storage/${this.#storage}/file-restore/download`, parameters);
   }
@@ -13639,16 +14530,18 @@ class PVEStorageStorageNodeNodesDownloadUrl {
   * @param {string} checksum The expected checksum of the file.
   * @param {string} checksum_algorithm The algorithm to calculate the checksum of the file.
   *   Enum: md5,sha1,sha224,sha256,sha384,sha512
+  * @param {string} compression Decompress the downloaded file using the specified compression algorithm.
   * @param {bool} verify_certificates If false, no SSL/TLS certificates will be verified.
   * @returns {Result}
   */
-  async downloadUrl(content, filename, url, checksum, checksum_algorithm, verify_certificates) {
+  async downloadUrl(content, filename, url, checksum, checksum_algorithm, compression, verify_certificates) {
     const parameters = {
       'content': content,
       'filename': filename,
       'url': url,
       'checksum': checksum,
       'checksum-algorithm': checksum_algorithm,
+      'compression': compression,
       'verify-certificates': verify_certificates
     };
     return await this.#client.create(`/nodes/${this.#node}/storage/${this.#storage}/download-url`, parameters);
@@ -14257,7 +15150,7 @@ class PVEAptNodeNodesUpdate {
   }
   /**
   * This is used to resynchronize the package index files from their sources (apt-get update).
-  * @param {bool} notify Send notification mail about new packages (to email address specified for user 'root@pam').
+  * @param {bool} notify Send notification about new packages.
   * @param {bool} quiet Only produces output suitable for logging, omitting progress indicators.
   * @returns {Result}
   */
@@ -14459,7 +15352,7 @@ class PVEFirewallNodeNodesRules {
   *   Enum: in,out,group
   * @param {string} comment Descriptive comment.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -14514,7 +15407,7 @@ class PVEItemRulesFirewallNodeNodesPos {
 
   /**
   * Delete rule.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async deleteRule(digest) {
@@ -14534,7 +15427,7 @@ class PVEItemRulesFirewallNodeNodesPos {
   * @param {string} comment Descriptive comment.
   * @param {string} delete_ A list of settings you want to delete.
   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
   * @param {int} enable Flag to enable/disable a rule.
   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
@@ -14599,7 +15492,7 @@ class PVEFirewallNodeNodesOptions {
   /**
   * Set Firewall options.
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} enable Enable host firewall rules.
   * @param {string} log_level_in Log level for incoming traffic.
   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
@@ -15498,8 +16391,8 @@ class PVENodeNodesVncshell {
 
   /**
   * Creates a VNC Shell proxy.
-  * @param {string} cmd Run specific command or default to login.
-  *   Enum: login,ceph_install,upgrade
+  * @param {string} cmd Run specific command or default to login (requires 'root@pam')
+  *   Enum: ceph_install,login,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {int} height sets the height of the console in pixels.
   * @param {bool} websocket use websocket instead of standard vnc.
@@ -15536,8 +16429,8 @@ class PVENodeNodesTermproxy {
 
   /**
   * Creates a VNC Shell proxy.
-  * @param {string} cmd Run specific command or default to login.
-  *   Enum: login,ceph_install,upgrade
+  * @param {string} cmd Run specific command or default to login (requires 'root@pam')
+  *   Enum: ceph_install,login,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @returns {Result}
   */
@@ -15599,8 +16492,8 @@ class PVENodeNodesSpiceshell {
 
   /**
   * Creates a SPICE shell.
-  * @param {string} cmd Run specific command or default to login.
-  *   Enum: login,ceph_install,upgrade
+  * @param {string} cmd Run specific command or default to login (requires 'root@pam')
+  *   Enum: ceph_install,login,upgrade
   * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
   * @param {string} proxy SPICE proxy server. This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As reasonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).
   * @returns {Result}
@@ -15851,6 +16744,33 @@ class PVENodeNodesStopall {
 }
 
 /**
+ * Class PVENodeNodesSuspendall
+ */
+class PVENodeNodesSuspendall {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+
+
+  /**
+  * Suspend all VMs.
+  * @param {string} vms Only consider Guests with these IDs.
+  * @returns {Result}
+  */
+  async suspendall(vms) {
+    const parameters = { 'vms': vms };
+    return await this.#client.create(`/nodes/${this.#node}/suspendall`, parameters);
+  }
+
+}
+
+/**
  * Class PVENodeNodesMigrateall
  */
 class PVENodeNodesMigrateall {
@@ -15910,7 +16830,7 @@ class PVENodeNodesHosts {
   /**
   * Write /etc/hosts.
   * @param {string} data The target content of /etc/hosts.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @returns {Result}
   */
   async writeEtcHosts(data, digest) {
@@ -16132,7 +17052,7 @@ class PVEItemStorageStorage {
   * @param {bool} create_subdirs Populate the directory with the default structure.
   * @param {string} data_pool Data Pool (for erasure coding only)
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {bool} disable Flag to disable the storage.
   * @param {string} domain CIFS domain.
   * @param {string} encryption_key Encryption key. Use 'autogen' to generate one automatically without passphrase.
@@ -16865,6 +17785,7 @@ class PVEAccessDomains {
   * @param {bool} case_sensitive username is case-sensitive
   * @param {string} cert Path to the client certificate
   * @param {string} certkey Path to the client certificate key
+  * @param {bool} check_connection Check bind connection to the server.
   * @param {string} client_id OpenID Client ID
   * @param {string} client_key OpenID Client Key
   * @param {string} comment Description.
@@ -16896,7 +17817,7 @@ class PVEAccessDomains {
   * @param {bool} verify Verify the server's SSL certificate
   * @returns {Result}
   */
-  async create(realm, type, acr_values, autocreate, base_dn, bind_dn, capath, case_sensitive, cert, certkey, client_id, client_key, comment, default_, domain, filter, group_classes, group_dn, group_filter, group_name_attr, issuer_url, mode, password, port, prompt, scopes, secure, server1, server2, sslversion, sync_defaults_options, sync_attributes, tfa, user_attr, user_classes, username_claim, verify) {
+  async create(realm, type, acr_values, autocreate, base_dn, bind_dn, capath, case_sensitive, cert, certkey, check_connection, client_id, client_key, comment, default_, domain, filter, group_classes, group_dn, group_filter, group_name_attr, issuer_url, mode, password, port, prompt, scopes, secure, server1, server2, sslversion, sync_defaults_options, sync_attributes, tfa, user_attr, user_classes, username_claim, verify) {
     const parameters = {
       'realm': realm,
       'type': type,
@@ -16908,6 +17829,7 @@ class PVEAccessDomains {
       'case-sensitive': case_sensitive,
       'cert': cert,
       'certkey': certkey,
+      'check-connection': check_connection,
       'client-id': client_id,
       'client-key': client_key,
       'comment': comment,
@@ -16985,12 +17907,13 @@ class PVEItemDomainsAccessRealm {
   * @param {bool} case_sensitive username is case-sensitive
   * @param {string} cert Path to the client certificate
   * @param {string} certkey Path to the client certificate key
+  * @param {bool} check_connection Check bind connection to the server.
   * @param {string} client_id OpenID Client ID
   * @param {string} client_key OpenID Client Key
   * @param {string} comment Description.
   * @param {bool} default_ Use this as default realm
   * @param {string} delete_ A list of settings you want to delete.
-  * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+  * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
   * @param {string} domain AD domain name
   * @param {string} filter LDAP filter for user sync.
   * @param {string} group_classes The objectclasses for groups.
@@ -17017,7 +17940,7 @@ class PVEItemDomainsAccessRealm {
   * @param {bool} verify Verify the server's SSL certificate
   * @returns {Result}
   */
-  async update(acr_values, autocreate, base_dn, bind_dn, capath, case_sensitive, cert, certkey, client_id, client_key, comment, default_, delete_, digest, domain, filter, group_classes, group_dn, group_filter, group_name_attr, issuer_url, mode, password, port, prompt, scopes, secure, server1, server2, sslversion, sync_defaults_options, sync_attributes, tfa, user_attr, user_classes, verify) {
+  async update(acr_values, autocreate, base_dn, bind_dn, capath, case_sensitive, cert, certkey, check_connection, client_id, client_key, comment, default_, delete_, digest, domain, filter, group_classes, group_dn, group_filter, group_name_attr, issuer_url, mode, password, port, prompt, scopes, secure, server1, server2, sslversion, sync_defaults_options, sync_attributes, tfa, user_attr, user_classes, verify) {
     const parameters = {
       'acr-values': acr_values,
       'autocreate': autocreate,
@@ -17027,6 +17950,7 @@ class PVEItemDomainsAccessRealm {
       'case-sensitive': case_sensitive,
       'cert': cert,
       'certkey': certkey,
+      'check-connection': check_connection,
       'client-id': client_id,
       'client-key': client_key,
       'comment': comment,
@@ -17467,11 +18391,27 @@ class PVEPools {
   get(poolid) { return new PVEItemPoolsPoolid(this.#client, poolid); }
 
   /**
-  * Pool index.
+  * Delete pool.
+  * @param {string} poolid
   * @returns {Result}
   */
-  async index() {
-    return await this.#client.get(`/pools`);
+  async deletePool(poolid) {
+    const parameters = { 'poolid': poolid };
+    return await this.#client.delete(`/pools`, parameters);
+  }
+  /**
+  * List pools or get pool configuration.
+  * @param {string} poolid
+  * @param {string} type
+  *   Enum: qemu,lxc,storage
+  * @returns {Result}
+  */
+  async index(poolid, type) {
+    const parameters = {
+      'poolid': poolid,
+      'type': type
+    };
+    return await this.#client.get(`/pools`, parameters);
   }
   /**
   * Create new pool.
@@ -17485,6 +18425,27 @@ class PVEPools {
       'comment': comment
     };
     return await this.#client.create(`/pools`, parameters);
+  }
+  /**
+  * Update pool.
+  * @param {string} poolid
+  * @param {bool} allow_move Allow adding a guest even if already in another pool. The guest will be removed from its current pool and added to this one.
+  * @param {string} comment
+  * @param {bool} delete_ Remove the passed VMIDs and/or storage IDs instead of adding them.
+  * @param {string} storage List of storage IDs to add or remove from this pool.
+  * @param {string} vms List of guest VMIDs to add or remove from this pool.
+  * @returns {Result}
+  */
+  async updatePool(poolid, allow_move, comment, delete_, storage, vms) {
+    const parameters = {
+      'poolid': poolid,
+      'allow-move': allow_move,
+      'comment': comment,
+      'delete': delete_,
+      'storage': storage,
+      'vms': vms
+    };
+    return await this.#client.set(`/pools`, parameters);
   }
 
 }
@@ -17504,14 +18465,14 @@ class PVEItemPoolsPoolid {
 
 
   /**
-  * Delete pool.
+  * Delete pool (deprecated, no support for nested pools, use 'DELETE /pools/?poolid={poolid}').
   * @returns {Result}
   */
-  async deletePool() {
+  async deletePoolDeprecated() {
     return await this.#client.delete(`/pools/${this.#poolid}`);
   }
   /**
-  * Get pool configuration.
+  * Get pool configuration (deprecated, no support for nested pools, use 'GET /pools/?poolid={poolid}').
   * @param {string} type
   *   Enum: qemu,lxc,storage
   * @returns {Result}
@@ -17521,15 +18482,17 @@ class PVEItemPoolsPoolid {
     return await this.#client.get(`/pools/${this.#poolid}`, parameters);
   }
   /**
-  * Update pool data.
+  * Update pool data (deprecated, no support for nested pools - use 'PUT /pools/?poolid={poolid}' instead).
+  * @param {bool} allow_move Allow adding a guest even if already in another pool. The guest will be removed from its current pool and added to this one.
   * @param {string} comment
-  * @param {bool} delete_ Remove vms/storage (instead of adding it).
-  * @param {string} storage List of storage IDs.
-  * @param {string} vms List of virtual machines.
+  * @param {bool} delete_ Remove the passed VMIDs and/or storage IDs instead of adding them.
+  * @param {string} storage List of storage IDs to add or remove from this pool.
+  * @param {string} vms List of guest VMIDs to add or remove from this pool.
   * @returns {Result}
   */
-  async updatePool(comment, delete_, storage, vms) {
+  async updatePoolDeprecated(allow_move, comment, delete_, storage, vms) {
     const parameters = {
+      'allow-move': allow_move,
       'comment': comment,
       'delete': delete_,
       'storage': storage,
