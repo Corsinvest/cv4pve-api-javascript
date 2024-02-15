@@ -17,6 +17,9 @@
     // go to js file when using IDE functions like
     // "Go to Definition" in VSCode
     "declarationMap": true,
-    "composite": true
+    "composite": true,
+    "target": "ES2020",
+    "typeRoots": ["./src/customTypings.d.ts"]
+    //, "node_modules/@types"
   }
 }

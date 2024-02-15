@@ -1,13 +1,9 @@
 {
   "name": "@corsinvest/cv4pve-api-javascript",
-  "version": "8.1.1",
+  "version": "8.1.2",
   "description": "Proxmox VE Client API JavaScript",
   "main": "./src/index.js",
   "types": "./dist/src/index.d.ts",
-  "dependencies": {
-    "debug": "^4.3.3",
-    "ms": "^2.1.2"
-  },
   "keywords": [
     "Proxmox VE",
     "Api",
@@ -16,7 +12,7 @@
     "pve"
   ],
   "scripts": {
-    "prepare": "npx tsc && sh ./fix-typescript-types.sh",
+    "prepare": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

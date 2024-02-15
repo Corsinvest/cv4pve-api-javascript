@@ -2,7 +2,7 @@
 
 Proxmox VE Client API JavaScript
 
-![GitHub release](https://img.shields.io/github/release/Corsinvest/cv4pve-api-javascript.svg) [![npm](https://img.shields.io/npm/dw/@corsinvest/cv4pve-api-javascript?logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
+![GitHub release](https://img.shields.io/github/release/Corsinvest/cv4pve-api-javascript.svg) [![npm](https://img.shields.io/npm/dt/@corsinvest/cv4pve-api-javascript?logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
 
 [Proxmox VE Api](https://pve.proxmox.com/pve-docs/api-viewer/)
 
