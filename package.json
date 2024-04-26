@@ -1,6 +1,6 @@
 {
   "name": "@corsinvest/cv4pve-api-javascript",
-  "version": "8.1.2",
+  "version": "8.2.0",
   "description": "Proxmox VE Client API JavaScript",
   "main": "./src/index.js",
   "types": "./dist/src/index.d.ts",
