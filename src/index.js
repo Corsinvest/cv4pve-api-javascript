@@ -531,7 +531,7 @@ class PveClient extends PveClientBase {
       return;
     }
 
-    for (const [key, value] of Object.entries(parameters)) {
+    for (const [key, value] of Object.entries(values)) {
       parameters[name + key] = value;
     }
   }
