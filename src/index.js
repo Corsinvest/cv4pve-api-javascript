@@ -1230,8 +1230,8 @@ class PVENotificationsClusterEndpoints {
   get sendmail() {
     return this.#sendmail == null
       ? (this.#sendmail = new PVEEndpointsNotificationsClusterSendmail(
-          this.#client
-        ))
+        this.#client
+      ))
       : this.#sendmail;
   }
   #gotify;
@@ -1242,8 +1242,8 @@ class PVENotificationsClusterEndpoints {
   get gotify() {
     return this.#gotify == null
       ? (this.#gotify = new PVEEndpointsNotificationsClusterGotify(
-          this.#client
-        ))
+        this.#client
+      ))
       : this.#gotify;
   }
   #smtp;
@@ -1723,9 +1723,9 @@ class PVEItemTargetsNotificationsClusterName {
   get test() {
     return this.#test == null
       ? (this.#test = new PVENameTargetsNotificationsClusterTest(
-          this.#client,
-          this.#name
-        ))
+        this.#client,
+        this.#name
+      ))
       : this.#test;
   }
 }
@@ -3226,9 +3226,9 @@ class PVEItemBackupClusterId {
   get includedVolumes() {
     return this.#includedVolumes == null
       ? (this.#includedVolumes = new PVEIdBackupClusterIncludedVolumes(
-          this.#client,
-          this.#id
-        ))
+        this.#client,
+        this.#id
+      ))
       : this.#includedVolumes;
   }
 
@@ -3583,9 +3583,9 @@ class PVEItemResourcesHaClusterSid {
   get migrate() {
     return this.#migrate == null
       ? (this.#migrate = new PVESidResourcesHaClusterMigrate(
-          this.#client,
-          this.#sid
-        ))
+        this.#client,
+        this.#sid
+      ))
       : this.#migrate;
   }
   #relocate;
@@ -3596,9 +3596,9 @@ class PVEItemResourcesHaClusterSid {
   get relocate() {
     return this.#relocate == null
       ? (this.#relocate = new PVESidResourcesHaClusterRelocate(
-          this.#client,
-          this.#sid
-        ))
+        this.#client,
+        this.#sid
+      ))
       : this.#relocate;
   }
 
@@ -3838,8 +3838,8 @@ class PVEHaClusterStatus {
   get managerStatus() {
     return this.#managerStatus == null
       ? (this.#managerStatus = new PVEStatusHaClusterManagerStatus(
-          this.#client
-        ))
+        this.#client
+      ))
       : this.#managerStatus;
   }
 
@@ -3960,8 +3960,8 @@ class PVEClusterAcme {
   get challengeSchema() {
     return this.#challengeSchema == null
       ? (this.#challengeSchema = new PVEAcmeClusterChallengeSchema(
-          this.#client
-        ))
+        this.#client
+      ))
       : this.#challengeSchema;
   }
 
@@ -4501,8 +4501,8 @@ class PVEClusterJobs {
   get scheduleAnalyze() {
     return this.#scheduleAnalyze == null
       ? (this.#scheduleAnalyze = new PVEJobsClusterScheduleAnalyze(
-          this.#client
-        ))
+        this.#client
+      ))
       : this.#scheduleAnalyze;
   }
 
@@ -5055,9 +5055,9 @@ class PVEItemVnetsSdnClusterVnet {
   get subnets() {
     return this.#subnets == null
       ? (this.#subnets = new PVEVnetVnetsSdnClusterSubnets(
-          this.#client,
-          this.#vnet
-        ))
+        this.#client,
+        this.#vnet
+      ))
       : this.#subnets;
   }
   #ips;
@@ -5842,9 +5842,9 @@ class PVEItemIpamsSdnClusterIpam {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEIpamIpamsSdnClusterStatus(
-          this.#client,
-          this.#ipam
-        ))
+        this.#client,
+        this.#ipam
+      ))
       : this.#status;
   }
 
@@ -6318,9 +6318,9 @@ class PVEItemNodesNode {
   get subscription() {
     return this.#subscription == null
       ? (this.#subscription = new PVENodeNodesSubscription(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#subscription;
   }
   #network;
@@ -6371,9 +6371,9 @@ class PVEItemNodesNode {
   get capabilities() {
     return this.#capabilities == null
       ? (this.#capabilities = new PVENodeNodesCapabilities(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#capabilities;
   }
   #storage;
@@ -6424,9 +6424,9 @@ class PVEItemNodesNode {
   get replication() {
     return this.#replication == null
       ? (this.#replication = new PVENodeNodesReplication(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#replication;
   }
   #certificates;
@@ -6437,9 +6437,9 @@ class PVEItemNodesNode {
   get certificates() {
     return this.#certificates == null
       ? (this.#certificates = new PVENodeNodesCertificates(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#certificates;
   }
   #config;
@@ -6580,9 +6580,9 @@ class PVEItemNodesNode {
   get vncwebsocket() {
     return this.#vncwebsocket == null
       ? (this.#vncwebsocket = new PVENodeNodesVncwebsocket(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#vncwebsocket;
   }
   #spiceshell;
@@ -6593,9 +6593,9 @@ class PVEItemNodesNode {
   get spiceshell() {
     return this.#spiceshell == null
       ? (this.#spiceshell = new PVENodeNodesSpiceshell(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#spiceshell;
   }
   #dns;
@@ -6636,9 +6636,9 @@ class PVEItemNodesNode {
   get queryUrlMetadata() {
     return this.#queryUrlMetadata == null
       ? (this.#queryUrlMetadata = new PVENodeNodesQueryUrlMetadata(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#queryUrlMetadata;
   }
   #report;
@@ -6679,9 +6679,9 @@ class PVEItemNodesNode {
   get suspendall() {
     return this.#suspendall == null
       ? (this.#suspendall = new PVENodeNodesSuspendall(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#suspendall;
   }
   #migrateall;
@@ -6692,9 +6692,9 @@ class PVEItemNodesNode {
   get migrateall() {
     return this.#migrateall == null
       ? (this.#migrateall = new PVENodeNodesMigrateall(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#migrateall;
   }
   #hosts;
@@ -7047,10 +7047,10 @@ class PVEItemQemuNodeNodesVmid {
   get firewall() {
     return this.#firewall == null
       ? (this.#firewall = new PVEVmidQemuNodeNodesFirewall(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#firewall;
   }
   #agent;
@@ -7061,10 +7061,10 @@ class PVEItemQemuNodeNodesVmid {
   get agent() {
     return this.#agent == null
       ? (this.#agent = new PVEVmidQemuNodeNodesAgent(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#agent;
   }
   #rrd;
@@ -7075,10 +7075,10 @@ class PVEItemQemuNodeNodesVmid {
   get rrd() {
     return this.#rrd == null
       ? (this.#rrd = new PVEVmidQemuNodeNodesRrd(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#rrd;
   }
   #rrddata;
@@ -7089,10 +7089,10 @@ class PVEItemQemuNodeNodesVmid {
   get rrddata() {
     return this.#rrddata == null
       ? (this.#rrddata = new PVEVmidQemuNodeNodesRrddata(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#rrddata;
   }
   #config;
@@ -7103,10 +7103,10 @@ class PVEItemQemuNodeNodesVmid {
   get config() {
     return this.#config == null
       ? (this.#config = new PVEVmidQemuNodeNodesConfig(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#config;
   }
   #pending;
@@ -7117,10 +7117,10 @@ class PVEItemQemuNodeNodesVmid {
   get pending() {
     return this.#pending == null
       ? (this.#pending = new PVEVmidQemuNodeNodesPending(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#pending;
   }
   #cloudinit;
@@ -7131,10 +7131,10 @@ class PVEItemQemuNodeNodesVmid {
   get cloudinit() {
     return this.#cloudinit == null
       ? (this.#cloudinit = new PVEVmidQemuNodeNodesCloudinit(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#cloudinit;
   }
   #unlink;
@@ -7145,10 +7145,10 @@ class PVEItemQemuNodeNodesVmid {
   get unlink() {
     return this.#unlink == null
       ? (this.#unlink = new PVEVmidQemuNodeNodesUnlink(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#unlink;
   }
   #vncproxy;
@@ -7159,10 +7159,10 @@ class PVEItemQemuNodeNodesVmid {
   get vncproxy() {
     return this.#vncproxy == null
       ? (this.#vncproxy = new PVEVmidQemuNodeNodesVncproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#vncproxy;
   }
   #termproxy;
@@ -7173,10 +7173,10 @@ class PVEItemQemuNodeNodesVmid {
   get termproxy() {
     return this.#termproxy == null
       ? (this.#termproxy = new PVEVmidQemuNodeNodesTermproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#termproxy;
   }
   #vncwebsocket;
@@ -7187,10 +7187,10 @@ class PVEItemQemuNodeNodesVmid {
   get vncwebsocket() {
     return this.#vncwebsocket == null
       ? (this.#vncwebsocket = new PVEVmidQemuNodeNodesVncwebsocket(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#vncwebsocket;
   }
   #spiceproxy;
@@ -7201,10 +7201,10 @@ class PVEItemQemuNodeNodesVmid {
   get spiceproxy() {
     return this.#spiceproxy == null
       ? (this.#spiceproxy = new PVEVmidQemuNodeNodesSpiceproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#spiceproxy;
   }
   #status;
@@ -7215,10 +7215,10 @@ class PVEItemQemuNodeNodesVmid {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEVmidQemuNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#status;
   }
   #sendkey;
@@ -7229,10 +7229,10 @@ class PVEItemQemuNodeNodesVmid {
   get sendkey() {
     return this.#sendkey == null
       ? (this.#sendkey = new PVEVmidQemuNodeNodesSendkey(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#sendkey;
   }
   #feature;
@@ -7243,10 +7243,10 @@ class PVEItemQemuNodeNodesVmid {
   get feature() {
     return this.#feature == null
       ? (this.#feature = new PVEVmidQemuNodeNodesFeature(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#feature;
   }
   #clone;
@@ -7257,10 +7257,10 @@ class PVEItemQemuNodeNodesVmid {
   get clone() {
     return this.#clone == null
       ? (this.#clone = new PVEVmidQemuNodeNodesClone(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#clone;
   }
   #moveDisk;
@@ -7271,10 +7271,10 @@ class PVEItemQemuNodeNodesVmid {
   get moveDisk() {
     return this.#moveDisk == null
       ? (this.#moveDisk = new PVEVmidQemuNodeNodesMoveDisk(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#moveDisk;
   }
   #migrate;
@@ -7285,10 +7285,10 @@ class PVEItemQemuNodeNodesVmid {
   get migrate() {
     return this.#migrate == null
       ? (this.#migrate = new PVEVmidQemuNodeNodesMigrate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#migrate;
   }
   #remoteMigrate;
@@ -7299,10 +7299,10 @@ class PVEItemQemuNodeNodesVmid {
   get remoteMigrate() {
     return this.#remoteMigrate == null
       ? (this.#remoteMigrate = new PVEVmidQemuNodeNodesRemoteMigrate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#remoteMigrate;
   }
   #monitor;
@@ -7313,10 +7313,10 @@ class PVEItemQemuNodeNodesVmid {
   get monitor() {
     return this.#monitor == null
       ? (this.#monitor = new PVEVmidQemuNodeNodesMonitor(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#monitor;
   }
   #resize;
@@ -7327,10 +7327,10 @@ class PVEItemQemuNodeNodesVmid {
   get resize() {
     return this.#resize == null
       ? (this.#resize = new PVEVmidQemuNodeNodesResize(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#resize;
   }
   #snapshot;
@@ -7341,10 +7341,10 @@ class PVEItemQemuNodeNodesVmid {
   get snapshot() {
     return this.#snapshot == null
       ? (this.#snapshot = new PVEVmidQemuNodeNodesSnapshot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#snapshot;
   }
   #template;
@@ -7355,10 +7355,10 @@ class PVEItemQemuNodeNodesVmid {
   get template() {
     return this.#template == null
       ? (this.#template = new PVEVmidQemuNodeNodesTemplate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#template;
   }
   #mtunnel;
@@ -7369,10 +7369,10 @@ class PVEItemQemuNodeNodesVmid {
   get mtunnel() {
     return this.#mtunnel == null
       ? (this.#mtunnel = new PVEVmidQemuNodeNodesMtunnel(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#mtunnel;
   }
   #mtunnelwebsocket;
@@ -7383,10 +7383,10 @@ class PVEItemQemuNodeNodesVmid {
   get mtunnelwebsocket() {
     return this.#mtunnelwebsocket == null
       ? (this.#mtunnelwebsocket = new PVEVmidQemuNodeNodesMtunnelwebsocket(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#mtunnelwebsocket;
   }
 
@@ -7439,10 +7439,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get rules() {
     return this.#rules == null
       ? (this.#rules = new PVEFirewallVmidQemuNodeNodesRules(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#rules;
   }
   #aliases;
@@ -7453,10 +7453,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get aliases() {
     return this.#aliases == null
       ? (this.#aliases = new PVEFirewallVmidQemuNodeNodesAliases(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#aliases;
   }
   #ipset;
@@ -7467,10 +7467,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get ipset() {
     return this.#ipset == null
       ? (this.#ipset = new PVEFirewallVmidQemuNodeNodesIpset(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#ipset;
   }
   #options;
@@ -7481,10 +7481,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get options() {
     return this.#options == null
       ? (this.#options = new PVEFirewallVmidQemuNodeNodesOptions(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#options;
   }
   #log;
@@ -7495,10 +7495,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEFirewallVmidQemuNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#log;
   }
   #refs;
@@ -7509,10 +7509,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get refs() {
     return this.#refs == null
       ? (this.#refs = new PVEFirewallVmidQemuNodeNodesRefs(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#refs;
   }
 
@@ -8003,8 +8003,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
   async removeIp(digest) {
     const parameters = { digest: digest };
     return await this.#client.delete(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
       }`,
       parameters
     );
@@ -8015,8 +8014,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
    */
   async readIp() {
     return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
       }`
     );
   }
@@ -8034,8 +8032,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
       nomatch: nomatch,
     };
     return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
       }`,
       parameters
     );
@@ -8211,10 +8208,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fsfreezeFreeze() {
     return this.#fsfreezeFreeze == null
       ? (this.#fsfreezeFreeze = new PVEAgentVmidQemuNodeNodesFsfreezeFreeze(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#fsfreezeFreeze;
   }
   #fsfreezeStatus;
@@ -8225,10 +8222,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fsfreezeStatus() {
     return this.#fsfreezeStatus == null
       ? (this.#fsfreezeStatus = new PVEAgentVmidQemuNodeNodesFsfreezeStatus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#fsfreezeStatus;
   }
   #fsfreezeThaw;
@@ -8239,10 +8236,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fsfreezeThaw() {
     return this.#fsfreezeThaw == null
       ? (this.#fsfreezeThaw = new PVEAgentVmidQemuNodeNodesFsfreezeThaw(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#fsfreezeThaw;
   }
   #fstrim;
@@ -8253,10 +8250,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fstrim() {
     return this.#fstrim == null
       ? (this.#fstrim = new PVEAgentVmidQemuNodeNodesFstrim(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#fstrim;
   }
   #getFsinfo;
@@ -8267,10 +8264,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getFsinfo() {
     return this.#getFsinfo == null
       ? (this.#getFsinfo = new PVEAgentVmidQemuNodeNodesGetFsinfo(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getFsinfo;
   }
   #getHostName;
@@ -8281,10 +8278,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getHostName() {
     return this.#getHostName == null
       ? (this.#getHostName = new PVEAgentVmidQemuNodeNodesGetHostName(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getHostName;
   }
   #getMemoryBlockInfo;
@@ -8295,11 +8292,11 @@ class PVEVmidQemuNodeNodesAgent {
   get getMemoryBlockInfo() {
     return this.#getMemoryBlockInfo == null
       ? (this.#getMemoryBlockInfo =
-          new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(
-            this.#client,
-            this.#node,
-            this.#vmid
-          ))
+        new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getMemoryBlockInfo;
   }
   #getMemoryBlocks;
@@ -8310,10 +8307,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getMemoryBlocks() {
     return this.#getMemoryBlocks == null
       ? (this.#getMemoryBlocks = new PVEAgentVmidQemuNodeNodesGetMemoryBlocks(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getMemoryBlocks;
   }
   #getOsinfo;
@@ -8324,10 +8321,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getOsinfo() {
     return this.#getOsinfo == null
       ? (this.#getOsinfo = new PVEAgentVmidQemuNodeNodesGetOsinfo(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getOsinfo;
   }
   #getTime;
@@ -8338,10 +8335,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getTime() {
     return this.#getTime == null
       ? (this.#getTime = new PVEAgentVmidQemuNodeNodesGetTime(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getTime;
   }
   #getTimezone;
@@ -8352,10 +8349,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getTimezone() {
     return this.#getTimezone == null
       ? (this.#getTimezone = new PVEAgentVmidQemuNodeNodesGetTimezone(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getTimezone;
   }
   #getUsers;
@@ -8366,10 +8363,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getUsers() {
     return this.#getUsers == null
       ? (this.#getUsers = new PVEAgentVmidQemuNodeNodesGetUsers(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getUsers;
   }
   #getVcpus;
@@ -8380,10 +8377,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getVcpus() {
     return this.#getVcpus == null
       ? (this.#getVcpus = new PVEAgentVmidQemuNodeNodesGetVcpus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#getVcpus;
   }
   #info;
@@ -8394,10 +8391,10 @@ class PVEVmidQemuNodeNodesAgent {
   get info() {
     return this.#info == null
       ? (this.#info = new PVEAgentVmidQemuNodeNodesInfo(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#info;
   }
   #networkGetInterfaces;
@@ -8408,11 +8405,11 @@ class PVEVmidQemuNodeNodesAgent {
   get networkGetInterfaces() {
     return this.#networkGetInterfaces == null
       ? (this.#networkGetInterfaces =
-          new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(
-            this.#client,
-            this.#node,
-            this.#vmid
-          ))
+        new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#networkGetInterfaces;
   }
   #ping;
@@ -8423,10 +8420,10 @@ class PVEVmidQemuNodeNodesAgent {
   get ping() {
     return this.#ping == null
       ? (this.#ping = new PVEAgentVmidQemuNodeNodesPing(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#ping;
   }
   #shutdown;
@@ -8437,10 +8434,10 @@ class PVEVmidQemuNodeNodesAgent {
   get shutdown() {
     return this.#shutdown == null
       ? (this.#shutdown = new PVEAgentVmidQemuNodeNodesShutdown(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#shutdown;
   }
   #suspendDisk;
@@ -8451,10 +8448,10 @@ class PVEVmidQemuNodeNodesAgent {
   get suspendDisk() {
     return this.#suspendDisk == null
       ? (this.#suspendDisk = new PVEAgentVmidQemuNodeNodesSuspendDisk(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#suspendDisk;
   }
   #suspendHybrid;
@@ -8465,10 +8462,10 @@ class PVEVmidQemuNodeNodesAgent {
   get suspendHybrid() {
     return this.#suspendHybrid == null
       ? (this.#suspendHybrid = new PVEAgentVmidQemuNodeNodesSuspendHybrid(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#suspendHybrid;
   }
   #suspendRam;
@@ -8479,10 +8476,10 @@ class PVEVmidQemuNodeNodesAgent {
   get suspendRam() {
     return this.#suspendRam == null
       ? (this.#suspendRam = new PVEAgentVmidQemuNodeNodesSuspendRam(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#suspendRam;
   }
   #setUserPassword;
@@ -8493,10 +8490,10 @@ class PVEVmidQemuNodeNodesAgent {
   get setUserPassword() {
     return this.#setUserPassword == null
       ? (this.#setUserPassword = new PVEAgentVmidQemuNodeNodesSetUserPassword(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#setUserPassword;
   }
   #exec;
@@ -8507,10 +8504,10 @@ class PVEVmidQemuNodeNodesAgent {
   get exec() {
     return this.#exec == null
       ? (this.#exec = new PVEAgentVmidQemuNodeNodesExec(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#exec;
   }
   #execStatus;
@@ -8521,10 +8518,10 @@ class PVEVmidQemuNodeNodesAgent {
   get execStatus() {
     return this.#execStatus == null
       ? (this.#execStatus = new PVEAgentVmidQemuNodeNodesExecStatus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#execStatus;
   }
   #fileRead;
@@ -8535,10 +8532,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fileRead() {
     return this.#fileRead == null
       ? (this.#fileRead = new PVEAgentVmidQemuNodeNodesFileRead(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#fileRead;
   }
   #fileWrite;
@@ -8549,10 +8546,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fileWrite() {
     return this.#fileWrite == null
       ? (this.#fileWrite = new PVEAgentVmidQemuNodeNodesFileWrite(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#fileWrite;
   }
 
@@ -9951,10 +9948,10 @@ class PVEVmidQemuNodeNodesCloudinit {
   get dump() {
     return this.#dump == null
       ? (this.#dump = new PVECloudinitVmidQemuNodeNodesDump(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#dump;
   }
 
@@ -10188,10 +10185,10 @@ class PVEVmidQemuNodeNodesStatus {
   get current() {
     return this.#current == null
       ? (this.#current = new PVEStatusVmidQemuNodeNodesCurrent(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#current;
   }
   #start;
@@ -10202,10 +10199,10 @@ class PVEVmidQemuNodeNodesStatus {
   get start() {
     return this.#start == null
       ? (this.#start = new PVEStatusVmidQemuNodeNodesStart(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#start;
   }
   #stop;
@@ -10216,10 +10213,10 @@ class PVEVmidQemuNodeNodesStatus {
   get stop() {
     return this.#stop == null
       ? (this.#stop = new PVEStatusVmidQemuNodeNodesStop(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#stop;
   }
   #reset;
@@ -10230,10 +10227,10 @@ class PVEVmidQemuNodeNodesStatus {
   get reset() {
     return this.#reset == null
       ? (this.#reset = new PVEStatusVmidQemuNodeNodesReset(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#reset;
   }
   #shutdown;
@@ -10244,10 +10241,10 @@ class PVEVmidQemuNodeNodesStatus {
   get shutdown() {
     return this.#shutdown == null
       ? (this.#shutdown = new PVEStatusVmidQemuNodeNodesShutdown(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#shutdown;
   }
   #reboot;
@@ -10258,10 +10255,10 @@ class PVEVmidQemuNodeNodesStatus {
   get reboot() {
     return this.#reboot == null
       ? (this.#reboot = new PVEStatusVmidQemuNodeNodesReboot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#reboot;
   }
   #suspend;
@@ -10272,10 +10269,10 @@ class PVEVmidQemuNodeNodesStatus {
   get suspend() {
     return this.#suspend == null
       ? (this.#suspend = new PVEStatusVmidQemuNodeNodesSuspend(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#suspend;
   }
   #resume;
@@ -10286,10 +10283,10 @@ class PVEVmidQemuNodeNodesStatus {
   get resume() {
     return this.#resume == null
       ? (this.#resume = new PVEStatusVmidQemuNodeNodesResume(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#resume;
   }
 
@@ -11044,11 +11041,11 @@ class PVEItemSnapshotVmidQemuNodeNodesSnapname {
   get config() {
     return this.#config == null
       ? (this.#config = new PVESnapnameSnapshotVmidQemuNodeNodesConfig(
-          this.#client,
-          this.#node,
-          this.#vmid,
-          this.#snapname
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid,
+        this.#snapname
+      ))
       : this.#config;
   }
   #rollback;
@@ -11059,11 +11056,11 @@ class PVEItemSnapshotVmidQemuNodeNodesSnapname {
   get rollback() {
     return this.#rollback == null
       ? (this.#rollback = new PVESnapnameSnapshotVmidQemuNodeNodesRollback(
-          this.#client,
-          this.#node,
-          this.#vmid,
-          this.#snapname
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid,
+        this.#snapname
+      ))
       : this.#rollback;
   }
 
@@ -11112,8 +11109,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
    */
   async getSnapshotConfig() {
     return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
-        this.#snapname
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname
       }/config`
     );
   }
@@ -11125,8 +11121,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
   async updateSnapshotConfig(description) {
     const parameters = { description: description };
     return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
-        this.#snapname
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname
       }/config`,
       parameters
     );
@@ -11158,8 +11153,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesRollback {
   async rollback(start) {
     const parameters = { start: start };
     return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
-        this.#snapname
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname
       }/rollback`,
       parameters
     );
@@ -11455,10 +11449,10 @@ class PVEItemLxcNodeNodesVmid {
   get config() {
     return this.#config == null
       ? (this.#config = new PVEVmidLxcNodeNodesConfig(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#config;
   }
   #status;
@@ -11469,10 +11463,10 @@ class PVEItemLxcNodeNodesVmid {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEVmidLxcNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#status;
   }
   #snapshot;
@@ -11483,10 +11477,10 @@ class PVEItemLxcNodeNodesVmid {
   get snapshot() {
     return this.#snapshot == null
       ? (this.#snapshot = new PVEVmidLxcNodeNodesSnapshot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#snapshot;
   }
   #firewall;
@@ -11497,10 +11491,10 @@ class PVEItemLxcNodeNodesVmid {
   get firewall() {
     return this.#firewall == null
       ? (this.#firewall = new PVEVmidLxcNodeNodesFirewall(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#firewall;
   }
   #rrd;
@@ -11511,10 +11505,10 @@ class PVEItemLxcNodeNodesVmid {
   get rrd() {
     return this.#rrd == null
       ? (this.#rrd = new PVEVmidLxcNodeNodesRrd(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#rrd;
   }
   #rrddata;
@@ -11525,10 +11519,10 @@ class PVEItemLxcNodeNodesVmid {
   get rrddata() {
     return this.#rrddata == null
       ? (this.#rrddata = new PVEVmidLxcNodeNodesRrddata(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#rrddata;
   }
   #vncproxy;
@@ -11539,10 +11533,10 @@ class PVEItemLxcNodeNodesVmid {
   get vncproxy() {
     return this.#vncproxy == null
       ? (this.#vncproxy = new PVEVmidLxcNodeNodesVncproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#vncproxy;
   }
   #termproxy;
@@ -11553,10 +11547,10 @@ class PVEItemLxcNodeNodesVmid {
   get termproxy() {
     return this.#termproxy == null
       ? (this.#termproxy = new PVEVmidLxcNodeNodesTermproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#termproxy;
   }
   #vncwebsocket;
@@ -11567,10 +11561,10 @@ class PVEItemLxcNodeNodesVmid {
   get vncwebsocket() {
     return this.#vncwebsocket == null
       ? (this.#vncwebsocket = new PVEVmidLxcNodeNodesVncwebsocket(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#vncwebsocket;
   }
   #spiceproxy;
@@ -11581,10 +11575,10 @@ class PVEItemLxcNodeNodesVmid {
   get spiceproxy() {
     return this.#spiceproxy == null
       ? (this.#spiceproxy = new PVEVmidLxcNodeNodesSpiceproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#spiceproxy;
   }
   #remoteMigrate;
@@ -11595,10 +11589,10 @@ class PVEItemLxcNodeNodesVmid {
   get remoteMigrate() {
     return this.#remoteMigrate == null
       ? (this.#remoteMigrate = new PVEVmidLxcNodeNodesRemoteMigrate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#remoteMigrate;
   }
   #migrate;
@@ -11609,10 +11603,10 @@ class PVEItemLxcNodeNodesVmid {
   get migrate() {
     return this.#migrate == null
       ? (this.#migrate = new PVEVmidLxcNodeNodesMigrate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#migrate;
   }
   #feature;
@@ -11623,10 +11617,10 @@ class PVEItemLxcNodeNodesVmid {
   get feature() {
     return this.#feature == null
       ? (this.#feature = new PVEVmidLxcNodeNodesFeature(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#feature;
   }
   #template;
@@ -11637,10 +11631,10 @@ class PVEItemLxcNodeNodesVmid {
   get template() {
     return this.#template == null
       ? (this.#template = new PVEVmidLxcNodeNodesTemplate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#template;
   }
   #clone;
@@ -11651,10 +11645,10 @@ class PVEItemLxcNodeNodesVmid {
   get clone() {
     return this.#clone == null
       ? (this.#clone = new PVEVmidLxcNodeNodesClone(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#clone;
   }
   #resize;
@@ -11665,10 +11659,10 @@ class PVEItemLxcNodeNodesVmid {
   get resize() {
     return this.#resize == null
       ? (this.#resize = new PVEVmidLxcNodeNodesResize(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#resize;
   }
   #moveVolume;
@@ -11679,10 +11673,10 @@ class PVEItemLxcNodeNodesVmid {
   get moveVolume() {
     return this.#moveVolume == null
       ? (this.#moveVolume = new PVEVmidLxcNodeNodesMoveVolume(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#moveVolume;
   }
   #pending;
@@ -11693,10 +11687,10 @@ class PVEItemLxcNodeNodesVmid {
   get pending() {
     return this.#pending == null
       ? (this.#pending = new PVEVmidLxcNodeNodesPending(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#pending;
   }
   #interfaces;
@@ -11707,10 +11701,10 @@ class PVEItemLxcNodeNodesVmid {
   get interfaces() {
     return this.#interfaces == null
       ? (this.#interfaces = new PVEVmidLxcNodeNodesInterfaces(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#interfaces;
   }
   #mtunnel;
@@ -11721,10 +11715,10 @@ class PVEItemLxcNodeNodesVmid {
   get mtunnel() {
     return this.#mtunnel == null
       ? (this.#mtunnel = new PVEVmidLxcNodeNodesMtunnel(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#mtunnel;
   }
   #mtunnelwebsocket;
@@ -11735,10 +11729,10 @@ class PVEItemLxcNodeNodesVmid {
   get mtunnelwebsocket() {
     return this.#mtunnelwebsocket == null
       ? (this.#mtunnelwebsocket = new PVEVmidLxcNodeNodesMtunnelwebsocket(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#mtunnelwebsocket;
   }
 
@@ -11940,10 +11934,10 @@ class PVEVmidLxcNodeNodesStatus {
   get current() {
     return this.#current == null
       ? (this.#current = new PVEStatusVmidLxcNodeNodesCurrent(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#current;
   }
   #start;
@@ -11954,10 +11948,10 @@ class PVEVmidLxcNodeNodesStatus {
   get start() {
     return this.#start == null
       ? (this.#start = new PVEStatusVmidLxcNodeNodesStart(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#start;
   }
   #stop;
@@ -11968,10 +11962,10 @@ class PVEVmidLxcNodeNodesStatus {
   get stop() {
     return this.#stop == null
       ? (this.#stop = new PVEStatusVmidLxcNodeNodesStop(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#stop;
   }
   #shutdown;
@@ -11982,10 +11976,10 @@ class PVEVmidLxcNodeNodesStatus {
   get shutdown() {
     return this.#shutdown == null
       ? (this.#shutdown = new PVEStatusVmidLxcNodeNodesShutdown(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#shutdown;
   }
   #suspend;
@@ -11996,10 +11990,10 @@ class PVEVmidLxcNodeNodesStatus {
   get suspend() {
     return this.#suspend == null
       ? (this.#suspend = new PVEStatusVmidLxcNodeNodesSuspend(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#suspend;
   }
   #resume;
@@ -12010,10 +12004,10 @@ class PVEVmidLxcNodeNodesStatus {
   get resume() {
     return this.#resume == null
       ? (this.#resume = new PVEStatusVmidLxcNodeNodesResume(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#resume;
   }
   #reboot;
@@ -12024,10 +12018,10 @@ class PVEVmidLxcNodeNodesStatus {
   get reboot() {
     return this.#reboot == null
       ? (this.#reboot = new PVEStatusVmidLxcNodeNodesReboot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#reboot;
   }
 
@@ -12327,11 +12321,11 @@ class PVEItemSnapshotVmidLxcNodeNodesSnapname {
   get rollback() {
     return this.#rollback == null
       ? (this.#rollback = new PVESnapnameSnapshotVmidLxcNodeNodesRollback(
-          this.#client,
-          this.#node,
-          this.#vmid,
-          this.#snapname
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid,
+        this.#snapname
+      ))
       : this.#rollback;
   }
   #config;
@@ -12342,11 +12336,11 @@ class PVEItemSnapshotVmidLxcNodeNodesSnapname {
   get config() {
     return this.#config == null
       ? (this.#config = new PVESnapnameSnapshotVmidLxcNodeNodesConfig(
-          this.#client,
-          this.#node,
-          this.#vmid,
-          this.#snapname
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid,
+        this.#snapname
+      ))
       : this.#config;
   }
 
@@ -12397,8 +12391,7 @@ class PVESnapnameSnapshotVmidLxcNodeNodesRollback {
   async rollback(start) {
     const parameters = { start: start };
     return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${
-        this.#snapname
+      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname
       }/rollback`,
       parameters
     );
@@ -12439,8 +12432,7 @@ class PVESnapnameSnapshotVmidLxcNodeNodesConfig {
   async updateSnapshotConfig(description) {
     const parameters = { description: description };
     return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${
-        this.#snapname
+      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname
       }/config`,
       parameters
     );
@@ -12470,10 +12462,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get rules() {
     return this.#rules == null
       ? (this.#rules = new PVEFirewallVmidLxcNodeNodesRules(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#rules;
   }
   #aliases;
@@ -12484,10 +12476,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get aliases() {
     return this.#aliases == null
       ? (this.#aliases = new PVEFirewallVmidLxcNodeNodesAliases(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#aliases;
   }
   #ipset;
@@ -12498,10 +12490,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get ipset() {
     return this.#ipset == null
       ? (this.#ipset = new PVEFirewallVmidLxcNodeNodesIpset(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#ipset;
   }
   #options;
@@ -12512,10 +12504,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get options() {
     return this.#options == null
       ? (this.#options = new PVEFirewallVmidLxcNodeNodesOptions(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#options;
   }
   #log;
@@ -12526,10 +12518,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEFirewallVmidLxcNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#log;
   }
   #refs;
@@ -12540,10 +12532,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get refs() {
     return this.#refs == null
       ? (this.#refs = new PVEFirewallVmidLxcNodeNodesRefs(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+        this.#client,
+        this.#node,
+        this.#vmid
+      ))
       : this.#refs;
   }
 
@@ -13034,8 +13026,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
   async removeIp(digest) {
     const parameters = { digest: digest };
     return await this.#client.delete(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
       }`,
       parameters
     );
@@ -13046,8 +13037,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
    */
   async readIp() {
     return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
       }`
     );
   }
@@ -13065,8 +13055,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
       nomatch: nomatch,
     };
     return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
       }`,
       parameters
     );
@@ -14010,9 +13999,9 @@ class PVENodeNodesCeph {
   get cmdSafety() {
     return this.#cmdSafety == null
       ? (this.#cmdSafety = new PVECephNodeNodesCmdSafety(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#cmdSafety;
   }
 
@@ -14237,10 +14226,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get metadata() {
     return this.#metadata == null
       ? (this.#metadata = new PVEOsdidOsdCephNodeNodesMetadata(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+        this.#client,
+        this.#node,
+        this.#osdid
+      ))
       : this.#metadata;
   }
   #lvInfo;
@@ -14251,10 +14240,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get lvInfo() {
     return this.#lvInfo == null
       ? (this.#lvInfo = new PVEOsdidOsdCephNodeNodesLvInfo(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+        this.#client,
+        this.#node,
+        this.#osdid
+      ))
       : this.#lvInfo;
   }
   #in;
@@ -14265,10 +14254,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get in() {
     return this.#in == null
       ? (this.#in = new PVEOsdidOsdCephNodeNodesIn(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+        this.#client,
+        this.#node,
+        this.#osdid
+      ))
       : this.#in;
   }
   #out;
@@ -14279,10 +14268,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get out() {
     return this.#out == null
       ? (this.#out = new PVEOsdidOsdCephNodeNodesOut(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+        this.#client,
+        this.#node,
+        this.#osdid
+      ))
       : this.#out;
   }
   #scrub;
@@ -14293,10 +14282,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get scrub() {
     return this.#scrub == null
       ? (this.#scrub = new PVEOsdidOsdCephNodeNodesScrub(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+        this.#client,
+        this.#node,
+        this.#osdid
+      ))
       : this.#scrub;
   }
 
@@ -14827,10 +14816,10 @@ class PVEItemPoolCephNodeNodesName {
   get status() {
     return this.#status == null
       ? (this.#status = new PVENamePoolCephNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#name
-        ))
+        this.#client,
+        this.#node,
+        this.#name
+      ))
       : this.#status;
   }
 
@@ -15203,9 +15192,9 @@ class PVENodeNodesVzdump {
   get defaults() {
     return this.#defaults == null
       ? (this.#defaults = new PVEVzdumpNodeNodesDefaults(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#defaults;
   }
   #extractconfig;
@@ -15216,9 +15205,9 @@ class PVENodeNodesVzdump {
   get extractconfig() {
     return this.#extractconfig == null
       ? (this.#extractconfig = new PVEVzdumpNodeNodesExtractconfig(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#extractconfig;
   }
 
@@ -15448,10 +15437,10 @@ class PVEItemServicesNodeNodesService {
   get state() {
     return this.#state == null
       ? (this.#state = new PVEServiceServicesNodeNodesState(
-          this.#client,
-          this.#node,
-          this.#service
-        ))
+        this.#client,
+        this.#node,
+        this.#service
+      ))
       : this.#state;
   }
   #start;
@@ -15462,10 +15451,10 @@ class PVEItemServicesNodeNodesService {
   get start() {
     return this.#start == null
       ? (this.#start = new PVEServiceServicesNodeNodesStart(
-          this.#client,
-          this.#node,
-          this.#service
-        ))
+        this.#client,
+        this.#node,
+        this.#service
+      ))
       : this.#start;
   }
   #stop;
@@ -15476,10 +15465,10 @@ class PVEItemServicesNodeNodesService {
   get stop() {
     return this.#stop == null
       ? (this.#stop = new PVEServiceServicesNodeNodesStop(
-          this.#client,
-          this.#node,
-          this.#service
-        ))
+        this.#client,
+        this.#node,
+        this.#service
+      ))
       : this.#stop;
   }
   #restart;
@@ -15490,10 +15479,10 @@ class PVEItemServicesNodeNodesService {
   get restart() {
     return this.#restart == null
       ? (this.#restart = new PVEServiceServicesNodeNodesRestart(
-          this.#client,
-          this.#node,
-          this.#service
-        ))
+        this.#client,
+        this.#node,
+        this.#service
+      ))
       : this.#restart;
   }
   #reload;
@@ -15504,10 +15493,10 @@ class PVEItemServicesNodeNodesService {
   get reload() {
     return this.#reload == null
       ? (this.#reload = new PVEServiceServicesNodeNodesReload(
-          this.#client,
-          this.#node,
-          this.#service
-        ))
+        this.#client,
+        this.#node,
+        this.#service
+      ))
       : this.#reload;
   }
 
@@ -16067,10 +16056,10 @@ class PVEItemTasksNodeNodesUpid {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEUpidTasksNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#upid
-        ))
+        this.#client,
+        this.#node,
+        this.#upid
+      ))
       : this.#log;
   }
   #status;
@@ -16081,10 +16070,10 @@ class PVEItemTasksNodeNodesUpid {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEUpidTasksNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#upid
-        ))
+        this.#client,
+        this.#node,
+        this.#upid
+      ))
       : this.#status;
   }
 
@@ -16217,9 +16206,9 @@ class PVENodeNodesScan {
   get glusterfs() {
     return this.#glusterfs == null
       ? (this.#glusterfs = new PVEScanNodeNodesGlusterfs(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#glusterfs;
   }
   #iscsi;
@@ -16594,10 +16583,10 @@ class PVEItemPciHardwareNodeNodesPciid {
   get mdev() {
     return this.#mdev == null
       ? (this.#mdev = new PVEPciidPciHardwareNodeNodesMdev(
-          this.#client,
-          this.#node,
-          this.#pciid
-        ))
+        this.#client,
+        this.#node,
+        this.#pciid
+      ))
       : this.#mdev;
   }
 
@@ -16680,9 +16669,9 @@ class PVENodeNodesCapabilities {
   get qemu() {
     return this.#qemu == null
       ? (this.#qemu = new PVECapabilitiesNodeNodesQemu(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#qemu;
   }
 
@@ -16715,9 +16704,9 @@ class PVECapabilitiesNodeNodesQemu {
   get cpu() {
     return this.#cpu == null
       ? (this.#cpu = new PVEQemuCapabilitiesNodeNodesCpu(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#cpu;
   }
   #machines;
@@ -16728,9 +16717,9 @@ class PVECapabilitiesNodeNodesQemu {
   get machines() {
     return this.#machines == null
       ? (this.#machines = new PVEQemuCapabilitiesNodeNodesMachines(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#machines;
   }
 
@@ -16857,10 +16846,10 @@ class PVEItemStorageNodeNodesStorage {
   get prunebackups() {
     return this.#prunebackups == null
       ? (this.#prunebackups = new PVEStorageStorageNodeNodesPrunebackups(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#prunebackups;
   }
   #content;
@@ -16871,10 +16860,10 @@ class PVEItemStorageNodeNodesStorage {
   get content() {
     return this.#content == null
       ? (this.#content = new PVEStorageStorageNodeNodesContent(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#content;
   }
   #fileRestore;
@@ -16885,10 +16874,10 @@ class PVEItemStorageNodeNodesStorage {
   get fileRestore() {
     return this.#fileRestore == null
       ? (this.#fileRestore = new PVEStorageStorageNodeNodesFileRestore(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#fileRestore;
   }
   #status;
@@ -16899,10 +16888,10 @@ class PVEItemStorageNodeNodesStorage {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEStorageStorageNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#status;
   }
   #rrd;
@@ -16913,10 +16902,10 @@ class PVEItemStorageNodeNodesStorage {
   get rrd() {
     return this.#rrd == null
       ? (this.#rrd = new PVEStorageStorageNodeNodesRrd(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#rrd;
   }
   #rrddata;
@@ -16927,10 +16916,10 @@ class PVEItemStorageNodeNodesStorage {
   get rrddata() {
     return this.#rrddata == null
       ? (this.#rrddata = new PVEStorageStorageNodeNodesRrddata(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#rrddata;
   }
   #upload;
@@ -16941,10 +16930,10 @@ class PVEItemStorageNodeNodesStorage {
   get upload() {
     return this.#upload == null
       ? (this.#upload = new PVEStorageStorageNodeNodesUpload(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#upload;
   }
   #downloadUrl;
@@ -16955,10 +16944,10 @@ class PVEItemStorageNodeNodesStorage {
   get downloadUrl() {
     return this.#downloadUrl == null
       ? (this.#downloadUrl = new PVEStorageStorageNodeNodesDownloadUrl(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#downloadUrl;
   }
   #importMetadata;
@@ -16969,10 +16958,10 @@ class PVEItemStorageNodeNodesStorage {
   get importMetadata() {
     return this.#importMetadata == null
       ? (this.#importMetadata = new PVEStorageStorageNodeNodesImportMetadata(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#importMetadata;
   }
 
@@ -17203,10 +17192,10 @@ class PVEStorageStorageNodeNodesFileRestore {
   get list() {
     return this.#list == null
       ? (this.#list = new PVEFileRestoreStorageStorageNodeNodesList(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#list;
   }
   #download;
@@ -17217,10 +17206,10 @@ class PVEStorageStorageNodeNodesFileRestore {
   get download() {
     return this.#download == null
       ? (this.#download = new PVEFileRestoreStorageStorageNodeNodesDownload(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+        this.#client,
+        this.#node,
+        this.#storage
+      ))
       : this.#download;
   }
 }
@@ -17554,9 +17543,9 @@ class PVENodeNodesDisks {
   get directory() {
     return this.#directory == null
       ? (this.#directory = new PVEDisksNodeNodesDirectory(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#directory;
   }
   #zfs;
@@ -17607,9 +17596,9 @@ class PVENodeNodesDisks {
   get wipedisk() {
     return this.#wipedisk == null
       ? (this.#wipedisk = new PVEDisksNodeNodesWipedisk(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#wipedisk;
   }
 
@@ -18135,9 +18124,9 @@ class PVENodeNodesApt {
   get changelog() {
     return this.#changelog == null
       ? (this.#changelog = new PVEAptNodeNodesChangelog(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#changelog;
   }
   #repositories;
@@ -18148,9 +18137,9 @@ class PVENodeNodesApt {
   get repositories() {
     return this.#repositories == null
       ? (this.#repositories = new PVEAptNodeNodesRepositories(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#repositories;
   }
   #versions;
@@ -18352,9 +18341,9 @@ class PVENodeNodesFirewall {
   get options() {
     return this.#options == null
       ? (this.#options = new PVEFirewallNodeNodesOptions(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#options;
   }
   #log;
@@ -18760,10 +18749,10 @@ class PVEItemReplicationNodeNodesId {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEIdReplicationNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#id
-        ))
+        this.#client,
+        this.#node,
+        this.#id
+      ))
       : this.#status;
   }
   #log;
@@ -18774,10 +18763,10 @@ class PVEItemReplicationNodeNodesId {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEIdReplicationNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#id
-        ))
+        this.#client,
+        this.#node,
+        this.#id
+      ))
       : this.#log;
   }
   #scheduleNow;
@@ -18788,10 +18777,10 @@ class PVEItemReplicationNodeNodesId {
   get scheduleNow() {
     return this.#scheduleNow == null
       ? (this.#scheduleNow = new PVEIdReplicationNodeNodesScheduleNow(
-          this.#client,
-          this.#node,
-          this.#id
-        ))
+        this.#client,
+        this.#node,
+        this.#id
+      ))
       : this.#scheduleNow;
   }
 
@@ -18911,9 +18900,9 @@ class PVENodeNodesCertificates {
   get acme() {
     return this.#acme == null
       ? (this.#acme = new PVECertificatesNodeNodesAcme(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#acme;
   }
   #info;
@@ -18924,9 +18913,9 @@ class PVENodeNodesCertificates {
   get info() {
     return this.#info == null
       ? (this.#info = new PVECertificatesNodeNodesInfo(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#info;
   }
   #custom;
@@ -18937,9 +18926,9 @@ class PVENodeNodesCertificates {
   get custom() {
     return this.#custom == null
       ? (this.#custom = new PVECertificatesNodeNodesCustom(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#custom;
   }
 
@@ -18972,9 +18961,9 @@ class PVECertificatesNodeNodesAcme {
   get certificate() {
     return this.#certificate == null
       ? (this.#certificate = new PVEAcmeCertificatesNodeNodesCertificate(
-          this.#client,
-          this.#node
-        ))
+        this.#client,
+        this.#node
+      ))
       : this.#certificate;
   }
 
@@ -19244,10 +19233,10 @@ class PVEItemZonesSdnNodeNodesZone {
   get content() {
     return this.#content == null
       ? (this.#content = new PVEZoneZonesSdnNodeNodesContent(
-          this.#client,
-          this.#node,
-          this.#zone
-        ))
+        this.#client,
+        this.#node,
+        this.#zone
+      ))
       : this.#content;
   }
 
@@ -20647,9 +20636,9 @@ class PVEItemUsersAccessUserid {
   get unlockTfa() {
     return this.#unlockTfa == null
       ? (this.#unlockTfa = new PVEUseridUsersAccessUnlockTfa(
-          this.#client,
-          this.#userid
-        ))
+        this.#client,
+        this.#userid
+      ))
       : this.#unlockTfa;
   }
   #token;
@@ -20660,9 +20649,9 @@ class PVEItemUsersAccessUserid {
   get token() {
     return this.#token == null
       ? (this.#token = new PVEUseridUsersAccessToken(
-          this.#client,
-          this.#userid
-        ))
+        this.#client,
+        this.#userid
+      ))
       : this.#token;
   }
 
