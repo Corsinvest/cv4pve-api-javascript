@@ -505,6 +505,9 @@ class PveClientBase {
 /**
  * Proxmox VE Client Api
  */
+/**
+ * Proxmox VE Client Api
+ */
 class PveClient extends PveClientBase {
   /** @type {PveClient} */
   #client;
@@ -531,7 +534,7 @@ class PveClient extends PveClientBase {
       return;
     }
 
-    for (const [key, value] of Object.entries(values)) {
+    for (const [key, value] of Object.entries(parameters)) {
       parameters[name + key] = value;
     }
   }
@@ -971,6 +974,16 @@ class PVEClusterMetrics {
       ? (this.#server = new PVEMetricsClusterServer(this.#client))
       : this.#server;
   }
+  #export;
+  /**
+   * Get MetricsClusterExport
+   * @returns {PVEMetricsClusterExport}
+   */
+  get export() {
+    return this.#export == null
+      ? (this.#export = new PVEMetricsClusterExport(this.#client))
+      : this.#export;
+  }
 
   /**
    * Metrics index.
@@ -1162,6 +1175,34 @@ class PVEItemServerMetricsClusterId {
 }
 
 /**
+ * Class PVEMetricsClusterExport
+ */
+class PVEMetricsClusterExport {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Retrieve metrics of the cluster.
+   * @param {boolean} history Also return historic values. Returns full available metric history unless `start-time` is also set
+   * @param {boolean} local_only Only return metrics for the current node instead of the whole cluster
+   * @param {int} start_time Only include metrics with a timestamp &amp;gt; start-time.
+   * @returns {Promise<Result>}
+   */
+  async export_(history, local_only, start_time) {
+    const parameters = {
+      history: history,
+      "local-only": local_only,
+      "start-time": start_time,
+    };
+    return await this.#client.get(`/cluster/metrics/export`, parameters);
+  }
+}
+
+/**
  * Class PVEClusterNotifications
  */
 class PVEClusterNotifications {
@@ -1172,6 +1213,29 @@ class PVEClusterNotifications {
     this.#client = client;
   }
 
+  #matcherFields;
+  /**
+   * Get NotificationsClusterMatcherFields
+   * @returns {PVENotificationsClusterMatcherFields}
+   */
+  get matcherFields() {
+    return this.#matcherFields == null
+      ? (this.#matcherFields = new PVENotificationsClusterMatcherFields(
+          this.#client
+        ))
+      : this.#matcherFields;
+  }
+  #matcherFieldValues;
+  /**
+   * Get NotificationsClusterMatcherFieldValues
+   * @returns {PVENotificationsClusterMatcherFieldValues}
+   */
+  get matcherFieldValues() {
+    return this.#matcherFieldValues == null
+      ? (this.#matcherFieldValues =
+          new PVENotificationsClusterMatcherFieldValues(this.#client))
+      : this.#matcherFieldValues;
+  }
   #endpoints;
   /**
    * Get NotificationsClusterEndpoints
@@ -1212,6 +1276,48 @@ class PVEClusterNotifications {
   }
 }
 /**
+ * Class PVENotificationsClusterMatcherFields
+ */
+class PVENotificationsClusterMatcherFields {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Returns known notification metadata fields
+   * @returns {Promise<Result>}
+   */
+  async getMatcherFields() {
+    return await this.#client.get(`/cluster/notifications/matcher-fields`);
+  }
+}
+
+/**
+ * Class PVENotificationsClusterMatcherFieldValues
+ */
+class PVENotificationsClusterMatcherFieldValues {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Returns known notification metadata fields and their known values
+   * @returns {Promise<Result>}
+   */
+  async getMatcherFieldValues() {
+    return await this.#client.get(
+      `/cluster/notifications/matcher-field-values`
+    );
+  }
+}
+
+/**
  * Class PVENotificationsClusterEndpoints
  */
 class PVENotificationsClusterEndpoints {
@@ -1230,8 +1336,8 @@ class PVENotificationsClusterEndpoints {
   get sendmail() {
     return this.#sendmail == null
       ? (this.#sendmail = new PVEEndpointsNotificationsClusterSendmail(
-        this.#client
-      ))
+          this.#client
+        ))
       : this.#sendmail;
   }
   #gotify;
@@ -1242,8 +1348,8 @@ class PVENotificationsClusterEndpoints {
   get gotify() {
     return this.#gotify == null
       ? (this.#gotify = new PVEEndpointsNotificationsClusterGotify(
-        this.#client
-      ))
+          this.#client
+        ))
       : this.#gotify;
   }
   #smtp;
@@ -1255,6 +1361,18 @@ class PVENotificationsClusterEndpoints {
     return this.#smtp == null
       ? (this.#smtp = new PVEEndpointsNotificationsClusterSmtp(this.#client))
       : this.#smtp;
+  }
+  #webhook;
+  /**
+   * Get EndpointsNotificationsClusterWebhook
+   * @returns {PVEEndpointsNotificationsClusterWebhook}
+   */
+  get webhook() {
+    return this.#webhook == null
+      ? (this.#webhook = new PVEEndpointsNotificationsClusterWebhook(
+          this.#client
+        ))
+      : this.#webhook;
   }
 
   /**
@@ -1675,6 +1793,149 @@ class PVEItemSmtpEndpointsNotificationsClusterName {
 }
 
 /**
+ * Class PVEEndpointsNotificationsClusterWebhook
+ */
+class PVEEndpointsNotificationsClusterWebhook {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Get ItemWebhookEndpointsNotificationsClusterName
+   * @param name
+   * @returns {PVEItemWebhookEndpointsNotificationsClusterName}
+   */
+  get(name) {
+    return new PVEItemWebhookEndpointsNotificationsClusterName(
+      this.#client,
+      name
+    );
+  }
+
+  /**
+   * Returns a list of all webhook endpoints
+   * @returns {Promise<Result>}
+   */
+  async getWebhookEndpoints() {
+    return await this.#client.get(`/cluster/notifications/endpoints/webhook`);
+  }
+  /**
+   * Create a new webhook endpoint
+   * @param {string} method HTTP method
+   *   Enum: post,put,get
+   * @param {string} name The name of the endpoint.
+   * @param {string} url Server URL
+   * @param {string} body HTTP body, base64 encoded
+   * @param {string} comment Comment
+   * @param {boolean} disable Disable this target
+   * @param {array} header HTTP headers to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {array} secret Secrets to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @returns {Promise<Result>}
+   */
+  async createWebhookEndpoint(
+    method,
+    name,
+    url,
+    body,
+    comment,
+    disable,
+    header,
+    secret
+  ) {
+    const parameters = {
+      method: method,
+      name: name,
+      url: url,
+      body: body,
+      comment: comment,
+      disable: disable,
+      header: header,
+      secret: secret,
+    };
+    return await this.#client.create(
+      `/cluster/notifications/endpoints/webhook`,
+      parameters
+    );
+  }
+}
+/**
+ * Class PVEItemWebhookEndpointsNotificationsClusterName
+ */
+class PVEItemWebhookEndpointsNotificationsClusterName {
+  #name;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, name) {
+    this.#client = client;
+    this.#name = name;
+  }
+
+  /**
+   * Remove webhook endpoint
+   * @returns {Promise<Result>}
+   */
+  async deleteWebhookEndpoint() {
+    return await this.#client.delete(
+      `/cluster/notifications/endpoints/webhook/${this.#name}`
+    );
+  }
+  /**
+   * Return a specific webhook endpoint
+   * @returns {Promise<Result>}
+   */
+  async getWebhookEndpoint() {
+    return await this.#client.get(
+      `/cluster/notifications/endpoints/webhook/${this.#name}`
+    );
+  }
+  /**
+   * Update existing webhook endpoint
+   * @param {string} body HTTP body, base64 encoded
+   * @param {string} comment Comment
+   * @param {array} delete_ A list of settings you want to delete.
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {boolean} disable Disable this target
+   * @param {array} header HTTP headers to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {string} method HTTP method
+   *   Enum: post,put,get
+   * @param {array} secret Secrets to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {string} url Server URL
+   * @returns {Promise<Result>}
+   */
+  async updateWebhookEndpoint(
+    body,
+    comment,
+    delete_,
+    digest,
+    disable,
+    header,
+    method,
+    secret,
+    url
+  ) {
+    const parameters = {
+      body: body,
+      comment: comment,
+      delete: delete_,
+      digest: digest,
+      disable: disable,
+      header: header,
+      method: method,
+      secret: secret,
+      url: url,
+    };
+    return await this.#client.set(
+      `/cluster/notifications/endpoints/webhook/${this.#name}`,
+      parameters
+    );
+  }
+}
+
+/**
  * Class PVENotificationsClusterTargets
  */
 class PVENotificationsClusterTargets {
@@ -1723,9 +1984,9 @@ class PVEItemTargetsNotificationsClusterName {
   get test() {
     return this.#test == null
       ? (this.#test = new PVENameTargetsNotificationsClusterTest(
-        this.#client,
-        this.#name
-      ))
+          this.#client,
+          this.#name
+        ))
       : this.#test;
   }
 }
@@ -2344,7 +2605,7 @@ class PVEItemGroupsFirewallClusterGroup {
    * Create new rule.
    * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @param {string} comment Descriptive comment.
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -2456,7 +2717,7 @@ class PVEItemGroupGroupsFirewallClusterPos {
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @returns {Promise<Result>}
    */
   async updateRule(
@@ -2533,7 +2794,7 @@ class PVEFirewallClusterRules {
    * Create new rule.
    * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @param {string} comment Descriptive comment.
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -2638,7 +2899,7 @@ class PVEItemRulesFirewallClusterPos {
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @returns {Promise<Result>}
    */
   async updateRule(
@@ -2971,6 +3232,8 @@ class PVEFirewallClusterOptions {
    * @param {boolean} ebtables Enable ebtables rules cluster wide.
    * @param {int} enable Enable or disable the firewall cluster wide.
    * @param {string} log_ratelimit Log ratelimiting settings
+   * @param {string} policy_forward Forward policy.
+   *   Enum: ACCEPT,DROP
    * @param {string} policy_in Input policy.
    *   Enum: ACCEPT,REJECT,DROP
    * @param {string} policy_out Output policy.
@@ -2983,6 +3246,7 @@ class PVEFirewallClusterOptions {
     ebtables,
     enable,
     log_ratelimit,
+    policy_forward,
     policy_in,
     policy_out
   ) {
@@ -2992,6 +3256,7 @@ class PVEFirewallClusterOptions {
       ebtables: ebtables,
       enable: enable,
       log_ratelimit: log_ratelimit,
+      policy_forward: policy_forward,
       policy_in: policy_in,
       policy_out: policy_out,
     };
@@ -3098,6 +3363,8 @@ class PVEClusterBackup {
    * @param {string} notification_policy Deprecated: Do not use
    *   Enum: always,failure,never
    * @param {string} notification_target Deprecated: Do not use
+   * @param {string} pbs_change_detection_mode PBS mode used to detect file changes and switch encoding format for container backups.
+   *   Enum: legacy,data,metadata
    * @param {string} performance Other performance-related settings.
    * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
    * @param {string} pool Backup all known guest systems included in the specified pool.
@@ -3141,6 +3408,7 @@ class PVEClusterBackup {
     notification_mode,
     notification_policy,
     notification_target,
+    pbs_change_detection_mode,
     performance,
     pigz,
     pool,
@@ -3183,6 +3451,7 @@ class PVEClusterBackup {
       "notification-mode": notification_mode,
       "notification-policy": notification_policy,
       "notification-target": notification_target,
+      "pbs-change-detection-mode": pbs_change_detection_mode,
       performance: performance,
       pigz: pigz,
       pool: pool,
@@ -3226,9 +3495,9 @@ class PVEItemBackupClusterId {
   get includedVolumes() {
     return this.#includedVolumes == null
       ? (this.#includedVolumes = new PVEIdBackupClusterIncludedVolumes(
-        this.#client,
-        this.#id
-      ))
+          this.#client,
+          this.#id
+        ))
       : this.#includedVolumes;
   }
 
@@ -3275,6 +3544,8 @@ class PVEItemBackupClusterId {
    * @param {string} notification_policy Deprecated: Do not use
    *   Enum: always,failure,never
    * @param {string} notification_target Deprecated: Do not use
+   * @param {string} pbs_change_detection_mode PBS mode used to detect file changes and switch encoding format for container backups.
+   *   Enum: legacy,data,metadata
    * @param {string} performance Other performance-related settings.
    * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
    * @param {string} pool Backup all known guest systems included in the specified pool.
@@ -3318,6 +3589,7 @@ class PVEItemBackupClusterId {
     notification_mode,
     notification_policy,
     notification_target,
+    pbs_change_detection_mode,
     performance,
     pigz,
     pool,
@@ -3360,6 +3632,7 @@ class PVEItemBackupClusterId {
       "notification-mode": notification_mode,
       "notification-policy": notification_policy,
       "notification-target": notification_target,
+      "pbs-change-detection-mode": pbs_change_detection_mode,
       performance: performance,
       pigz: pigz,
       pool: pool,
@@ -3583,9 +3856,9 @@ class PVEItemResourcesHaClusterSid {
   get migrate() {
     return this.#migrate == null
       ? (this.#migrate = new PVESidResourcesHaClusterMigrate(
-        this.#client,
-        this.#sid
-      ))
+          this.#client,
+          this.#sid
+        ))
       : this.#migrate;
   }
   #relocate;
@@ -3596,9 +3869,9 @@ class PVEItemResourcesHaClusterSid {
   get relocate() {
     return this.#relocate == null
       ? (this.#relocate = new PVESidResourcesHaClusterRelocate(
-        this.#client,
-        this.#sid
-      ))
+          this.#client,
+          this.#sid
+        ))
       : this.#relocate;
   }
 
@@ -3838,8 +4111,8 @@ class PVEHaClusterStatus {
   get managerStatus() {
     return this.#managerStatus == null
       ? (this.#managerStatus = new PVEStatusHaClusterManagerStatus(
-        this.#client
-      ))
+          this.#client
+        ))
       : this.#managerStatus;
   }
 
@@ -3960,8 +4233,8 @@ class PVEClusterAcme {
   get challengeSchema() {
     return this.#challengeSchema == null
       ? (this.#challengeSchema = new PVEAcmeClusterChallengeSchema(
-        this.#client
-      ))
+          this.#client
+        ))
       : this.#challengeSchema;
   }
 
@@ -4501,8 +4774,8 @@ class PVEClusterJobs {
   get scheduleAnalyze() {
     return this.#scheduleAnalyze == null
       ? (this.#scheduleAnalyze = new PVEJobsClusterScheduleAnalyze(
-        this.#client
-      ))
+          this.#client
+        ))
       : this.#scheduleAnalyze;
   }
 
@@ -5016,17 +5289,19 @@ class PVESdnClusterVnets {
    * @param {string} vnet The SDN vnet object identifier.
    * @param {string} zone zone id
    * @param {string} alias alias name of the vnet
+   * @param {boolean} isolate_ports If true, sets the isolated property for all members of this VNet
    * @param {int} tag vlan or vxlan id
    * @param {string} type Type
    *   Enum: vnet
    * @param {boolean} vlanaware Allow vm VLANs to pass through this vnet.
    * @returns {Promise<Result>}
    */
-  async create(vnet, zone, alias, tag, type, vlanaware) {
+  async create(vnet, zone, alias, isolate_ports, tag, type, vlanaware) {
     const parameters = {
       vnet: vnet,
       zone: zone,
       alias: alias,
+      "isolate-ports": isolate_ports,
       tag: tag,
       type: type,
       vlanaware: vlanaware,
@@ -5047,6 +5322,19 @@ class PVEItemVnetsSdnClusterVnet {
     this.#vnet = vnet;
   }
 
+  #firewall;
+  /**
+   * Get VnetVnetsSdnClusterFirewall
+   * @returns {PVEVnetVnetsSdnClusterFirewall}
+   */
+  get firewall() {
+    return this.#firewall == null
+      ? (this.#firewall = new PVEVnetVnetsSdnClusterFirewall(
+          this.#client,
+          this.#vnet
+        ))
+      : this.#firewall;
+  }
   #subnets;
   /**
    * Get VnetVnetsSdnClusterSubnets
@@ -5055,9 +5343,9 @@ class PVEItemVnetsSdnClusterVnet {
   get subnets() {
     return this.#subnets == null
       ? (this.#subnets = new PVEVnetVnetsSdnClusterSubnets(
-        this.#client,
-        this.#vnet
-      ))
+          this.#client,
+          this.#vnet
+        ))
       : this.#subnets;
   }
   #ips;
@@ -5099,16 +5387,18 @@ class PVEItemVnetsSdnClusterVnet {
    * @param {string} alias alias name of the vnet
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {boolean} isolate_ports If true, sets the isolated property for all members of this VNet
    * @param {int} tag vlan or vxlan id
    * @param {boolean} vlanaware Allow vm VLANs to pass through this vnet.
    * @param {string} zone zone id
    * @returns {Promise<Result>}
    */
-  async update(alias, delete_, digest, tag, vlanaware, zone) {
+  async update(alias, delete_, digest, isolate_ports, tag, vlanaware, zone) {
     const parameters = {
       alias: alias,
       delete: delete_,
       digest: digest,
+      "isolate-ports": isolate_ports,
       tag: tag,
       vlanaware: vlanaware,
       zone: zone,
@@ -5119,6 +5409,299 @@ class PVEItemVnetsSdnClusterVnet {
     );
   }
 }
+/**
+ * Class PVEVnetVnetsSdnClusterFirewall
+ */
+class PVEVnetVnetsSdnClusterFirewall {
+  #vnet;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, vnet) {
+    this.#client = client;
+    this.#vnet = vnet;
+  }
+
+  #rules;
+  /**
+   * Get FirewallVnetVnetsSdnClusterRules
+   * @returns {PVEFirewallVnetVnetsSdnClusterRules}
+   */
+  get rules() {
+    return this.#rules == null
+      ? (this.#rules = new PVEFirewallVnetVnetsSdnClusterRules(
+          this.#client,
+          this.#vnet
+        ))
+      : this.#rules;
+  }
+  #options;
+  /**
+   * Get FirewallVnetVnetsSdnClusterOptions
+   * @returns {PVEFirewallVnetVnetsSdnClusterOptions}
+   */
+  get options() {
+    return this.#options == null
+      ? (this.#options = new PVEFirewallVnetVnetsSdnClusterOptions(
+          this.#client,
+          this.#vnet
+        ))
+      : this.#options;
+  }
+
+  /**
+   * Directory index.
+   * @returns {Promise<Result>}
+   */
+  async index() {
+    return await this.#client.get(`/cluster/sdn/vnets/${this.#vnet}/firewall`);
+  }
+}
+/**
+ * Class PVEFirewallVnetVnetsSdnClusterRules
+ */
+class PVEFirewallVnetVnetsSdnClusterRules {
+  #vnet;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, vnet) {
+    this.#client = client;
+    this.#vnet = vnet;
+  }
+
+  /**
+   * Get ItemRulesFirewallVnetVnetsSdnClusterPos
+   * @param pos
+   * @returns {PVEItemRulesFirewallVnetVnetsSdnClusterPos}
+   */
+  get(pos) {
+    return new PVEItemRulesFirewallVnetVnetsSdnClusterPos(
+      this.#client,
+      this.#vnet,
+      pos
+    );
+  }
+
+  /**
+   * List rules.
+   * @returns {Promise<Result>}
+   */
+  async getRules() {
+    return await this.#client.get(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules`
+    );
+  }
+  /**
+   * Create new rule.
+   * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
+   * @param {string} type Rule type.
+   *   Enum: in,out,forward,group
+   * @param {string} comment Descriptive comment.
+   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
+   * @param {int} enable Flag to enable/disable a rule.
+   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
+   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
+   * @param {string} log Log level for firewall rule.
+   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
+   * @param {string} macro Use predefined standard macro.
+   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
+   * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
+   * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
+   * @returns {Promise<Result>}
+   */
+  async createRule(
+    action,
+    type,
+    comment,
+    dest,
+    digest,
+    dport,
+    enable,
+    icmp_type,
+    iface,
+    log,
+    macro,
+    pos,
+    proto,
+    source,
+    sport
+  ) {
+    const parameters = {
+      action: action,
+      type: type,
+      comment: comment,
+      dest: dest,
+      digest: digest,
+      dport: dport,
+      enable: enable,
+      "icmp-type": icmp_type,
+      iface: iface,
+      log: log,
+      macro: macro,
+      pos: pos,
+      proto: proto,
+      source: source,
+      sport: sport,
+    };
+    return await this.#client.create(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules`,
+      parameters
+    );
+  }
+}
+/**
+ * Class PVEItemRulesFirewallVnetVnetsSdnClusterPos
+ */
+class PVEItemRulesFirewallVnetVnetsSdnClusterPos {
+  #vnet;
+  #pos;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, vnet, pos) {
+    this.#client = client;
+    this.#vnet = vnet;
+    this.#pos = pos;
+  }
+
+  /**
+   * Delete rule.
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @returns {Promise<Result>}
+   */
+  async deleteRule(digest) {
+    const parameters = { digest: digest };
+    return await this.#client.delete(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules/${this.#pos}`,
+      parameters
+    );
+  }
+  /**
+   * Get single rule data.
+   * @returns {Promise<Result>}
+   */
+  async getRule() {
+    return await this.#client.get(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules/${this.#pos}`
+    );
+  }
+  /**
+   * Modify rule data.
+   * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
+   * @param {string} comment Descriptive comment.
+   * @param {string} delete_ A list of settings you want to delete.
+   * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
+   * @param {int} enable Flag to enable/disable a rule.
+   * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
+   * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
+   * @param {string} log Log level for firewall rule.
+   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
+   * @param {string} macro Use predefined standard macro.
+   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
+   * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
+   * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
+   * @param {string} type Rule type.
+   *   Enum: in,out,forward,group
+   * @returns {Promise<Result>}
+   */
+  async updateRule(
+    action,
+    comment,
+    delete_,
+    dest,
+    digest,
+    dport,
+    enable,
+    icmp_type,
+    iface,
+    log,
+    macro,
+    moveto,
+    proto,
+    source,
+    sport,
+    type
+  ) {
+    const parameters = {
+      action: action,
+      comment: comment,
+      delete: delete_,
+      dest: dest,
+      digest: digest,
+      dport: dport,
+      enable: enable,
+      "icmp-type": icmp_type,
+      iface: iface,
+      log: log,
+      macro: macro,
+      moveto: moveto,
+      proto: proto,
+      source: source,
+      sport: sport,
+      type: type,
+    };
+    return await this.#client.set(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules/${this.#pos}`,
+      parameters
+    );
+  }
+}
+
+/**
+ * Class PVEFirewallVnetVnetsSdnClusterOptions
+ */
+class PVEFirewallVnetVnetsSdnClusterOptions {
+  #vnet;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, vnet) {
+    this.#client = client;
+    this.#vnet = vnet;
+  }
+
+  /**
+   * Get vnet firewall options.
+   * @returns {Promise<Result>}
+   */
+  async getOptions() {
+    return await this.#client.get(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/options`
+    );
+  }
+  /**
+   * Set Firewall options.
+   * @param {string} delete_ A list of settings you want to delete.
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {boolean} enable Enable/disable firewall rules.
+   * @param {string} log_level_forward Log level for forwarded traffic.
+   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
+   * @param {string} policy_forward Forward policy.
+   *   Enum: ACCEPT,DROP
+   * @returns {Promise<Result>}
+   */
+  async setOptions(delete_, digest, enable, log_level_forward, policy_forward) {
+    const parameters = {
+      delete: delete_,
+      digest: digest,
+      enable: enable,
+      log_level_forward: log_level_forward,
+      policy_forward: policy_forward,
+    };
+    return await this.#client.set(
+      `/cluster/sdn/vnets/${this.#vnet}/firewall/options`,
+      parameters
+    );
+  }
+}
+
 /**
  * Class PVEVnetVnetsSdnClusterSubnets
  */
@@ -5842,9 +6425,9 @@ class PVEItemIpamsSdnClusterIpam {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEIpamIpamsSdnClusterStatus(
-        this.#client,
-        this.#ipam
-      ))
+          this.#client,
+          this.#ipam
+        ))
       : this.#status;
   }
 
@@ -6047,7 +6630,7 @@ class PVEClusterResources {
 
   /**
    * Resources index (cluster wide).
-   * @param {string} type
+   * @param {string} type Resource type.
    *   Enum: vm,storage,node,sdn
    * @returns {Promise<Result>}
    */
@@ -6318,9 +6901,9 @@ class PVEItemNodesNode {
   get subscription() {
     return this.#subscription == null
       ? (this.#subscription = new PVENodeNodesSubscription(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#subscription;
   }
   #network;
@@ -6371,9 +6954,9 @@ class PVEItemNodesNode {
   get capabilities() {
     return this.#capabilities == null
       ? (this.#capabilities = new PVENodeNodesCapabilities(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#capabilities;
   }
   #storage;
@@ -6424,9 +7007,9 @@ class PVEItemNodesNode {
   get replication() {
     return this.#replication == null
       ? (this.#replication = new PVENodeNodesReplication(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#replication;
   }
   #certificates;
@@ -6437,9 +7020,9 @@ class PVEItemNodesNode {
   get certificates() {
     return this.#certificates == null
       ? (this.#certificates = new PVENodeNodesCertificates(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#certificates;
   }
   #config;
@@ -6580,9 +7163,9 @@ class PVEItemNodesNode {
   get vncwebsocket() {
     return this.#vncwebsocket == null
       ? (this.#vncwebsocket = new PVENodeNodesVncwebsocket(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#vncwebsocket;
   }
   #spiceshell;
@@ -6593,9 +7176,9 @@ class PVEItemNodesNode {
   get spiceshell() {
     return this.#spiceshell == null
       ? (this.#spiceshell = new PVENodeNodesSpiceshell(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#spiceshell;
   }
   #dns;
@@ -6636,9 +7219,9 @@ class PVEItemNodesNode {
   get queryUrlMetadata() {
     return this.#queryUrlMetadata == null
       ? (this.#queryUrlMetadata = new PVENodeNodesQueryUrlMetadata(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#queryUrlMetadata;
   }
   #report;
@@ -6679,9 +7262,9 @@ class PVEItemNodesNode {
   get suspendall() {
     return this.#suspendall == null
       ? (this.#suspendall = new PVENodeNodesSuspendall(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#suspendall;
   }
   #migrateall;
@@ -6692,9 +7275,9 @@ class PVEItemNodesNode {
   get migrateall() {
     return this.#migrateall == null
       ? (this.#migrateall = new PVENodeNodesMigrateall(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#migrateall;
   }
   #hosts;
@@ -6753,6 +7336,7 @@ class PVENodeNodesQemu {
    * @param {boolean} acpi Enable/disable ACPI.
    * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
    * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
+   * @param {string} amd_sev Secure Encrypted Virtualization (SEV) features by AMD CPUs
    * @param {string} arch Virtual processor architecture. Defaults to the host.
    *   Enum: x86_64,aarch64
    * @param {string} archive The backup archive. Either the file system path to a .tar or .vma file (use '-' to pipe data from stdin) or a proxmox storage backup volume identifier.
@@ -6786,6 +7370,7 @@ class PVENodeNodesQemu {
    * @param {string} hugepages Enable/disable hugepages memory.
    *   Enum: any,2,1024
    * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {string} import_working_storage A file-based storage with 'images' content-type enabled, which is used as an intermediary extraction storage during import. Defaults to the source storage.
    * @param {array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
    * @param {string} ivshmem Inter-VM shared memory. Useful for direct communication between VMs, or to the host.
    * @param {boolean} keephugepages Use together with hugepages. If enabled, hugepages will not not be deleted after VM shutdown and can be used for subsequent starts.
@@ -6798,7 +7383,7 @@ class PVENodeNodesQemu {
    *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
    * @param {string} machine Specify the QEMU machine.
    * @param {string} memory Memory properties.
-   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
+   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
    * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
    * @param {string} name Set a name for the VM. Only used on the configuration web interface.
    * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
@@ -6850,6 +7435,7 @@ class PVENodeNodesQemu {
     acpi,
     affinity,
     agent,
+    amd_sev,
     arch,
     archive,
     args,
@@ -6879,6 +7465,7 @@ class PVENodeNodesQemu {
     hotplug,
     hugepages,
     ideN,
+    import_working_storage,
     ipconfigN,
     ivshmem,
     keephugepages,
@@ -6938,6 +7525,7 @@ class PVENodeNodesQemu {
       acpi: acpi,
       affinity: affinity,
       agent: agent,
+      "amd-sev": amd_sev,
       arch: arch,
       archive: archive,
       args: args,
@@ -6965,6 +7553,7 @@ class PVENodeNodesQemu {
       hookscript: hookscript,
       hotplug: hotplug,
       hugepages: hugepages,
+      "import-working-storage": import_working_storage,
       ivshmem: ivshmem,
       keephugepages: keephugepages,
       keyboard: keyboard,
@@ -7047,10 +7636,10 @@ class PVEItemQemuNodeNodesVmid {
   get firewall() {
     return this.#firewall == null
       ? (this.#firewall = new PVEVmidQemuNodeNodesFirewall(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#firewall;
   }
   #agent;
@@ -7061,10 +7650,10 @@ class PVEItemQemuNodeNodesVmid {
   get agent() {
     return this.#agent == null
       ? (this.#agent = new PVEVmidQemuNodeNodesAgent(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#agent;
   }
   #rrd;
@@ -7075,10 +7664,10 @@ class PVEItemQemuNodeNodesVmid {
   get rrd() {
     return this.#rrd == null
       ? (this.#rrd = new PVEVmidQemuNodeNodesRrd(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#rrd;
   }
   #rrddata;
@@ -7089,10 +7678,10 @@ class PVEItemQemuNodeNodesVmid {
   get rrddata() {
     return this.#rrddata == null
       ? (this.#rrddata = new PVEVmidQemuNodeNodesRrddata(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#rrddata;
   }
   #config;
@@ -7103,10 +7692,10 @@ class PVEItemQemuNodeNodesVmid {
   get config() {
     return this.#config == null
       ? (this.#config = new PVEVmidQemuNodeNodesConfig(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#config;
   }
   #pending;
@@ -7117,10 +7706,10 @@ class PVEItemQemuNodeNodesVmid {
   get pending() {
     return this.#pending == null
       ? (this.#pending = new PVEVmidQemuNodeNodesPending(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#pending;
   }
   #cloudinit;
@@ -7131,10 +7720,10 @@ class PVEItemQemuNodeNodesVmid {
   get cloudinit() {
     return this.#cloudinit == null
       ? (this.#cloudinit = new PVEVmidQemuNodeNodesCloudinit(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#cloudinit;
   }
   #unlink;
@@ -7145,10 +7734,10 @@ class PVEItemQemuNodeNodesVmid {
   get unlink() {
     return this.#unlink == null
       ? (this.#unlink = new PVEVmidQemuNodeNodesUnlink(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#unlink;
   }
   #vncproxy;
@@ -7159,10 +7748,10 @@ class PVEItemQemuNodeNodesVmid {
   get vncproxy() {
     return this.#vncproxy == null
       ? (this.#vncproxy = new PVEVmidQemuNodeNodesVncproxy(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#vncproxy;
   }
   #termproxy;
@@ -7173,10 +7762,10 @@ class PVEItemQemuNodeNodesVmid {
   get termproxy() {
     return this.#termproxy == null
       ? (this.#termproxy = new PVEVmidQemuNodeNodesTermproxy(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#termproxy;
   }
   #vncwebsocket;
@@ -7187,10 +7776,10 @@ class PVEItemQemuNodeNodesVmid {
   get vncwebsocket() {
     return this.#vncwebsocket == null
       ? (this.#vncwebsocket = new PVEVmidQemuNodeNodesVncwebsocket(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#vncwebsocket;
   }
   #spiceproxy;
@@ -7201,10 +7790,10 @@ class PVEItemQemuNodeNodesVmid {
   get spiceproxy() {
     return this.#spiceproxy == null
       ? (this.#spiceproxy = new PVEVmidQemuNodeNodesSpiceproxy(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#spiceproxy;
   }
   #status;
@@ -7215,10 +7804,10 @@ class PVEItemQemuNodeNodesVmid {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEVmidQemuNodeNodesStatus(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#status;
   }
   #sendkey;
@@ -7229,10 +7818,10 @@ class PVEItemQemuNodeNodesVmid {
   get sendkey() {
     return this.#sendkey == null
       ? (this.#sendkey = new PVEVmidQemuNodeNodesSendkey(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#sendkey;
   }
   #feature;
@@ -7243,10 +7832,10 @@ class PVEItemQemuNodeNodesVmid {
   get feature() {
     return this.#feature == null
       ? (this.#feature = new PVEVmidQemuNodeNodesFeature(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#feature;
   }
   #clone;
@@ -7257,10 +7846,10 @@ class PVEItemQemuNodeNodesVmid {
   get clone() {
     return this.#clone == null
       ? (this.#clone = new PVEVmidQemuNodeNodesClone(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#clone;
   }
   #moveDisk;
@@ -7271,10 +7860,10 @@ class PVEItemQemuNodeNodesVmid {
   get moveDisk() {
     return this.#moveDisk == null
       ? (this.#moveDisk = new PVEVmidQemuNodeNodesMoveDisk(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#moveDisk;
   }
   #migrate;
@@ -7285,10 +7874,10 @@ class PVEItemQemuNodeNodesVmid {
   get migrate() {
     return this.#migrate == null
       ? (this.#migrate = new PVEVmidQemuNodeNodesMigrate(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#migrate;
   }
   #remoteMigrate;
@@ -7299,10 +7888,10 @@ class PVEItemQemuNodeNodesVmid {
   get remoteMigrate() {
     return this.#remoteMigrate == null
       ? (this.#remoteMigrate = new PVEVmidQemuNodeNodesRemoteMigrate(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#remoteMigrate;
   }
   #monitor;
@@ -7313,10 +7902,10 @@ class PVEItemQemuNodeNodesVmid {
   get monitor() {
     return this.#monitor == null
       ? (this.#monitor = new PVEVmidQemuNodeNodesMonitor(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#monitor;
   }
   #resize;
@@ -7327,10 +7916,10 @@ class PVEItemQemuNodeNodesVmid {
   get resize() {
     return this.#resize == null
       ? (this.#resize = new PVEVmidQemuNodeNodesResize(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#resize;
   }
   #snapshot;
@@ -7341,10 +7930,10 @@ class PVEItemQemuNodeNodesVmid {
   get snapshot() {
     return this.#snapshot == null
       ? (this.#snapshot = new PVEVmidQemuNodeNodesSnapshot(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#snapshot;
   }
   #template;
@@ -7355,10 +7944,10 @@ class PVEItemQemuNodeNodesVmid {
   get template() {
     return this.#template == null
       ? (this.#template = new PVEVmidQemuNodeNodesTemplate(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#template;
   }
   #mtunnel;
@@ -7369,10 +7958,10 @@ class PVEItemQemuNodeNodesVmid {
   get mtunnel() {
     return this.#mtunnel == null
       ? (this.#mtunnel = new PVEVmidQemuNodeNodesMtunnel(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#mtunnel;
   }
   #mtunnelwebsocket;
@@ -7383,10 +7972,10 @@ class PVEItemQemuNodeNodesVmid {
   get mtunnelwebsocket() {
     return this.#mtunnelwebsocket == null
       ? (this.#mtunnelwebsocket = new PVEVmidQemuNodeNodesMtunnelwebsocket(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#mtunnelwebsocket;
   }
 
@@ -7439,10 +8028,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get rules() {
     return this.#rules == null
       ? (this.#rules = new PVEFirewallVmidQemuNodeNodesRules(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#rules;
   }
   #aliases;
@@ -7453,10 +8042,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get aliases() {
     return this.#aliases == null
       ? (this.#aliases = new PVEFirewallVmidQemuNodeNodesAliases(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#aliases;
   }
   #ipset;
@@ -7467,10 +8056,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get ipset() {
     return this.#ipset == null
       ? (this.#ipset = new PVEFirewallVmidQemuNodeNodesIpset(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#ipset;
   }
   #options;
@@ -7481,10 +8070,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get options() {
     return this.#options == null
       ? (this.#options = new PVEFirewallVmidQemuNodeNodesOptions(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#options;
   }
   #log;
@@ -7495,10 +8084,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEFirewallVmidQemuNodeNodesLog(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#log;
   }
   #refs;
@@ -7509,10 +8098,10 @@ class PVEVmidQemuNodeNodesFirewall {
   get refs() {
     return this.#refs == null
       ? (this.#refs = new PVEFirewallVmidQemuNodeNodesRefs(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#refs;
   }
 
@@ -7568,7 +8157,7 @@ class PVEFirewallVmidQemuNodeNodesRules {
    * Create new rule.
    * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @param {string} comment Descriptive comment.
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -7682,7 +8271,7 @@ class PVEItemRulesFirewallVmidQemuNodeNodesPos {
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @returns {Promise<Result>}
    */
   async updateRule(
@@ -8003,7 +8592,8 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
   async removeIp(digest) {
     const parameters = { digest: digest };
     return await this.#client.delete(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
+        this.#cidr
       }`,
       parameters
     );
@@ -8014,7 +8604,8 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
    */
   async readIp() {
     return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
+        this.#cidr
       }`
     );
   }
@@ -8032,7 +8623,8 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
       nomatch: nomatch,
     };
     return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
+        this.#cidr
       }`,
       parameters
     );
@@ -8208,10 +8800,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fsfreezeFreeze() {
     return this.#fsfreezeFreeze == null
       ? (this.#fsfreezeFreeze = new PVEAgentVmidQemuNodeNodesFsfreezeFreeze(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#fsfreezeFreeze;
   }
   #fsfreezeStatus;
@@ -8222,10 +8814,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fsfreezeStatus() {
     return this.#fsfreezeStatus == null
       ? (this.#fsfreezeStatus = new PVEAgentVmidQemuNodeNodesFsfreezeStatus(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#fsfreezeStatus;
   }
   #fsfreezeThaw;
@@ -8236,10 +8828,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fsfreezeThaw() {
     return this.#fsfreezeThaw == null
       ? (this.#fsfreezeThaw = new PVEAgentVmidQemuNodeNodesFsfreezeThaw(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#fsfreezeThaw;
   }
   #fstrim;
@@ -8250,10 +8842,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fstrim() {
     return this.#fstrim == null
       ? (this.#fstrim = new PVEAgentVmidQemuNodeNodesFstrim(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#fstrim;
   }
   #getFsinfo;
@@ -8264,10 +8856,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getFsinfo() {
     return this.#getFsinfo == null
       ? (this.#getFsinfo = new PVEAgentVmidQemuNodeNodesGetFsinfo(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getFsinfo;
   }
   #getHostName;
@@ -8278,10 +8870,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getHostName() {
     return this.#getHostName == null
       ? (this.#getHostName = new PVEAgentVmidQemuNodeNodesGetHostName(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getHostName;
   }
   #getMemoryBlockInfo;
@@ -8292,11 +8884,11 @@ class PVEVmidQemuNodeNodesAgent {
   get getMemoryBlockInfo() {
     return this.#getMemoryBlockInfo == null
       ? (this.#getMemoryBlockInfo =
-        new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+          new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(
+            this.#client,
+            this.#node,
+            this.#vmid
+          ))
       : this.#getMemoryBlockInfo;
   }
   #getMemoryBlocks;
@@ -8307,10 +8899,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getMemoryBlocks() {
     return this.#getMemoryBlocks == null
       ? (this.#getMemoryBlocks = new PVEAgentVmidQemuNodeNodesGetMemoryBlocks(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getMemoryBlocks;
   }
   #getOsinfo;
@@ -8321,10 +8913,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getOsinfo() {
     return this.#getOsinfo == null
       ? (this.#getOsinfo = new PVEAgentVmidQemuNodeNodesGetOsinfo(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getOsinfo;
   }
   #getTime;
@@ -8335,10 +8927,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getTime() {
     return this.#getTime == null
       ? (this.#getTime = new PVEAgentVmidQemuNodeNodesGetTime(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getTime;
   }
   #getTimezone;
@@ -8349,10 +8941,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getTimezone() {
     return this.#getTimezone == null
       ? (this.#getTimezone = new PVEAgentVmidQemuNodeNodesGetTimezone(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getTimezone;
   }
   #getUsers;
@@ -8363,10 +8955,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getUsers() {
     return this.#getUsers == null
       ? (this.#getUsers = new PVEAgentVmidQemuNodeNodesGetUsers(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getUsers;
   }
   #getVcpus;
@@ -8377,10 +8969,10 @@ class PVEVmidQemuNodeNodesAgent {
   get getVcpus() {
     return this.#getVcpus == null
       ? (this.#getVcpus = new PVEAgentVmidQemuNodeNodesGetVcpus(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getVcpus;
   }
   #info;
@@ -8391,10 +8983,10 @@ class PVEVmidQemuNodeNodesAgent {
   get info() {
     return this.#info == null
       ? (this.#info = new PVEAgentVmidQemuNodeNodesInfo(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#info;
   }
   #networkGetInterfaces;
@@ -8405,11 +8997,11 @@ class PVEVmidQemuNodeNodesAgent {
   get networkGetInterfaces() {
     return this.#networkGetInterfaces == null
       ? (this.#networkGetInterfaces =
-        new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+          new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(
+            this.#client,
+            this.#node,
+            this.#vmid
+          ))
       : this.#networkGetInterfaces;
   }
   #ping;
@@ -8420,10 +9012,10 @@ class PVEVmidQemuNodeNodesAgent {
   get ping() {
     return this.#ping == null
       ? (this.#ping = new PVEAgentVmidQemuNodeNodesPing(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#ping;
   }
   #shutdown;
@@ -8434,10 +9026,10 @@ class PVEVmidQemuNodeNodesAgent {
   get shutdown() {
     return this.#shutdown == null
       ? (this.#shutdown = new PVEAgentVmidQemuNodeNodesShutdown(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#shutdown;
   }
   #suspendDisk;
@@ -8448,10 +9040,10 @@ class PVEVmidQemuNodeNodesAgent {
   get suspendDisk() {
     return this.#suspendDisk == null
       ? (this.#suspendDisk = new PVEAgentVmidQemuNodeNodesSuspendDisk(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#suspendDisk;
   }
   #suspendHybrid;
@@ -8462,10 +9054,10 @@ class PVEVmidQemuNodeNodesAgent {
   get suspendHybrid() {
     return this.#suspendHybrid == null
       ? (this.#suspendHybrid = new PVEAgentVmidQemuNodeNodesSuspendHybrid(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#suspendHybrid;
   }
   #suspendRam;
@@ -8476,10 +9068,10 @@ class PVEVmidQemuNodeNodesAgent {
   get suspendRam() {
     return this.#suspendRam == null
       ? (this.#suspendRam = new PVEAgentVmidQemuNodeNodesSuspendRam(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#suspendRam;
   }
   #setUserPassword;
@@ -8490,10 +9082,10 @@ class PVEVmidQemuNodeNodesAgent {
   get setUserPassword() {
     return this.#setUserPassword == null
       ? (this.#setUserPassword = new PVEAgentVmidQemuNodeNodesSetUserPassword(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#setUserPassword;
   }
   #exec;
@@ -8504,10 +9096,10 @@ class PVEVmidQemuNodeNodesAgent {
   get exec() {
     return this.#exec == null
       ? (this.#exec = new PVEAgentVmidQemuNodeNodesExec(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#exec;
   }
   #execStatus;
@@ -8518,10 +9110,10 @@ class PVEVmidQemuNodeNodesAgent {
   get execStatus() {
     return this.#execStatus == null
       ? (this.#execStatus = new PVEAgentVmidQemuNodeNodesExecStatus(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#execStatus;
   }
   #fileRead;
@@ -8532,10 +9124,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fileRead() {
     return this.#fileRead == null
       ? (this.#fileRead = new PVEAgentVmidQemuNodeNodesFileRead(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#fileRead;
   }
   #fileWrite;
@@ -8546,10 +9138,10 @@ class PVEVmidQemuNodeNodesAgent {
   get fileWrite() {
     return this.#fileWrite == null
       ? (this.#fileWrite = new PVEAgentVmidQemuNodeNodesFileWrite(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#fileWrite;
   }
 
@@ -9361,10 +9953,11 @@ class PVEVmidQemuNodeNodesConfig {
     );
   }
   /**
-   * Set virtual machine options (asynchrounous API).
+   * Set virtual machine options (asynchronous API).
    * @param {boolean} acpi Enable/disable ACPI.
    * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
    * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
+   * @param {string} amd_sev Secure Encrypted Virtualization (SEV) features by AMD CPUs
    * @param {string} arch Virtual processor architecture. Defaults to the host.
    *   Enum: x86_64,aarch64
    * @param {string} args Arbitrary arguments passed to kvm.
@@ -9399,6 +9992,7 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {string} hugepages Enable/disable hugepages memory.
    *   Enum: any,2,1024
    * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {string} import_working_storage A file-based storage with 'images' content-type enabled, which is used as an intermediary extraction storage during import. Defaults to the source storage.
    * @param {array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
    * @param {string} ivshmem Inter-VM shared memory. Useful for direct communication between VMs, or to the host.
    * @param {boolean} keephugepages Use together with hugepages. If enabled, hugepages will not not be deleted after VM shutdown and can be used for subsequent starts.
@@ -9410,7 +10004,7 @@ class PVEVmidQemuNodeNodesConfig {
    *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
    * @param {string} machine Specify the QEMU machine.
    * @param {string} memory Memory properties.
-   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
+   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
    * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
    * @param {string} name Set a name for the VM. Only used on the configuration web interface.
    * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
@@ -9459,6 +10053,7 @@ class PVEVmidQemuNodeNodesConfig {
     acpi,
     affinity,
     agent,
+    amd_sev,
     arch,
     args,
     audio0,
@@ -9489,6 +10084,7 @@ class PVEVmidQemuNodeNodesConfig {
     hotplug,
     hugepages,
     ideN,
+    import_working_storage,
     ipconfigN,
     ivshmem,
     keephugepages,
@@ -9544,6 +10140,7 @@ class PVEVmidQemuNodeNodesConfig {
       acpi: acpi,
       affinity: affinity,
       agent: agent,
+      "amd-sev": amd_sev,
       arch: arch,
       args: args,
       audio0: audio0,
@@ -9572,6 +10169,7 @@ class PVEVmidQemuNodeNodesConfig {
       hookscript: hookscript,
       hotplug: hotplug,
       hugepages: hugepages,
+      "import-working-storage": import_working_storage,
       ivshmem: ivshmem,
       keephugepages: keephugepages,
       keyboard: keyboard,
@@ -9631,10 +10229,11 @@ class PVEVmidQemuNodeNodesConfig {
     );
   }
   /**
-   * Set virtual machine options (synchrounous API) - You should consider using the POST method instead for any actions involving hotplug or storage allocation.
+   * Set virtual machine options (synchronous API) - You should consider using the POST method instead for any actions involving hotplug or storage allocation.
    * @param {boolean} acpi Enable/disable ACPI.
    * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
    * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
+   * @param {string} amd_sev Secure Encrypted Virtualization (SEV) features by AMD CPUs
    * @param {string} arch Virtual processor architecture. Defaults to the host.
    *   Enum: x86_64,aarch64
    * @param {string} args Arbitrary arguments passed to kvm.
@@ -9679,7 +10278,7 @@ class PVEVmidQemuNodeNodesConfig {
    *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
    * @param {string} machine Specify the QEMU machine.
    * @param {string} memory Memory properties.
-   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations.
+   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
    * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
    * @param {string} name Set a name for the VM. Only used on the configuration web interface.
    * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
@@ -9728,6 +10327,7 @@ class PVEVmidQemuNodeNodesConfig {
     acpi,
     affinity,
     agent,
+    amd_sev,
     arch,
     args,
     audio0,
@@ -9812,6 +10412,7 @@ class PVEVmidQemuNodeNodesConfig {
       acpi: acpi,
       affinity: affinity,
       agent: agent,
+      "amd-sev": amd_sev,
       arch: arch,
       args: args,
       audio0: audio0,
@@ -9948,10 +10549,10 @@ class PVEVmidQemuNodeNodesCloudinit {
   get dump() {
     return this.#dump == null
       ? (this.#dump = new PVECloudinitVmidQemuNodeNodesDump(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#dump;
   }
 
@@ -10185,10 +10786,10 @@ class PVEVmidQemuNodeNodesStatus {
   get current() {
     return this.#current == null
       ? (this.#current = new PVEStatusVmidQemuNodeNodesCurrent(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#current;
   }
   #start;
@@ -10199,10 +10800,10 @@ class PVEVmidQemuNodeNodesStatus {
   get start() {
     return this.#start == null
       ? (this.#start = new PVEStatusVmidQemuNodeNodesStart(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#start;
   }
   #stop;
@@ -10213,10 +10814,10 @@ class PVEVmidQemuNodeNodesStatus {
   get stop() {
     return this.#stop == null
       ? (this.#stop = new PVEStatusVmidQemuNodeNodesStop(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#stop;
   }
   #reset;
@@ -10227,10 +10828,10 @@ class PVEVmidQemuNodeNodesStatus {
   get reset() {
     return this.#reset == null
       ? (this.#reset = new PVEStatusVmidQemuNodeNodesReset(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#reset;
   }
   #shutdown;
@@ -10241,10 +10842,10 @@ class PVEVmidQemuNodeNodesStatus {
   get shutdown() {
     return this.#shutdown == null
       ? (this.#shutdown = new PVEStatusVmidQemuNodeNodesShutdown(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#shutdown;
   }
   #reboot;
@@ -10255,10 +10856,10 @@ class PVEVmidQemuNodeNodesStatus {
   get reboot() {
     return this.#reboot == null
       ? (this.#reboot = new PVEStatusVmidQemuNodeNodesReboot(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#reboot;
   }
   #suspend;
@@ -10269,10 +10870,10 @@ class PVEVmidQemuNodeNodesStatus {
   get suspend() {
     return this.#suspend == null
       ? (this.#suspend = new PVEStatusVmidQemuNodeNodesSuspend(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#suspend;
   }
   #resume;
@@ -10283,10 +10884,10 @@ class PVEVmidQemuNodeNodesStatus {
   get resume() {
     return this.#resume == null
       ? (this.#resume = new PVEStatusVmidQemuNodeNodesResume(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#resume;
   }
 
@@ -11041,11 +11642,11 @@ class PVEItemSnapshotVmidQemuNodeNodesSnapname {
   get config() {
     return this.#config == null
       ? (this.#config = new PVESnapnameSnapshotVmidQemuNodeNodesConfig(
-        this.#client,
-        this.#node,
-        this.#vmid,
-        this.#snapname
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid,
+          this.#snapname
+        ))
       : this.#config;
   }
   #rollback;
@@ -11056,11 +11657,11 @@ class PVEItemSnapshotVmidQemuNodeNodesSnapname {
   get rollback() {
     return this.#rollback == null
       ? (this.#rollback = new PVESnapnameSnapshotVmidQemuNodeNodesRollback(
-        this.#client,
-        this.#node,
-        this.#vmid,
-        this.#snapname
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid,
+          this.#snapname
+        ))
       : this.#rollback;
   }
 
@@ -11109,7 +11710,8 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
    */
   async getSnapshotConfig() {
     return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
+        this.#snapname
       }/config`
     );
   }
@@ -11121,7 +11723,8 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
   async updateSnapshotConfig(description) {
     const parameters = { description: description };
     return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
+        this.#snapname
       }/config`,
       parameters
     );
@@ -11153,7 +11756,8 @@ class PVESnapnameSnapshotVmidQemuNodeNodesRollback {
   async rollback(start) {
     const parameters = { start: start };
     return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
+        this.#snapname
       }/rollback`,
       parameters
     );
@@ -11303,7 +11907,7 @@ class PVENodeNodesLxc {
    * @param {array} devN Device to pass through to the container
    * @param {string} features Allow containers access to advanced features.
    * @param {boolean} force Allow to overwrite existing container.
-   * @param {string} hookscript Script that will be exectued during various steps in the containers lifetime.
+   * @param {string} hookscript Script that will be executed during various steps in the containers lifetime.
    * @param {string} hostname Set a host name for the container.
    * @param {boolean} ignore_unpack_errors Ignore errors when extracting the template.
    * @param {string} lock Lock/unlock the container.
@@ -11449,10 +12053,10 @@ class PVEItemLxcNodeNodesVmid {
   get config() {
     return this.#config == null
       ? (this.#config = new PVEVmidLxcNodeNodesConfig(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#config;
   }
   #status;
@@ -11463,10 +12067,10 @@ class PVEItemLxcNodeNodesVmid {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEVmidLxcNodeNodesStatus(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#status;
   }
   #snapshot;
@@ -11477,10 +12081,10 @@ class PVEItemLxcNodeNodesVmid {
   get snapshot() {
     return this.#snapshot == null
       ? (this.#snapshot = new PVEVmidLxcNodeNodesSnapshot(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#snapshot;
   }
   #firewall;
@@ -11491,10 +12095,10 @@ class PVEItemLxcNodeNodesVmid {
   get firewall() {
     return this.#firewall == null
       ? (this.#firewall = new PVEVmidLxcNodeNodesFirewall(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#firewall;
   }
   #rrd;
@@ -11505,10 +12109,10 @@ class PVEItemLxcNodeNodesVmid {
   get rrd() {
     return this.#rrd == null
       ? (this.#rrd = new PVEVmidLxcNodeNodesRrd(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#rrd;
   }
   #rrddata;
@@ -11519,10 +12123,10 @@ class PVEItemLxcNodeNodesVmid {
   get rrddata() {
     return this.#rrddata == null
       ? (this.#rrddata = new PVEVmidLxcNodeNodesRrddata(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#rrddata;
   }
   #vncproxy;
@@ -11533,10 +12137,10 @@ class PVEItemLxcNodeNodesVmid {
   get vncproxy() {
     return this.#vncproxy == null
       ? (this.#vncproxy = new PVEVmidLxcNodeNodesVncproxy(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#vncproxy;
   }
   #termproxy;
@@ -11547,10 +12151,10 @@ class PVEItemLxcNodeNodesVmid {
   get termproxy() {
     return this.#termproxy == null
       ? (this.#termproxy = new PVEVmidLxcNodeNodesTermproxy(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#termproxy;
   }
   #vncwebsocket;
@@ -11561,10 +12165,10 @@ class PVEItemLxcNodeNodesVmid {
   get vncwebsocket() {
     return this.#vncwebsocket == null
       ? (this.#vncwebsocket = new PVEVmidLxcNodeNodesVncwebsocket(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#vncwebsocket;
   }
   #spiceproxy;
@@ -11575,10 +12179,10 @@ class PVEItemLxcNodeNodesVmid {
   get spiceproxy() {
     return this.#spiceproxy == null
       ? (this.#spiceproxy = new PVEVmidLxcNodeNodesSpiceproxy(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#spiceproxy;
   }
   #remoteMigrate;
@@ -11589,10 +12193,10 @@ class PVEItemLxcNodeNodesVmid {
   get remoteMigrate() {
     return this.#remoteMigrate == null
       ? (this.#remoteMigrate = new PVEVmidLxcNodeNodesRemoteMigrate(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#remoteMigrate;
   }
   #migrate;
@@ -11603,10 +12207,10 @@ class PVEItemLxcNodeNodesVmid {
   get migrate() {
     return this.#migrate == null
       ? (this.#migrate = new PVEVmidLxcNodeNodesMigrate(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#migrate;
   }
   #feature;
@@ -11617,10 +12221,10 @@ class PVEItemLxcNodeNodesVmid {
   get feature() {
     return this.#feature == null
       ? (this.#feature = new PVEVmidLxcNodeNodesFeature(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#feature;
   }
   #template;
@@ -11631,10 +12235,10 @@ class PVEItemLxcNodeNodesVmid {
   get template() {
     return this.#template == null
       ? (this.#template = new PVEVmidLxcNodeNodesTemplate(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#template;
   }
   #clone;
@@ -11645,10 +12249,10 @@ class PVEItemLxcNodeNodesVmid {
   get clone() {
     return this.#clone == null
       ? (this.#clone = new PVEVmidLxcNodeNodesClone(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#clone;
   }
   #resize;
@@ -11659,10 +12263,10 @@ class PVEItemLxcNodeNodesVmid {
   get resize() {
     return this.#resize == null
       ? (this.#resize = new PVEVmidLxcNodeNodesResize(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#resize;
   }
   #moveVolume;
@@ -11673,10 +12277,10 @@ class PVEItemLxcNodeNodesVmid {
   get moveVolume() {
     return this.#moveVolume == null
       ? (this.#moveVolume = new PVEVmidLxcNodeNodesMoveVolume(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#moveVolume;
   }
   #pending;
@@ -11687,10 +12291,10 @@ class PVEItemLxcNodeNodesVmid {
   get pending() {
     return this.#pending == null
       ? (this.#pending = new PVEVmidLxcNodeNodesPending(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#pending;
   }
   #interfaces;
@@ -11701,10 +12305,10 @@ class PVEItemLxcNodeNodesVmid {
   get interfaces() {
     return this.#interfaces == null
       ? (this.#interfaces = new PVEVmidLxcNodeNodesInterfaces(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#interfaces;
   }
   #mtunnel;
@@ -11715,10 +12319,10 @@ class PVEItemLxcNodeNodesVmid {
   get mtunnel() {
     return this.#mtunnel == null
       ? (this.#mtunnel = new PVEVmidLxcNodeNodesMtunnel(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#mtunnel;
   }
   #mtunnelwebsocket;
@@ -11729,10 +12333,10 @@ class PVEItemLxcNodeNodesVmid {
   get mtunnelwebsocket() {
     return this.#mtunnelwebsocket == null
       ? (this.#mtunnelwebsocket = new PVEVmidLxcNodeNodesMtunnelwebsocket(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#mtunnelwebsocket;
   }
 
@@ -11809,7 +12413,7 @@ class PVEVmidLxcNodeNodesConfig {
    * @param {array} devN Device to pass through to the container
    * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
    * @param {string} features Allow containers access to advanced features.
-   * @param {string} hookscript Script that will be exectued during various steps in the containers lifetime.
+   * @param {string} hookscript Script that will be executed during various steps in the containers lifetime.
    * @param {string} hostname Set a host name for the container.
    * @param {string} lock Lock/unlock the container.
    *   Enum: backup,create,destroyed,disk,fstrim,migrate,mounted,rollback,snapshot,snapshot-delete
@@ -11934,10 +12538,10 @@ class PVEVmidLxcNodeNodesStatus {
   get current() {
     return this.#current == null
       ? (this.#current = new PVEStatusVmidLxcNodeNodesCurrent(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#current;
   }
   #start;
@@ -11948,10 +12552,10 @@ class PVEVmidLxcNodeNodesStatus {
   get start() {
     return this.#start == null
       ? (this.#start = new PVEStatusVmidLxcNodeNodesStart(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#start;
   }
   #stop;
@@ -11962,10 +12566,10 @@ class PVEVmidLxcNodeNodesStatus {
   get stop() {
     return this.#stop == null
       ? (this.#stop = new PVEStatusVmidLxcNodeNodesStop(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#stop;
   }
   #shutdown;
@@ -11976,10 +12580,10 @@ class PVEVmidLxcNodeNodesStatus {
   get shutdown() {
     return this.#shutdown == null
       ? (this.#shutdown = new PVEStatusVmidLxcNodeNodesShutdown(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#shutdown;
   }
   #suspend;
@@ -11990,10 +12594,10 @@ class PVEVmidLxcNodeNodesStatus {
   get suspend() {
     return this.#suspend == null
       ? (this.#suspend = new PVEStatusVmidLxcNodeNodesSuspend(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#suspend;
   }
   #resume;
@@ -12004,10 +12608,10 @@ class PVEVmidLxcNodeNodesStatus {
   get resume() {
     return this.#resume == null
       ? (this.#resume = new PVEStatusVmidLxcNodeNodesResume(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#resume;
   }
   #reboot;
@@ -12018,10 +12622,10 @@ class PVEVmidLxcNodeNodesStatus {
   get reboot() {
     return this.#reboot == null
       ? (this.#reboot = new PVEStatusVmidLxcNodeNodesReboot(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#reboot;
   }
 
@@ -12321,11 +12925,11 @@ class PVEItemSnapshotVmidLxcNodeNodesSnapname {
   get rollback() {
     return this.#rollback == null
       ? (this.#rollback = new PVESnapnameSnapshotVmidLxcNodeNodesRollback(
-        this.#client,
-        this.#node,
-        this.#vmid,
-        this.#snapname
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid,
+          this.#snapname
+        ))
       : this.#rollback;
   }
   #config;
@@ -12336,11 +12940,11 @@ class PVEItemSnapshotVmidLxcNodeNodesSnapname {
   get config() {
     return this.#config == null
       ? (this.#config = new PVESnapnameSnapshotVmidLxcNodeNodesConfig(
-        this.#client,
-        this.#node,
-        this.#vmid,
-        this.#snapname
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid,
+          this.#snapname
+        ))
       : this.#config;
   }
 
@@ -12391,7 +12995,8 @@ class PVESnapnameSnapshotVmidLxcNodeNodesRollback {
   async rollback(start) {
     const parameters = { start: start };
     return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname
+      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${
+        this.#snapname
       }/rollback`,
       parameters
     );
@@ -12432,7 +13037,8 @@ class PVESnapnameSnapshotVmidLxcNodeNodesConfig {
   async updateSnapshotConfig(description) {
     const parameters = { description: description };
     return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname
+      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${
+        this.#snapname
       }/config`,
       parameters
     );
@@ -12462,10 +13068,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get rules() {
     return this.#rules == null
       ? (this.#rules = new PVEFirewallVmidLxcNodeNodesRules(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#rules;
   }
   #aliases;
@@ -12476,10 +13082,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get aliases() {
     return this.#aliases == null
       ? (this.#aliases = new PVEFirewallVmidLxcNodeNodesAliases(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#aliases;
   }
   #ipset;
@@ -12490,10 +13096,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get ipset() {
     return this.#ipset == null
       ? (this.#ipset = new PVEFirewallVmidLxcNodeNodesIpset(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#ipset;
   }
   #options;
@@ -12504,10 +13110,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get options() {
     return this.#options == null
       ? (this.#options = new PVEFirewallVmidLxcNodeNodesOptions(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#options;
   }
   #log;
@@ -12518,10 +13124,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEFirewallVmidLxcNodeNodesLog(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#log;
   }
   #refs;
@@ -12532,10 +13138,10 @@ class PVEVmidLxcNodeNodesFirewall {
   get refs() {
     return this.#refs == null
       ? (this.#refs = new PVEFirewallVmidLxcNodeNodesRefs(
-        this.#client,
-        this.#node,
-        this.#vmid
-      ))
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#refs;
   }
 
@@ -12591,7 +13197,7 @@ class PVEFirewallVmidLxcNodeNodesRules {
    * Create new rule.
    * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @param {string} comment Descriptive comment.
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -12705,7 +13311,7 @@ class PVEItemRulesFirewallVmidLxcNodeNodesPos {
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @returns {Promise<Result>}
    */
   async updateRule(
@@ -13026,7 +13632,8 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
   async removeIp(digest) {
     const parameters = { digest: digest };
     return await this.#client.delete(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
+        this.#cidr
       }`,
       parameters
     );
@@ -13037,7 +13644,8 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
    */
   async readIp() {
     return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
+        this.#cidr
       }`
     );
   }
@@ -13055,7 +13663,8 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
       nomatch: nomatch,
     };
     return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
+        this.#cidr
       }`,
       parameters
     );
@@ -13999,9 +14608,9 @@ class PVENodeNodesCeph {
   get cmdSafety() {
     return this.#cmdSafety == null
       ? (this.#cmdSafety = new PVECephNodeNodesCmdSafety(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#cmdSafety;
   }
 
@@ -14226,10 +14835,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get metadata() {
     return this.#metadata == null
       ? (this.#metadata = new PVEOsdidOsdCephNodeNodesMetadata(
-        this.#client,
-        this.#node,
-        this.#osdid
-      ))
+          this.#client,
+          this.#node,
+          this.#osdid
+        ))
       : this.#metadata;
   }
   #lvInfo;
@@ -14240,10 +14849,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get lvInfo() {
     return this.#lvInfo == null
       ? (this.#lvInfo = new PVEOsdidOsdCephNodeNodesLvInfo(
-        this.#client,
-        this.#node,
-        this.#osdid
-      ))
+          this.#client,
+          this.#node,
+          this.#osdid
+        ))
       : this.#lvInfo;
   }
   #in;
@@ -14254,10 +14863,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get in() {
     return this.#in == null
       ? (this.#in = new PVEOsdidOsdCephNodeNodesIn(
-        this.#client,
-        this.#node,
-        this.#osdid
-      ))
+          this.#client,
+          this.#node,
+          this.#osdid
+        ))
       : this.#in;
   }
   #out;
@@ -14268,10 +14877,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get out() {
     return this.#out == null
       ? (this.#out = new PVEOsdidOsdCephNodeNodesOut(
-        this.#client,
-        this.#node,
-        this.#osdid
-      ))
+          this.#client,
+          this.#node,
+          this.#osdid
+        ))
       : this.#out;
   }
   #scrub;
@@ -14282,10 +14891,10 @@ class PVEItemOsdCephNodeNodesOsdid {
   get scrub() {
     return this.#scrub == null
       ? (this.#scrub = new PVEOsdidOsdCephNodeNodesScrub(
-        this.#client,
-        this.#node,
-        this.#osdid
-      ))
+          this.#client,
+          this.#node,
+          this.#osdid
+        ))
       : this.#scrub;
   }
 
@@ -14816,10 +15425,10 @@ class PVEItemPoolCephNodeNodesName {
   get status() {
     return this.#status == null
       ? (this.#status = new PVENamePoolCephNodeNodesStatus(
-        this.#client,
-        this.#node,
-        this.#name
-      ))
+          this.#client,
+          this.#node,
+          this.#name
+        ))
       : this.#status;
   }
 
@@ -15192,9 +15801,9 @@ class PVENodeNodesVzdump {
   get defaults() {
     return this.#defaults == null
       ? (this.#defaults = new PVEVzdumpNodeNodesDefaults(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#defaults;
   }
   #extractconfig;
@@ -15205,9 +15814,9 @@ class PVENodeNodesVzdump {
   get extractconfig() {
     return this.#extractconfig == null
       ? (this.#extractconfig = new PVEVzdumpNodeNodesExtractconfig(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#extractconfig;
   }
 
@@ -15222,6 +15831,7 @@ class PVENodeNodesVzdump {
    * @param {array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
    * @param {string} fleecing Options for backup fleecing (VM only).
    * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
+   * @param {string} job_id The ID of the backup job. If set, the 'backup-job' metadata field of the backup notification will be set to this value. Only root@pam can set this parameter.
    * @param {int} lockwait Maximal time to wait for the global lock (minutes).
    * @param {string} mailnotification Deprecated: use notification targets/matchers instead. Specify when to send a notification mail
    *   Enum: always,failure
@@ -15235,6 +15845,8 @@ class PVENodeNodesVzdump {
    * @param {string} notification_policy Deprecated: Do not use
    *   Enum: always,failure,never
    * @param {string} notification_target Deprecated: Do not use
+   * @param {string} pbs_change_detection_mode PBS mode used to detect file changes and switch encoding format for container backups.
+   *   Enum: legacy,data,metadata
    * @param {string} performance Other performance-related settings.
    * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
    * @param {string} pool Backup all known guest systems included in the specified pool.
@@ -15262,6 +15874,7 @@ class PVENodeNodesVzdump {
     exclude_path,
     fleecing,
     ionice,
+    job_id,
     lockwait,
     mailnotification,
     mailto,
@@ -15271,6 +15884,7 @@ class PVENodeNodesVzdump {
     notification_mode,
     notification_policy,
     notification_target,
+    pbs_change_detection_mode,
     performance,
     pigz,
     pool,
@@ -15297,6 +15911,7 @@ class PVENodeNodesVzdump {
       "exclude-path": exclude_path,
       fleecing: fleecing,
       ionice: ionice,
+      "job-id": job_id,
       lockwait: lockwait,
       mailnotification: mailnotification,
       mailto: mailto,
@@ -15306,6 +15921,7 @@ class PVENodeNodesVzdump {
       "notification-mode": notification_mode,
       "notification-policy": notification_policy,
       "notification-target": notification_target,
+      "pbs-change-detection-mode": pbs_change_detection_mode,
       performance: performance,
       pigz: pigz,
       pool: pool,
@@ -15437,10 +16053,10 @@ class PVEItemServicesNodeNodesService {
   get state() {
     return this.#state == null
       ? (this.#state = new PVEServiceServicesNodeNodesState(
-        this.#client,
-        this.#node,
-        this.#service
-      ))
+          this.#client,
+          this.#node,
+          this.#service
+        ))
       : this.#state;
   }
   #start;
@@ -15451,10 +16067,10 @@ class PVEItemServicesNodeNodesService {
   get start() {
     return this.#start == null
       ? (this.#start = new PVEServiceServicesNodeNodesStart(
-        this.#client,
-        this.#node,
-        this.#service
-      ))
+          this.#client,
+          this.#node,
+          this.#service
+        ))
       : this.#start;
   }
   #stop;
@@ -15465,10 +16081,10 @@ class PVEItemServicesNodeNodesService {
   get stop() {
     return this.#stop == null
       ? (this.#stop = new PVEServiceServicesNodeNodesStop(
-        this.#client,
-        this.#node,
-        this.#service
-      ))
+          this.#client,
+          this.#node,
+          this.#service
+        ))
       : this.#stop;
   }
   #restart;
@@ -15479,10 +16095,10 @@ class PVEItemServicesNodeNodesService {
   get restart() {
     return this.#restart == null
       ? (this.#restart = new PVEServiceServicesNodeNodesRestart(
-        this.#client,
-        this.#node,
-        this.#service
-      ))
+          this.#client,
+          this.#node,
+          this.#service
+        ))
       : this.#restart;
   }
   #reload;
@@ -15493,10 +16109,10 @@ class PVEItemServicesNodeNodesService {
   get reload() {
     return this.#reload == null
       ? (this.#reload = new PVEServiceServicesNodeNodesReload(
-        this.#client,
-        this.#node,
-        this.#service
-      ))
+          this.#client,
+          this.#node,
+          this.#service
+        ))
       : this.#reload;
   }
 
@@ -15746,6 +16362,7 @@ class PVENodeNodesNetwork {
    * @param {string} bond_xmit_hash_policy Selects the transmit hash policy to use for slave selection in balance-xor and 802.3ad modes.
    *   Enum: layer2,layer2+3,layer3+4
    * @param {string} bridge_ports Specify the interfaces you want to add to your bridge.
+   * @param {string} bridge_vids Specify the allowed VLANs. For example: '2 4 100-200'. Only used if the bridge is VLAN aware.
    * @param {boolean} bridge_vlan_aware Enable bridge vlan support.
    * @param {string} cidr IPv4 CIDR.
    * @param {string} cidr6 IPv6 CIDR.
@@ -15776,6 +16393,7 @@ class PVENodeNodesNetwork {
     bond_mode,
     bond_xmit_hash_policy,
     bridge_ports,
+    bridge_vids,
     bridge_vlan_aware,
     cidr,
     cidr6,
@@ -15805,6 +16423,7 @@ class PVENodeNodesNetwork {
       bond_mode: bond_mode,
       bond_xmit_hash_policy: bond_xmit_hash_policy,
       bridge_ports: bridge_ports,
+      bridge_vids: bridge_vids,
       bridge_vlan_aware: bridge_vlan_aware,
       cidr: cidr,
       cidr6: cidr6,
@@ -15883,6 +16502,7 @@ class PVEItemNetworkNodeNodesIface {
    * @param {string} bond_xmit_hash_policy Selects the transmit hash policy to use for slave selection in balance-xor and 802.3ad modes.
    *   Enum: layer2,layer2+3,layer3+4
    * @param {string} bridge_ports Specify the interfaces you want to add to your bridge.
+   * @param {string} bridge_vids Specify the allowed VLANs. For example: '2 4 100-200'. Only used if the bridge is VLAN aware.
    * @param {boolean} bridge_vlan_aware Enable bridge vlan support.
    * @param {string} cidr IPv4 CIDR.
    * @param {string} cidr6 IPv6 CIDR.
@@ -15913,6 +16533,7 @@ class PVEItemNetworkNodeNodesIface {
     bond_mode,
     bond_xmit_hash_policy,
     bridge_ports,
+    bridge_vids,
     bridge_vlan_aware,
     cidr,
     cidr6,
@@ -15942,6 +16563,7 @@ class PVEItemNetworkNodeNodesIface {
       bond_mode: bond_mode,
       bond_xmit_hash_policy: bond_xmit_hash_policy,
       bridge_ports: bridge_ports,
+      bridge_vids: bridge_vids,
       bridge_vlan_aware: bridge_vlan_aware,
       cidr: cidr,
       cidr6: cidr6,
@@ -16056,10 +16678,10 @@ class PVEItemTasksNodeNodesUpid {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEUpidTasksNodeNodesLog(
-        this.#client,
-        this.#node,
-        this.#upid
-      ))
+          this.#client,
+          this.#node,
+          this.#upid
+        ))
       : this.#log;
   }
   #status;
@@ -16070,10 +16692,10 @@ class PVEItemTasksNodeNodesUpid {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEUpidTasksNodeNodesStatus(
-        this.#client,
-        this.#node,
-        this.#upid
-      ))
+          this.#client,
+          this.#node,
+          this.#upid
+        ))
       : this.#status;
   }
 
@@ -16206,9 +16828,9 @@ class PVENodeNodesScan {
   get glusterfs() {
     return this.#glusterfs == null
       ? (this.#glusterfs = new PVEScanNodeNodesGlusterfs(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#glusterfs;
   }
   #iscsi;
@@ -16531,15 +17153,15 @@ class PVEHardwareNodeNodesPci {
   }
 
   /**
-   * Get ItemPciHardwareNodeNodesPciid
-   * @param pciid
-   * @returns {PVEItemPciHardwareNodeNodesPciid}
+   * Get ItemPciHardwareNodeNodesPciIdOrMapping
+   * @param pci_id_or_mapping
+   * @returns {PVEItemPciHardwareNodeNodesPciIdOrMapping}
    */
-  get(pciid) {
-    return new PVEItemPciHardwareNodeNodesPciid(
+  get(pci_id_or_mapping) {
+    return new PVEItemPciHardwareNodeNodesPciIdOrMapping(
       this.#client,
       this.#node,
-      pciid
+      pci_id_or_mapping
     );
   }
 
@@ -16549,7 +17171,7 @@ class PVEHardwareNodeNodesPci {
    * @param {boolean} verbose If disabled, does only print the PCI IDs. Otherwise, additional information like vendor and device will be returned.
    * @returns {Promise<Result>}
    */
-  async pciscan(pci_class_blacklist, verbose) {
+  async pciScan(pci_class_blacklist, verbose) {
     const parameters = {
       "pci-class-blacklist": pci_class_blacklist,
       verbose: verbose,
@@ -16561,67 +17183,73 @@ class PVEHardwareNodeNodesPci {
   }
 }
 /**
- * Class PVEItemPciHardwareNodeNodesPciid
+ * Class PVEItemPciHardwareNodeNodesPciIdOrMapping
  */
-class PVEItemPciHardwareNodeNodesPciid {
+class PVEItemPciHardwareNodeNodesPciIdOrMapping {
   #node;
-  #pciid;
+  #pci_id_or_mapping;
   /** @type {PveClient} */
   #client;
 
-  constructor(client, node, pciid) {
+  constructor(client, node, pci_id_or_mapping) {
     this.#client = client;
     this.#node = node;
-    this.#pciid = pciid;
+    this.#pci_id_or_mapping = pci_id_or_mapping;
   }
 
   #mdev;
   /**
-   * Get PciidPciHardwareNodeNodesMdev
-   * @returns {PVEPciidPciHardwareNodeNodesMdev}
+   * Get PciIdOrMappingPciHardwareNodeNodesMdev
+   * @returns {PVEPciIdOrMappingPciHardwareNodeNodesMdev}
    */
   get mdev() {
     return this.#mdev == null
-      ? (this.#mdev = new PVEPciidPciHardwareNodeNodesMdev(
-        this.#client,
-        this.#node,
-        this.#pciid
-      ))
+      ? (this.#mdev = new PVEPciIdOrMappingPciHardwareNodeNodesMdev(
+          this.#client,
+          this.#node,
+          this.#pci_id_or_mapping
+        ))
       : this.#mdev;
   }
 
   /**
    * Index of available pci methods
+   * @param {string} pci_id_or_mapping
    * @returns {Promise<Result>}
    */
-  async pciindex() {
+  async pciIndex(pci_id_or_mapping) {
+    const parameters = { "pci-id-or-mapping": pci_id_or_mapping };
     return await this.#client.get(
-      `/nodes/${this.#node}/hardware/pci/${this.#pciid}`
+      `/nodes/${this.#node}/hardware/pci/${this.#pci_id_or_mapping}`,
+      parameters
     );
   }
 }
 /**
- * Class PVEPciidPciHardwareNodeNodesMdev
+ * Class PVEPciIdOrMappingPciHardwareNodeNodesMdev
  */
-class PVEPciidPciHardwareNodeNodesMdev {
+class PVEPciIdOrMappingPciHardwareNodeNodesMdev {
   #node;
-  #pciid;
+  #pci_id_or_mapping;
   /** @type {PveClient} */
   #client;
 
-  constructor(client, node, pciid) {
+  constructor(client, node, pci_id_or_mapping) {
     this.#client = client;
     this.#node = node;
-    this.#pciid = pciid;
+    this.#pci_id_or_mapping = pci_id_or_mapping;
   }
 
   /**
    * List mediated device types for given PCI device.
+   * @param {string} pci_id_or_mapping The PCI ID or mapping to list the mdev types for.
    * @returns {Promise<Result>}
    */
-  async mdevscan() {
+  async mdevscan(pci_id_or_mapping) {
+    const parameters = { "pci-id-or-mapping": pci_id_or_mapping };
     return await this.#client.get(
-      `/nodes/${this.#node}/hardware/pci/${this.#pciid}/mdev`
+      `/nodes/${this.#node}/hardware/pci/${this.#pci_id_or_mapping}/mdev`,
+      parameters
     );
   }
 }
@@ -16669,9 +17297,9 @@ class PVENodeNodesCapabilities {
   get qemu() {
     return this.#qemu == null
       ? (this.#qemu = new PVECapabilitiesNodeNodesQemu(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#qemu;
   }
 
@@ -16704,9 +17332,9 @@ class PVECapabilitiesNodeNodesQemu {
   get cpu() {
     return this.#cpu == null
       ? (this.#cpu = new PVEQemuCapabilitiesNodeNodesCpu(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#cpu;
   }
   #machines;
@@ -16717,9 +17345,9 @@ class PVECapabilitiesNodeNodesQemu {
   get machines() {
     return this.#machines == null
       ? (this.#machines = new PVEQemuCapabilitiesNodeNodesMachines(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#machines;
   }
 
@@ -16846,10 +17474,10 @@ class PVEItemStorageNodeNodesStorage {
   get prunebackups() {
     return this.#prunebackups == null
       ? (this.#prunebackups = new PVEStorageStorageNodeNodesPrunebackups(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#prunebackups;
   }
   #content;
@@ -16860,10 +17488,10 @@ class PVEItemStorageNodeNodesStorage {
   get content() {
     return this.#content == null
       ? (this.#content = new PVEStorageStorageNodeNodesContent(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#content;
   }
   #fileRestore;
@@ -16874,10 +17502,10 @@ class PVEItemStorageNodeNodesStorage {
   get fileRestore() {
     return this.#fileRestore == null
       ? (this.#fileRestore = new PVEStorageStorageNodeNodesFileRestore(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#fileRestore;
   }
   #status;
@@ -16888,10 +17516,10 @@ class PVEItemStorageNodeNodesStorage {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEStorageStorageNodeNodesStatus(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#status;
   }
   #rrd;
@@ -16902,10 +17530,10 @@ class PVEItemStorageNodeNodesStorage {
   get rrd() {
     return this.#rrd == null
       ? (this.#rrd = new PVEStorageStorageNodeNodesRrd(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#rrd;
   }
   #rrddata;
@@ -16916,10 +17544,10 @@ class PVEItemStorageNodeNodesStorage {
   get rrddata() {
     return this.#rrddata == null
       ? (this.#rrddata = new PVEStorageStorageNodeNodesRrddata(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#rrddata;
   }
   #upload;
@@ -16930,10 +17558,10 @@ class PVEItemStorageNodeNodesStorage {
   get upload() {
     return this.#upload == null
       ? (this.#upload = new PVEStorageStorageNodeNodesUpload(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#upload;
   }
   #downloadUrl;
@@ -16944,10 +17572,10 @@ class PVEItemStorageNodeNodesStorage {
   get downloadUrl() {
     return this.#downloadUrl == null
       ? (this.#downloadUrl = new PVEStorageStorageNodeNodesDownloadUrl(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#downloadUrl;
   }
   #importMetadata;
@@ -16958,10 +17586,10 @@ class PVEItemStorageNodeNodesStorage {
   get importMetadata() {
     return this.#importMetadata == null
       ? (this.#importMetadata = new PVEStorageStorageNodeNodesImportMetadata(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#importMetadata;
   }
 
@@ -17192,10 +17820,10 @@ class PVEStorageStorageNodeNodesFileRestore {
   get list() {
     return this.#list == null
       ? (this.#list = new PVEFileRestoreStorageStorageNodeNodesList(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#list;
   }
   #download;
@@ -17206,10 +17834,10 @@ class PVEStorageStorageNodeNodesFileRestore {
   get download() {
     return this.#download == null
       ? (this.#download = new PVEFileRestoreStorageStorageNodeNodesDownload(
-        this.#client,
-        this.#node,
-        this.#storage
-      ))
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
       : this.#download;
   }
 }
@@ -17395,9 +18023,9 @@ class PVEStorageStorageNodeNodesUpload {
   }
 
   /**
-   * Upload templates and ISO images.
+   * Upload templates, ISO images and OVAs.
    * @param {string} content Content type.
-   *   Enum: iso,vztmpl
+   *   Enum: iso,vztmpl,import
    * @param {string} filename The name of the file to create. Caution: This will be normalized!
    * @param {string} checksum The expected checksum of the file.
    * @param {string} checksum_algorithm The algorithm to calculate the checksum of the file.
@@ -17436,9 +18064,9 @@ class PVEStorageStorageNodeNodesDownloadUrl {
   }
 
   /**
-   * Download templates and ISO images by using an URL.
+   * Download templates, ISO images and OVAs by using an URL.
    * @param {string} content Content type.
-   *   Enum: iso,vztmpl
+   *   Enum: iso,vztmpl,import
    * @param {string} filename The name of the file to create. Caution: This will be normalized!
    * @param {string} url The URL to download the file from.
    * @param {string} checksum The expected checksum of the file.
@@ -17543,9 +18171,9 @@ class PVENodeNodesDisks {
   get directory() {
     return this.#directory == null
       ? (this.#directory = new PVEDisksNodeNodesDirectory(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#directory;
   }
   #zfs;
@@ -17596,9 +18224,9 @@ class PVENodeNodesDisks {
   get wipedisk() {
     return this.#wipedisk == null
       ? (this.#wipedisk = new PVEDisksNodeNodesWipedisk(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#wipedisk;
   }
 
@@ -18124,9 +18752,9 @@ class PVENodeNodesApt {
   get changelog() {
     return this.#changelog == null
       ? (this.#changelog = new PVEAptNodeNodesChangelog(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#changelog;
   }
   #repositories;
@@ -18137,9 +18765,9 @@ class PVENodeNodesApt {
   get repositories() {
     return this.#repositories == null
       ? (this.#repositories = new PVEAptNodeNodesRepositories(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#repositories;
   }
   #versions;
@@ -18341,9 +18969,9 @@ class PVENodeNodesFirewall {
   get options() {
     return this.#options == null
       ? (this.#options = new PVEFirewallNodeNodesOptions(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#options;
   }
   #log;
@@ -18398,7 +19026,7 @@ class PVEFirewallNodeNodesRules {
    * Create new rule.
    * @param {string} action Rule action ('ACCEPT', 'DROP', 'REJECT') or security group name.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @param {string} comment Descriptive comment.
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -18510,7 +19138,7 @@ class PVEItemRulesFirewallNodeNodesPos {
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
    * @param {string} type Rule type.
-   *   Enum: in,out,group
+   *   Enum: in,out,forward,group
    * @returns {Promise<Result>}
    */
   async updateRule(
@@ -18581,6 +19209,8 @@ class PVEFirewallNodeNodesOptions {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} enable Enable host firewall rules.
+   * @param {string} log_level_forward Log level for forwarded traffic.
+   *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} log_level_in Log level for incoming traffic.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} log_level_out Log level for outgoing traffic.
@@ -18608,6 +19238,7 @@ class PVEFirewallNodeNodesOptions {
     delete_,
     digest,
     enable,
+    log_level_forward,
     log_level_in,
     log_level_out,
     log_nf_conntrack,
@@ -18630,6 +19261,7 @@ class PVEFirewallNodeNodesOptions {
       delete: delete_,
       digest: digest,
       enable: enable,
+      log_level_forward: log_level_forward,
       log_level_in: log_level_in,
       log_level_out: log_level_out,
       log_nf_conntrack: log_nf_conntrack,
@@ -18749,10 +19381,10 @@ class PVEItemReplicationNodeNodesId {
   get status() {
     return this.#status == null
       ? (this.#status = new PVEIdReplicationNodeNodesStatus(
-        this.#client,
-        this.#node,
-        this.#id
-      ))
+          this.#client,
+          this.#node,
+          this.#id
+        ))
       : this.#status;
   }
   #log;
@@ -18763,10 +19395,10 @@ class PVEItemReplicationNodeNodesId {
   get log() {
     return this.#log == null
       ? (this.#log = new PVEIdReplicationNodeNodesLog(
-        this.#client,
-        this.#node,
-        this.#id
-      ))
+          this.#client,
+          this.#node,
+          this.#id
+        ))
       : this.#log;
   }
   #scheduleNow;
@@ -18777,10 +19409,10 @@ class PVEItemReplicationNodeNodesId {
   get scheduleNow() {
     return this.#scheduleNow == null
       ? (this.#scheduleNow = new PVEIdReplicationNodeNodesScheduleNow(
-        this.#client,
-        this.#node,
-        this.#id
-      ))
+          this.#client,
+          this.#node,
+          this.#id
+        ))
       : this.#scheduleNow;
   }
 
@@ -18900,9 +19532,9 @@ class PVENodeNodesCertificates {
   get acme() {
     return this.#acme == null
       ? (this.#acme = new PVECertificatesNodeNodesAcme(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#acme;
   }
   #info;
@@ -18913,9 +19545,9 @@ class PVENodeNodesCertificates {
   get info() {
     return this.#info == null
       ? (this.#info = new PVECertificatesNodeNodesInfo(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#info;
   }
   #custom;
@@ -18926,9 +19558,9 @@ class PVENodeNodesCertificates {
   get custom() {
     return this.#custom == null
       ? (this.#custom = new PVECertificatesNodeNodesCustom(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#custom;
   }
 
@@ -18961,9 +19593,9 @@ class PVECertificatesNodeNodesAcme {
   get certificate() {
     return this.#certificate == null
       ? (this.#certificate = new PVEAcmeCertificatesNodeNodesCertificate(
-        this.#client,
-        this.#node
-      ))
+          this.#client,
+          this.#node
+        ))
       : this.#certificate;
   }
 
@@ -19233,10 +19865,10 @@ class PVEItemZonesSdnNodeNodesZone {
   get content() {
     return this.#content == null
       ? (this.#content = new PVEZoneZonesSdnNodeNodesContent(
-        this.#client,
-        this.#node,
-        this.#zone
-      ))
+          this.#client,
+          this.#node,
+          this.#zone
+        ))
       : this.#content;
   }
 
@@ -20062,7 +20694,7 @@ class PVEStorage {
    * @param {string} password Password for accessing the share/datastore.
    * @param {string} path File system path.
    * @param {string} pool Pool.
-   * @param {int} port For non default port.
+   * @param {int} port Use this port to connect to the storage instead of the default one (for example, with PBS or ESXi). For NFS and CIFS, use the 'options' option to configure the port via the mount options.
    * @param {string} portal iSCSI portal (IP or DNS name with optional port).
    * @param {string} preallocation Preallocation mode for raw and qcow2 images. Using 'metadata' on raw images results in preallocation=off.
    *   Enum: off,metadata,falloc,full
@@ -20283,7 +20915,7 @@ class PVEItemStorageStorage {
    * @param {string} options NFS/CIFS mount options (see 'man nfs' or 'man mount.cifs')
    * @param {string} password Password for accessing the share/datastore.
    * @param {string} pool Pool.
-   * @param {int} port For non default port.
+   * @param {int} port Use this port to connect to the storage instead of the default one (for example, with PBS or ESXi). For NFS and CIFS, use the 'options' option to configure the port via the mount options.
    * @param {string} preallocation Preallocation mode for raw and qcow2 images. Using 'metadata' on raw images results in preallocation=off.
    *   Enum: off,metadata,falloc,full
    * @param {string} prune_backups The retention options with shorter intervals are processed first with --keep-last being the very first one. Each option covers a specific period of time. We say that backups within this period are covered by this option. The next option does not take care of already covered backups and only considers older backups.
@@ -20636,9 +21268,9 @@ class PVEItemUsersAccessUserid {
   get unlockTfa() {
     return this.#unlockTfa == null
       ? (this.#unlockTfa = new PVEUseridUsersAccessUnlockTfa(
-        this.#client,
-        this.#userid
-      ))
+          this.#client,
+          this.#userid
+        ))
       : this.#unlockTfa;
   }
   #token;
@@ -20649,9 +21281,9 @@ class PVEItemUsersAccessUserid {
   get token() {
     return this.#token == null
       ? (this.#token = new PVEUseridUsersAccessToken(
-        this.#client,
-        this.#userid
-      ))
+          this.#client,
+          this.#userid
+        ))
       : this.#token;
   }
 
