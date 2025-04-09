@@ -505,9 +505,6 @@ class PveClientBase {
 /**
  * Proxmox VE Client Api
  */
-/**
- * Proxmox VE Client Api
- */
 class PveClient extends PveClientBase {
   /** @type {PveClient} */
   #client;
@@ -4282,7 +4279,7 @@ class PVEAcmeClusterPlugins {
    * @param {string} type ACME challenge type.
    *   Enum: dns,standalone
    * @param {string} api API plugin name
-   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,tencent,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
+   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,alviy,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ionos_cloud,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,limacity,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,omglol,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,technitium,tele3,tencent,timeweb,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,west_cn,world4you,yandex360,yc,zilore,zone,zoneedit,zonomi
    * @param {string} data DNS plugin data. (base64 encoded)
    * @param {boolean} disable Flag to disable the config.
    * @param {string} nodes List of cluster node names.
@@ -4332,7 +4329,7 @@ class PVEItemPluginsAcmeClusterId {
   /**
    * Update ACME plugin configuration.
    * @param {string} api API plugin name
-   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,do,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,tele3,tencent,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,world4you,yandex,yc,zilore,zone,zonomi
+   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,alviy,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ionos_cloud,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,limacity,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,omglol,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,technitium,tele3,tencent,timeweb,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,west_cn,world4you,yandex360,yc,zilore,zone,zoneedit,zonomi
    * @param {string} data DNS plugin data. (base64 encoded)
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -4849,7 +4846,7 @@ class PVEItemRealmSyncJobsClusterId {
    * @param {boolean} enable_new Enable newly synced users immediately.
    * @param {boolean} enabled Determines if the job is enabled.
    * @param {string} realm Authentication domain ID
-   * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
+   * @param {string} remove_vanished A semicolon-separated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
    * @param {string} scope Select what to sync.
    *   Enum: users,groups,both
    * @returns {Promise<Result>}
@@ -4884,7 +4881,7 @@ class PVEItemRealmSyncJobsClusterId {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {boolean} enable_new Enable newly synced users immediately.
    * @param {boolean} enabled Determines if the job is enabled.
-   * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
+   * @param {string} remove_vanished A semicolon-separated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
    * @param {string} scope Select what to sync.
    *   Enum: users,groups,both
    * @returns {Promise<Result>}
@@ -4953,6 +4950,16 @@ class PVEClusterMapping {
     this.#client = client;
   }
 
+  #dir;
+  /**
+   * Get MappingClusterDir
+   * @returns {PVEMappingClusterDir}
+   */
+  get dir() {
+    return this.#dir == null
+      ? (this.#dir = new PVEMappingClusterDir(this.#client))
+      : this.#dir;
+  }
   #pci;
   /**
    * Get MappingClusterPci
@@ -4982,6 +4989,100 @@ class PVEClusterMapping {
     return await this.#client.get(`/cluster/mapping`);
   }
 }
+/**
+ * Class PVEMappingClusterDir
+ */
+class PVEMappingClusterDir {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Get ItemDirMappingClusterId
+   * @param id
+   * @returns {PVEItemDirMappingClusterId}
+   */
+  get(id) {
+    return new PVEItemDirMappingClusterId(this.#client, id);
+  }
+
+  /**
+   * List directory mapping
+   * @param {string} check_node If given, checks the configurations on the given node for correctness, and adds relevant diagnostics for the directory to the response.
+   * @returns {Promise<Result>}
+   */
+  async index(check_node) {
+    const parameters = { "check-node": check_node };
+    return await this.#client.get(`/cluster/mapping/dir`, parameters);
+  }
+  /**
+   * Create a new directory mapping.
+   * @param {string} id The ID of the directory mapping
+   * @param {array} map A list of maps for the cluster nodes.
+   * @param {string} description Description of the directory mapping
+   * @returns {Promise<Result>}
+   */
+  async create(id, map, description) {
+    const parameters = {
+      id: id,
+      map: map,
+      description: description,
+    };
+    return await this.#client.create(`/cluster/mapping/dir`, parameters);
+  }
+}
+/**
+ * Class PVEItemDirMappingClusterId
+ */
+class PVEItemDirMappingClusterId {
+  #id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, id) {
+    this.#client = client;
+    this.#id = id;
+  }
+
+  /**
+   * Remove directory mapping.
+   * @returns {Promise<Result>}
+   */
+  async delete_() {
+    return await this.#client.delete(`/cluster/mapping/dir/${this.#id}`);
+  }
+  /**
+   * Get directory mapping.
+   * @returns {Promise<Result>}
+   */
+  async get() {
+    return await this.#client.get(`/cluster/mapping/dir/${this.#id}`);
+  }
+  /**
+   * Update a directory mapping.
+   * @param {string} delete_ A list of settings you want to delete.
+   * @param {string} description Description of the directory mapping
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {array} map A list of maps for the cluster nodes.
+   * @returns {Promise<Result>}
+   */
+  async update(delete_, description, digest, map) {
+    const parameters = {
+      delete: delete_,
+      description: description,
+      digest: digest,
+      map: map,
+    };
+    return await this.#client.set(
+      `/cluster/mapping/dir/${this.#id}`,
+      parameters
+    );
+  }
+}
+
 /**
  * Class PVEMappingClusterPci
  */
@@ -5016,14 +5117,16 @@ class PVEMappingClusterPci {
    * @param {string} id The ID of the logical PCI mapping.
    * @param {array} map A list of maps for the cluster nodes.
    * @param {string} description Description of the logical PCI device.
+   * @param {boolean} live_migration_capable Marks the device(s) as being able to be live-migrated (Experimental). This needs hardware and driver support to work.
    * @param {boolean} mdev Marks the device(s) as being capable of providing mediated devices.
    * @returns {Promise<Result>}
    */
-  async create(id, map, description, mdev) {
+  async create(id, map, description, live_migration_capable, mdev) {
     const parameters = {
       id: id,
       map: map,
       description: description,
+      "live-migration-capable": live_migration_capable,
       mdev: mdev,
     };
     return await this.#client.create(`/cluster/mapping/pci`, parameters);
@@ -5061,15 +5164,24 @@ class PVEItemPciMappingClusterId {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description of the logical PCI device.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {boolean} live_migration_capable Marks the device(s) as being able to be live-migrated (Experimental). This needs hardware and driver support to work.
    * @param {array} map A list of maps for the cluster nodes.
    * @param {boolean} mdev Marks the device(s) as being capable of providing mediated devices.
    * @returns {Promise<Result>}
    */
-  async update(delete_, description, digest, map, mdev) {
+  async update(
+    delete_,
+    description,
+    digest,
+    live_migration_capable,
+    map,
+    mdev
+  ) {
     const parameters = {
       delete: delete_,
       description: description,
       digest: digest,
+      "live-migration-capable": live_migration_capable,
       map: map,
       mdev: mdev,
     };
@@ -6388,15 +6500,17 @@ class PVESdnClusterIpams {
    * @param {string} ipam The SDN ipam object identifier.
    * @param {string} type Plugin type.
    *   Enum: netbox,phpipam,pve
+   * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {int} section
    * @param {string} token
    * @param {string} url
    * @returns {Promise<Result>}
    */
-  async create(ipam, type, section, token, url) {
+  async create(ipam, type, fingerprint, section, token, url) {
     const parameters = {
       ipam: ipam,
       type: type,
+      fingerprint: fingerprint,
       section: section,
       token: token,
       url: url,
@@ -6449,15 +6563,17 @@ class PVEItemIpamsSdnClusterIpam {
    * Update sdn ipam object configuration.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {int} section
    * @param {string} token
    * @param {string} url
    * @returns {Promise<Result>}
    */
-  async update(delete_, digest, section, token, url) {
+  async update(delete_, digest, fingerprint, section, token, url) {
     const parameters = {
       delete: delete_,
       digest: digest,
+      fingerprint: fingerprint,
       section: section,
       token: token,
       url: url,
@@ -6527,17 +6643,28 @@ class PVESdnClusterDns {
    * @param {string} type Plugin type.
    *   Enum: powerdns
    * @param {string} url
+   * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {int} reversemaskv6
    * @param {int} reversev6mask
    * @param {int} ttl
    * @returns {Promise<Result>}
    */
-  async create(dns, key, type, url, reversemaskv6, reversev6mask, ttl) {
+  async create(
+    dns,
+    key,
+    type,
+    url,
+    fingerprint,
+    reversemaskv6,
+    reversev6mask,
+    ttl
+  ) {
     const parameters = {
       dns: dns,
       key: key,
       type: type,
       url: url,
+      fingerprint: fingerprint,
       reversemaskv6: reversemaskv6,
       reversev6mask: reversev6mask,
       ttl: ttl,
@@ -6576,16 +6703,18 @@ class PVEItemDnsSdnClusterDns {
    * Update sdn dns object configuration.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {string} key
    * @param {int} reversemaskv6
    * @param {int} ttl
    * @param {string} url
    * @returns {Promise<Result>}
    */
-  async update(delete_, digest, key, reversemaskv6, ttl, url) {
+  async update(delete_, digest, fingerprint, key, reversemaskv6, ttl, url) {
     const parameters = {
       delete: delete_,
       digest: digest,
+      fingerprint: fingerprint,
       key: key,
       reversemaskv6: reversemaskv6,
       ttl: ttl,
@@ -6681,6 +6810,7 @@ class PVEClusterOptions {
   /**
    * Set datacenter options.
    * @param {string} bwlimit Set I/O bandwidth limit for various operations (in KiB/s).
+   * @param {string} consent_text Consent text that is displayed before logging in.
    * @param {string} console Select the default Console viewer. You can either use the builtin java applet (VNC; deprecated and maps to html5), an external virt-viewer comtatible application (SPICE), an HTML5 based vnc viewer (noVNC), or an HTML5 based console client (xtermjs). If the selected viewer is not available (e.g. SPICE not activated for the VM), the fallback is noVNC.
    *   Enum: applet,vv,html5,xtermjs
    * @param {string} crs Cluster resource scheduling settings.
@@ -6710,6 +6840,7 @@ class PVEClusterOptions {
    */
   async setOptions(
     bwlimit,
+    consent_text,
     console,
     crs,
     delete_,
@@ -6734,6 +6865,7 @@ class PVEClusterOptions {
   ) {
     const parameters = {
       bwlimit: bwlimit,
+      "consent-text": consent_text,
       console: console,
       crs: crs,
       delete: delete_,
@@ -7425,6 +7557,7 @@ class PVENodeNodesQemu {
    * @param {int} vcpus Number of hotplugged vcpus.
    * @param {string} vga Configure the VGA hardware.
    * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
    * @param {string} vmgenid Set VM Generation ID. Use '1' to autogenerate on create or update, pass '0' to disable explicitly.
    * @param {string} vmstatestorage Default storage for VM state volumes/files.
    * @param {string} watchdog Create a virtual hardware watchdog device.
@@ -7516,6 +7649,7 @@ class PVENodeNodesQemu {
     vcpus,
     vga,
     virtioN,
+    virtiofsN,
     vmgenid,
     vmstatestorage,
     watchdog
@@ -7610,6 +7744,7 @@ class PVENodeNodesQemu {
     this.#client.addIndexedParameter(parameters, "unused", unusedN);
     this.#client.addIndexedParameter(parameters, "usb", usbN);
     this.#client.addIndexedParameter(parameters, "virtio", virtioN);
+    this.#client.addIndexedParameter(parameters, "virtiofs", virtiofsN);
     return await this.#client.create(`/nodes/${this.#node}/qemu`, parameters);
   }
 }
@@ -10044,6 +10179,7 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {int} vcpus Number of hotplugged vcpus.
    * @param {string} vga Configure the VGA hardware.
    * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
    * @param {string} vmgenid Set VM Generation ID. Use '1' to autogenerate on create or update, pass '0' to disable explicitly.
    * @param {string} vmstatestorage Default storage for VM state volumes/files.
    * @param {string} watchdog Create a virtual hardware watchdog device.
@@ -10132,6 +10268,7 @@ class PVEVmidQemuNodeNodesConfig {
     vcpus,
     vga,
     virtioN,
+    virtiofsN,
     vmgenid,
     vmstatestorage,
     watchdog
@@ -10223,6 +10360,7 @@ class PVEVmidQemuNodeNodesConfig {
     this.#client.addIndexedParameter(parameters, "unused", unusedN);
     this.#client.addIndexedParameter(parameters, "usb", usbN);
     this.#client.addIndexedParameter(parameters, "virtio", virtioN);
+    this.#client.addIndexedParameter(parameters, "virtiofs", virtiofsN);
     return await this.#client.create(
       `/nodes/${this.#node}/qemu/${this.#vmid}/config`,
       parameters
@@ -10318,6 +10456,7 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {int} vcpus Number of hotplugged vcpus.
    * @param {string} vga Configure the VGA hardware.
    * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
    * @param {string} vmgenid Set VM Generation ID. Use '1' to autogenerate on create or update, pass '0' to disable explicitly.
    * @param {string} vmstatestorage Default storage for VM state volumes/files.
    * @param {string} watchdog Create a virtual hardware watchdog device.
@@ -10404,6 +10543,7 @@ class PVEVmidQemuNodeNodesConfig {
     vcpus,
     vga,
     virtioN,
+    virtiofsN,
     vmgenid,
     vmstatestorage,
     watchdog
@@ -10493,6 +10633,7 @@ class PVEVmidQemuNodeNodesConfig {
     this.#client.addIndexedParameter(parameters, "unused", unusedN);
     this.#client.addIndexedParameter(parameters, "usb", usbN);
     this.#client.addIndexedParameter(parameters, "virtio", virtioN);
+    this.#client.addIndexedParameter(parameters, "virtiofs", virtiofsN);
     return await this.#client.set(
       `/nodes/${this.#node}/qemu/${this.#vmid}/config`,
       parameters
@@ -16341,7 +16482,7 @@ class PVENodeNodesNetwork {
   /**
    * List available networks
    * @param {string} type Only list specific interface types.
-   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,any_bridge,any_local_bridge
+   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,any_bridge,any_local_bridge
    * @returns {Promise<Result>}
    */
   async index(type) {
@@ -16352,7 +16493,7 @@ class PVENodeNodesNetwork {
    * Create network device configuration
    * @param {string} iface Network interface name.
    * @param {string} type Network interface type
-   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,unknown
+   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,unknown
    * @param {string} address IP address.
    * @param {string} address6 IP address.
    * @param {boolean} autostart Automatically start interface on boot.
@@ -16492,7 +16633,7 @@ class PVEItemNetworkNodeNodesIface {
   /**
    * Update network device configuration
    * @param {string} type Network interface type
-   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,unknown
+   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,unknown
    * @param {string} address IP address.
    * @param {string} address6 IP address.
    * @param {boolean} autostart Automatically start interface on boot.
@@ -17708,8 +17849,8 @@ class PVEStorageStorageNodeNodesContent {
    * @param {string} filename The name of the file to create.
    * @param {string} size Size in kilobyte (1024 bytes). Optional suffixes 'M' (megabyte, 1024K) and 'G' (gigabyte, 1024M)
    * @param {int} vmid Specify owner VM
-   * @param {string} format
-   *   Enum: raw,qcow2,subvol
+   * @param {string} format Format of the image.
+   *   Enum: raw,qcow2,subvol,vmdk
    * @returns {Promise<Result>}
    */
   async create(filename, size, vmid, format) {
@@ -18023,7 +18164,7 @@ class PVEStorageStorageNodeNodesUpload {
   }
 
   /**
-   * Upload templates, ISO images and OVAs.
+   * Upload templates, ISO images, OVAs and VM images.
    * @param {string} content Content type.
    *   Enum: iso,vztmpl,import
    * @param {string} filename The name of the file to create. Caution: This will be normalized!
@@ -18064,7 +18205,7 @@ class PVEStorageStorageNodeNodesDownloadUrl {
   }
 
   /**
-   * Download templates, ISO images and OVAs by using an URL.
+   * Download templates, ISO images, OVAs and VM images by using an URL.
    * @param {string} content Content type.
    *   Enum: iso,vztmpl,import
    * @param {string} filename The name of the file to create. Caution: This will be normalized!
@@ -19740,7 +19881,7 @@ class PVENodeNodesConfig {
   /**
    * Get node configuration options.
    * @param {string} property Return only a specific property from the node configuration.
-   *   Enum: acme,acmedomain0,acmedomain1,acmedomain2,acmedomain3,acmedomain4,acmedomain5,description,startall-onboot-delay,wakeonlan
+   *   Enum: acme,acmedomain0,acmedomain1,acmedomain2,acmedomain3,acmedomain4,acmedomain5,ballooning-target,description,startall-onboot-delay,wakeonlan
    * @returns {Promise<Result>}
    */
   async getConfig(property) {
@@ -19751,6 +19892,7 @@ class PVENodeNodesConfig {
    * Set node configuration options.
    * @param {string} acme Node specific ACME settings.
    * @param {array} acmedomainN ACME domain and validation plugin
+   * @param {int} ballooning_target RAM usage target for ballooning (in percent of total memory)
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description for the Node. Shown in the web-interface node notes panel. This is saved as comment inside the configuration file.
    * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -19761,6 +19903,7 @@ class PVENodeNodesConfig {
   async setOptions(
     acme,
     acmedomainN,
+    ballooning_target,
     delete_,
     description,
     digest,
@@ -19769,6 +19912,7 @@ class PVENodeNodesConfig {
   ) {
     const parameters = {
       acme: acme,
+      "ballooning-target": ballooning_target,
       delete: delete_,
       description: description,
       digest: digest,
@@ -20179,7 +20323,7 @@ class PVENodeNodesVncshell {
   /**
    * Creates a VNC Shell proxy.
    * @param {string} cmd Run specific command or default to login (requires 'root@pam')
-   *   Enum: upgrade,ceph_install,login
+   *   Enum: ceph_install,upgrade,login
    * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
    * @param {int} height sets the height of the console in pixels.
    * @param {boolean} websocket use websocket instead of standard vnc.
@@ -20217,7 +20361,7 @@ class PVENodeNodesTermproxy {
   /**
    * Creates a VNC Shell proxy.
    * @param {string} cmd Run specific command or default to login (requires 'root@pam')
-   *   Enum: upgrade,ceph_install,login
+   *   Enum: ceph_install,upgrade,login
    * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
    * @returns {Promise<Result>}
    */
@@ -20280,7 +20424,7 @@ class PVENodeNodesSpiceshell {
   /**
    * Creates a SPICE shell.
    * @param {string} cmd Run specific command or default to login (requires 'root@pam')
-   *   Enum: upgrade,ceph_install,login
+   *   Enum: ceph_install,upgrade,login
    * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
    * @param {string} proxy SPICE proxy server. This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As reasonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).
    * @returns {Promise<Result>}
@@ -20673,6 +20817,7 @@ class PVEStorage {
    * @param {string} export_ NFS export path.
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {string} format Default image format.
+   *   Enum: raw,qcow2,subvol,vmdk
    * @param {string} fs_name The Ceph filesystem name.
    * @param {boolean} fuse Mount CephFS through FUSE.
    * @param {string} is_mountpoint Assume the given path is an externally managed mountpoint and consider the storage offline if it is not mounted. Using a boolean (yes/no) value serves as a shortcut to using the target path in this field.
@@ -20896,6 +21041,7 @@ class PVEItemStorageStorage {
    * @param {string} encryption_key Encryption key. Use 'autogen' to generate one automatically without passphrase.
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {string} format Default image format.
+   *   Enum: raw,qcow2,subvol,vmdk
    * @param {string} fs_name The Ceph filesystem name.
    * @param {boolean} fuse Mount CephFS through FUSE.
    * @param {string} is_mountpoint Assume the given path is an externally managed mountpoint and consider the storage offline if it is not mounted. Using a boolean (yes/no) value serves as a shortcut to using the target path in this field.
@@ -21752,12 +21898,16 @@ class PVEAccessDomains {
    * @param {string} group_dn LDAP base domain name for group sync. If not set, the base_dn will be used.
    * @param {string} group_filter LDAP filter for group sync.
    * @param {string} group_name_attr LDAP attribute representing a groups name. If not set or found, the first value of the DN will be used as name.
+   * @param {boolean} groups_autocreate Automatically create groups if they do not exist.
+   * @param {string} groups_claim OpenID claim used to retrieve groups with.
+   * @param {boolean} groups_overwrite All groups will be overwritten for the user on login.
    * @param {string} issuer_url OpenID Issuer Url
    * @param {string} mode LDAP protocol mode.
    *   Enum: ldap,ldaps,ldap+starttls
    * @param {string} password LDAP bind password. Will be stored in '/etc/pve/priv/realm/&amp;lt;REALM&amp;gt;.pw'.
    * @param {int} port Server port.
    * @param {string} prompt Specifies whether the Authorization Server prompts the End-User for reauthentication and consent.
+   * @param {boolean} query_userinfo Enables querying the userinfo endpoint for claims values.
    * @param {string} scopes Specifies the scopes (user details) that should be authorized and returned, for example 'email' or 'profile'.
    * @param {boolean} secure Use secure LDAPS protocol. DEPRECATED: use 'mode' instead.
    * @param {string} server1 Server IP address (or DNS name)
@@ -21795,11 +21945,15 @@ class PVEAccessDomains {
     group_dn,
     group_filter,
     group_name_attr,
+    groups_autocreate,
+    groups_claim,
+    groups_overwrite,
     issuer_url,
     mode,
     password,
     port,
     prompt,
+    query_userinfo,
     scopes,
     secure,
     server1,
@@ -21835,11 +21989,15 @@ class PVEAccessDomains {
       group_dn: group_dn,
       group_filter: group_filter,
       group_name_attr: group_name_attr,
+      "groups-autocreate": groups_autocreate,
+      "groups-claim": groups_claim,
+      "groups-overwrite": groups_overwrite,
       "issuer-url": issuer_url,
       mode: mode,
       password: password,
       port: port,
       prompt: prompt,
+      "query-userinfo": query_userinfo,
       scopes: scopes,
       secure: secure,
       server1: server1,
@@ -21917,12 +22075,16 @@ class PVEItemDomainsAccessRealm {
    * @param {string} group_dn LDAP base domain name for group sync. If not set, the base_dn will be used.
    * @param {string} group_filter LDAP filter for group sync.
    * @param {string} group_name_attr LDAP attribute representing a groups name. If not set or found, the first value of the DN will be used as name.
+   * @param {boolean} groups_autocreate Automatically create groups if they do not exist.
+   * @param {string} groups_claim OpenID claim used to retrieve groups with.
+   * @param {boolean} groups_overwrite All groups will be overwritten for the user on login.
    * @param {string} issuer_url OpenID Issuer Url
    * @param {string} mode LDAP protocol mode.
    *   Enum: ldap,ldaps,ldap+starttls
    * @param {string} password LDAP bind password. Will be stored in '/etc/pve/priv/realm/&amp;lt;REALM&amp;gt;.pw'.
    * @param {int} port Server port.
    * @param {string} prompt Specifies whether the Authorization Server prompts the End-User for reauthentication and consent.
+   * @param {boolean} query_userinfo Enables querying the userinfo endpoint for claims values.
    * @param {string} scopes Specifies the scopes (user details) that should be authorized and returned, for example 'email' or 'profile'.
    * @param {boolean} secure Use secure LDAPS protocol. DEPRECATED: use 'mode' instead.
    * @param {string} server1 Server IP address (or DNS name)
@@ -21959,11 +22121,15 @@ class PVEItemDomainsAccessRealm {
     group_dn,
     group_filter,
     group_name_attr,
+    groups_autocreate,
+    groups_claim,
+    groups_overwrite,
     issuer_url,
     mode,
     password,
     port,
     prompt,
+    query_userinfo,
     scopes,
     secure,
     server1,
@@ -21998,11 +22164,15 @@ class PVEItemDomainsAccessRealm {
       group_dn: group_dn,
       group_filter: group_filter,
       group_name_attr: group_name_attr,
+      "groups-autocreate": groups_autocreate,
+      "groups-claim": groups_claim,
+      "groups-overwrite": groups_overwrite,
       "issuer-url": issuer_url,
       mode: mode,
       password: password,
       port: port,
       prompt: prompt,
+      "query-userinfo": query_userinfo,
       scopes: scopes,
       secure: secure,
       server1: server1,
@@ -22037,7 +22207,7 @@ class PVERealmDomainsAccessSync {
    * @param {boolean} enable_new Enable newly synced users immediately.
    * @param {boolean} full DEPRECATED: use 'remove-vanished' instead. If set, uses the LDAP Directory as source of truth, deleting users or groups not returned from the sync and removing all locally modified properties of synced users. If not set, only syncs information which is present in the synced data, and does not delete or modify anything else.
    * @param {boolean} purge DEPRECATED: use 'remove-vanished' instead. Remove ACLs for users or groups which were removed from the config during a sync.
-   * @param {string} remove_vanished A semicolon-seperated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
+   * @param {string} remove_vanished A semicolon-separated list of things to remove when they or the user vanishes during a sync. The following values are possible: 'entry' removes the user/group when not returned from the sync. 'properties' removes the set properties on existing user/group that do not appear in the source (even custom ones). 'acl' removes acls when the user/group is not returned from the sync. Instead of a list it also can be 'none' (the default).
    * @param {string} scope Select what to sync.
    *   Enum: users,groups,both
    * @returns {Promise<Result>}
@@ -22312,7 +22482,7 @@ class PVEAccessTicket {
    * @param {string} otp One-time password for Two-factor authentication.
    * @param {string} path Verify ticket, and check if user have access 'privs' on 'path'
    * @param {string} privs Verify ticket, and check if user have access 'privs' on 'path'
-   * @param {string} realm You can optionally pass the realm using this parameter. Normally the realm is simply added to the username &amp;lt;username&amp;gt;@&amp;lt;relam&amp;gt;.
+   * @param {string} realm You can optionally pass the realm using this parameter. Normally the realm is simply added to the username &amp;lt;username&amp;gt;@&amp;lt;realm&amp;gt;.
    * @param {string} tfa_challenge The signed TFA challenge string the user wants to respond to.
    * @returns {Promise<Result>}
    */
