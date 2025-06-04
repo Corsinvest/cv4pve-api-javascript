@@ -333,6 +333,11 @@ class PveClientBase {
           reject(error);
         });
       });
+      // 处理req的error，比如 getaddrinfo ENOTFOUND ， 否则永远不会结束promise
+      req.on("error", (error) => {
+        this.#error(error);
+        reject(error);
+      });
 
       if (body != "") {
         req.write(body);
