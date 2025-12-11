@@ -11,9 +11,10 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     permissions:
-      contents: write
-      packages: write
+      contents: read
+      id-token: write
 
     steps:
     - name: Checkout
@@ -30,7 +31,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    # Extract and validate version
     - name: Extract and validate version
       id: version
       run: |
@@ -49,15 +49,13 @@ jobs:
           echo "   Git tag: v$TAG_VERSION"
           exit 1
         fi
-
+        
         echo "✅ Version validated: $PROJECT_VERSION"
         echo "version=$PROJECT_VERSION" >> $GITHUB_OUTPUT
 
-    # Build the package
     - name: Build package
       run: npm run prepare
 
-    # Create GitHub Release and upload assets
     - name: Create Release and Upload Assets
       uses: softprops/action-gh-release@v2
       with:
@@ -66,8 +64,5 @@ jobs:
         prerelease: false
         generate_release_notes: true
 
-    # Publish to npm
     - name: Publish to npm
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: npm publish --provenance --access public
