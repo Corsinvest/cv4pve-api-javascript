@@ -12,7 +12,7 @@ class Result {
   /**
    *
    * @param {string} response
-   * @param {int} statusCode
+   * @param {number} statusCode
    * @param {string} reasonPhrase
    * @param {string} requestResource
    * @param {object} requestParameters
@@ -97,14 +97,14 @@ class Result {
    * Is success code
    */
   get isSuccessStatusCode() {
-    return this.#statusCode == 200;
+    return this.#statusCode === 200;
   }
 
   /**
    * Get if response Proxmox VE contain errors
    */
   get responseInError() {
-    return typeof this.#response.errors != "undefined";
+    return typeof this.#response.errors !== "undefined";
   }
 
   /**
@@ -142,7 +142,7 @@ class PveClientBase {
    * Constructor
    *
    * @param {string} hostname
-   * @param {int} port
+   * @param {number} port
    */
   constructor(hostname, port = 8006) {
     this.#hostname = hostname;
@@ -212,6 +212,20 @@ class PveClientBase {
     this.#apiToken = value;
   }
 
+  #timeout = 30000;
+  /**
+   * Get timeout in milliseconds
+   */
+  get timeout() {
+    return this.#timeout;
+  }
+  /**
+   * Set timeout in milliseconds
+   */
+  set timeout(value) {
+    this.#timeout = value;
+  }
+
   /**
    * Log enabled
    */
@@ -237,14 +251,14 @@ class PveClientBase {
   async #execute(method, resource, parameters) {
     const ref = this;
 
-    if (parameters == null || parameters == undefined) {
-      parameters = Object.create({});
+    if (parameters === null || parameters === undefined) {
+      parameters = {};
     }
 
-    let tmpParameters = Object.create({});
+    let tmpParameters = {};
     for (const [key, value] of Object.entries(parameters)) {
-      if (value != null && value != undefined) {
-        if (typeof value == "boolean") {
+      if (value !== null && value !== undefined) {
+        if (typeof value === "boolean") {
           tmpParameters[key] = value ? 1 : 0;
         } else {
           tmpParameters[key] = value;
@@ -256,9 +270,9 @@ class PveClientBase {
     let body = "";
     let headers = {};
     let url = "/api2/json" + resource;
-    const urlParams = new URLSearchParams(parameters).toString();
 
-    if (method == "GET" || method == "DELETE") {
+    if (method === "GET" || method === "DELETE") {
+      const urlParams = new URLSearchParams(parameters).toString();
       if (urlParams.length > 0) {
         url += "?" + urlParams;
       }
@@ -269,22 +283,23 @@ class PveClientBase {
       headers["Content-Length"] = Buffer.byteLength(body);
     }
 
-    if (this.#ticketCSRFPreventionToken != "") {
+    if (this.#ticketCSRFPreventionToken !== "") {
       headers["CSRFPreventionToken"] = this.#ticketCSRFPreventionToken;
       headers["Cookie"] = "PVEAuthCookie=" + this.#ticketPVEAuthCookie;
     }
 
-    if (this.apiToken != "") {
+    if (this.apiToken !== "") {
       headers["Authorization"] = "PVEAPIToken=" + this.apiToken;
     }
 
     const options = {
-      rejectUnauthorized: false,
+      rejectUnauthorized: false, // Proxmox VE uses self-signed certificates by default
       host: this.hostname,
       port: this.port,
       path: url,
       method: method,
       headers: headers,
+      timeout: this.#timeout,
     };
 
     //debug
@@ -303,10 +318,19 @@ class PveClientBase {
         response.on("end", () => {
           let data = null;
 
-          if (ref.responseType == ResponseType.JSON) {
-            data = JSON.parse(chunks);
-          } else if (ref.responseType == ResponseType.PNG) {
-            data = "data:image/png;base64," + chunks;
+          try {
+            if (ref.responseType === ResponseType.JSON) {
+              data = JSON.parse(chunks);
+            } else if (ref.responseType === ResponseType.PNG) {
+              if (!/^[A-Za-z0-9+/]*={0,2}$/.test(chunks.trim())) {
+                throw new Error("Invalid base64 format for PNG response");
+              }
+              data = "data:image/png;base64," + chunks;
+            }
+          } catch (error) {
+            this.#error(error);
+            reject(new Error("Invalid response format: " + error.message));
+            return;
           }
 
           const result = new Result(
@@ -334,7 +358,19 @@ class PveClientBase {
         });
       });
 
-      if (body != "") {
+      req.on("error", (error) => {
+        this.#error(error);
+        reject(error);
+      });
+
+      req.on("timeout", () => {
+        req.destroy();
+        const error = new Error(`Request timeout after ${this.#timeout}ms`);
+        this.#error(error);
+        reject(error);
+      });
+
+      if (body !== "") {
         req.write(body);
       }
       req.end();
@@ -362,8 +398,7 @@ class PveClientBase {
       })
         .then((result) => {
           if (result.isSuccessStatusCode) {
-            ref.#ticketCSRFPreventionToken =
-              result.response.data.CSRFPreventionToken;
+            ref.#ticketCSRFPreventionToken = result.response.data.CSRFPreventionToken;
             ref.#ticketPVEAuthCookie = result.response.data.ticket;
           }
 
@@ -432,8 +467,8 @@ class PveClientBase {
    * Wait for task to finish
    *
    * @param {string} task Task identifier
-   * @param {int} wait Millisecond wait next check
-   * @param {int} timeOut Millisecond timeout
+   * @param {number} wait Millisecond wait next check
+   * @param {number} timeOut Millisecond timeout
    * @return {Promise<boolean>}
    */
   async waitForTaskToFinish(task, wait = 500, timeOut = 10000) {
@@ -472,7 +507,7 @@ class PveClientBase {
    * @returns {Promise<boolean>}
    */
   async taskIsRunning(task) {
-    return (await this.readTaskStatus(task)).response.data.status == "running";
+    return (await this.readTaskStatus(task)).response.data.status === "running";
   }
 
   /**
@@ -492,9 +527,7 @@ class PveClientBase {
    * @returns {Promise<Result>}
    */
   async readTaskStatus(task) {
-    return this.get(
-      "/nodes/" + this.#getNodeFromTask(task) + "/tasks/" + task + "/status"
-    );
+    return this.get("/nodes/" + this.#getNodeFromTask(task) + "/tasks/" + task + "/status");
   }
 }
 
@@ -513,7 +546,7 @@ class PveClient extends PveClientBase {
    * Constructor
    *
    * @param {string} hostname
-   * @param {int} port
+   * @param {number} port
    */
   constructor(hostname, port = 8006) {
     super(hostname, port);
@@ -524,10 +557,10 @@ class PveClient extends PveClientBase {
    * Add index parameter to parameters
    * @param {object} parameters Parameters
    * @param {string} name name
-   * @param {array} values values
+   * @param {Array} values values
    */
   addIndexedParameter(parameters, name, values) {
-    if (values == null) {
+    if (values === null || values === undefined) {
       return;
     }
 
@@ -542,9 +575,7 @@ class PveClient extends PveClientBase {
    * @returns {PVECluster}
    */
   get cluster() {
-    return this.#cluster == null
-      ? (this.#cluster = new PVECluster(this.#client))
-      : this.#cluster;
+    return this.#cluster == null ? (this.#cluster = new PVECluster(this.#client)) : this.#cluster;
   }
   #nodes;
   /**
@@ -552,9 +583,7 @@ class PveClient extends PveClientBase {
    * @returns {PVENodes}
    */
   get nodes() {
-    return this.#nodes == null
-      ? (this.#nodes = new PVENodes(this.#client))
-      : this.#nodes;
+    return this.#nodes == null ? (this.#nodes = new PVENodes(this.#client)) : this.#nodes;
   }
   #storage;
   /**
@@ -562,9 +591,7 @@ class PveClient extends PveClientBase {
    * @returns {PVEStorage}
    */
   get storage() {
-    return this.#storage == null
-      ? (this.#storage = new PVEStorage(this.#client))
-      : this.#storage;
+    return this.#storage == null ? (this.#storage = new PVEStorage(this.#client)) : this.#storage;
   }
   #access;
   /**
@@ -572,9 +599,7 @@ class PveClient extends PveClientBase {
    * @returns {PVEAccess}
    */
   get access() {
-    return this.#access == null
-      ? (this.#access = new PVEAccess(this.#client))
-      : this.#access;
+    return this.#access == null ? (this.#access = new PVEAccess(this.#client)) : this.#access;
   }
   #pools;
   /**
@@ -582,9 +607,7 @@ class PveClient extends PveClientBase {
    * @returns {PVEPools}
    */
   get pools() {
-    return this.#pools == null
-      ? (this.#pools = new PVEPools(this.#client))
-      : this.#pools;
+    return this.#pools == null ? (this.#pools = new PVEPools(this.#client)) : this.#pools;
   }
   #version;
   /**
@@ -592,9 +615,7 @@ class PveClient extends PveClientBase {
    * @returns {PVEVersion}
    */
   get version() {
-    return this.#version == null
-      ? (this.#version = new PVEVersion(this.#client))
-      : this.#version;
+    return this.#version == null ? (this.#version = new PVEVersion(this.#client)) : this.#version;
   }
 }
 /**
@@ -684,9 +705,7 @@ class PVECluster {
    * @returns {PVEClusterHa}
    */
   get ha() {
-    return this.#ha == null
-      ? (this.#ha = new PVEClusterHa(this.#client))
-      : this.#ha;
+    return this.#ha == null ? (this.#ha = new PVEClusterHa(this.#client)) : this.#ha;
   }
   #acme;
   /**
@@ -694,9 +713,7 @@ class PVECluster {
    * @returns {PVEClusterAcme}
    */
   get acme() {
-    return this.#acme == null
-      ? (this.#acme = new PVEClusterAcme(this.#client))
-      : this.#acme;
+    return this.#acme == null ? (this.#acme = new PVEClusterAcme(this.#client)) : this.#acme;
   }
   #ceph;
   /**
@@ -704,9 +721,7 @@ class PVECluster {
    * @returns {PVEClusterCeph}
    */
   get ceph() {
-    return this.#ceph == null
-      ? (this.#ceph = new PVEClusterCeph(this.#client))
-      : this.#ceph;
+    return this.#ceph == null ? (this.#ceph = new PVEClusterCeph(this.#client)) : this.#ceph;
   }
   #jobs;
   /**
@@ -714,9 +729,7 @@ class PVECluster {
    * @returns {PVEClusterJobs}
    */
   get jobs() {
-    return this.#jobs == null
-      ? (this.#jobs = new PVEClusterJobs(this.#client))
-      : this.#jobs;
+    return this.#jobs == null ? (this.#jobs = new PVEClusterJobs(this.#client)) : this.#jobs;
   }
   #mapping;
   /**
@@ -728,15 +741,23 @@ class PVECluster {
       ? (this.#mapping = new PVEClusterMapping(this.#client))
       : this.#mapping;
   }
+  #bulkAction;
+  /**
+   * Get ClusterBulkAction
+   * @returns {PVEClusterBulkAction}
+   */
+  get bulkAction() {
+    return this.#bulkAction == null
+      ? (this.#bulkAction = new PVEClusterBulkAction(this.#client))
+      : this.#bulkAction;
+  }
   #sdn;
   /**
    * Get ClusterSdn
    * @returns {PVEClusterSdn}
    */
   get sdn() {
-    return this.#sdn == null
-      ? (this.#sdn = new PVEClusterSdn(this.#client))
-      : this.#sdn;
+    return this.#sdn == null ? (this.#sdn = new PVEClusterSdn(this.#client)) : this.#sdn;
   }
   #log;
   /**
@@ -744,9 +765,7 @@ class PVECluster {
    * @returns {PVEClusterLog}
    */
   get log() {
-    return this.#log == null
-      ? (this.#log = new PVEClusterLog(this.#client))
-      : this.#log;
+    return this.#log == null ? (this.#log = new PVEClusterLog(this.#client)) : this.#log;
   }
   #resources;
   /**
@@ -764,9 +783,7 @@ class PVECluster {
    * @returns {PVEClusterTasks}
    */
   get tasks() {
-    return this.#tasks == null
-      ? (this.#tasks = new PVEClusterTasks(this.#client))
-      : this.#tasks;
+    return this.#tasks == null ? (this.#tasks = new PVEClusterTasks(this.#client)) : this.#tasks;
   }
   #options;
   /**
@@ -842,24 +859,14 @@ class PVEClusterReplication {
    *   Enum: local
    * @param {string} comment Description.
    * @param {boolean} disable Flag to disable/deactivate the entry.
-   * @param {float} rate Rate limit in mbps (megabytes per second) as floating point number.
+   * @param {number} rate Rate limit in mbps (megabytes per second) as floating point number.
    * @param {string} remove_job Mark the replication job for removal. The job will remove all local replication snapshots. When set to 'full', it also tries to remove replicated volumes on the target. The job then removes itself from the configuration file.
    *   Enum: local,full
    * @param {string} schedule Storage replication schedule. The format is a subset of `systemd` calendar events.
    * @param {string} source For internal use, to detect if the guest was stolen.
    * @returns {Promise<Result>}
    */
-  async create(
-    id,
-    target,
-    type,
-    comment,
-    disable,
-    rate,
-    remove_job,
-    schedule,
-    source
-  ) {
+  async create(id, target, type, comment, disable, rate, remove_job, schedule, source) {
     const parameters = {
       id: id,
       target: target,
@@ -898,10 +905,7 @@ class PVEItemReplicationClusterId {
       force: force,
       keep: keep,
     };
-    return await this.#client.delete(
-      `/cluster/replication/${this.#id}`,
-      parameters
-    );
+    return await this.#client.delete(`/cluster/replication/${this.#id}`, parameters);
   }
   /**
    * Read replication job configuration.
@@ -916,23 +920,14 @@ class PVEItemReplicationClusterId {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Flag to disable/deactivate the entry.
-   * @param {float} rate Rate limit in mbps (megabytes per second) as floating point number.
+   * @param {number} rate Rate limit in mbps (megabytes per second) as floating point number.
    * @param {string} remove_job Mark the replication job for removal. The job will remove all local replication snapshots. When set to 'full', it also tries to remove replicated volumes on the target. The job then removes itself from the configuration file.
    *   Enum: local,full
    * @param {string} schedule Storage replication schedule. The format is a subset of `systemd` calendar events.
    * @param {string} source For internal use, to detect if the guest was stolen.
    * @returns {Promise<Result>}
    */
-  async update(
-    comment,
-    delete_,
-    digest,
-    disable,
-    rate,
-    remove_job,
-    schedule,
-    source
-  ) {
+  async update(comment, delete_, digest, disable, rate, remove_job, schedule, source) {
     const parameters = {
       comment: comment,
       delete: delete_,
@@ -943,10 +938,7 @@ class PVEItemReplicationClusterId {
       schedule: schedule,
       source: source,
     };
-    return await this.#client.set(
-      `/cluster/replication/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/replication/${this.#id}`, parameters);
   }
 }
 
@@ -1047,22 +1039,32 @@ class PVEItemServerMetricsClusterId {
   }
   /**
    * Create a new external metric server config
-   * @param {int} port server network port
+   * @param {number} port server network port
    * @param {string} server server dns name or IP address
    * @param {string} type Plugin type.
-   *   Enum: graphite,influxdb
+   *   Enum: graphite,influxdb,opentelemetry
    * @param {string} api_path_prefix An API path prefix inserted between '&amp;lt;host&amp;gt;:&amp;lt;port&amp;gt;/' and '/api2/'. Can be useful if the InfluxDB service runs behind a reverse proxy.
    * @param {string} bucket The InfluxDB bucket/db. Only necessary when using the http v2 api.
    * @param {boolean} disable Flag to disable the plugin.
    * @param {string} influxdbproto
    *   Enum: udp,http,https
-   * @param {int} max_body_size InfluxDB max-body-size in bytes. Requests are batched up to this size.
-   * @param {int} mtu MTU for metrics transmission over UDP
+   * @param {number} max_body_size InfluxDB max-body-size in bytes. Requests are batched up to this size.
+   * @param {number} mtu MTU for metrics transmission over UDP
    * @param {string} organization The InfluxDB organization. Only necessary when using the http v2 api. Has no meaning when using v2 compatibility api.
+   * @param {string} otel_compression Compression algorithm for requests
+   *   Enum: none,gzip
+   * @param {string} otel_headers Custom HTTP headers (JSON format, base64 encoded)
+   * @param {number} otel_max_body_size Maximum request body size in bytes
+   * @param {string} otel_path OTLP endpoint path
+   * @param {string} otel_protocol HTTP protocol
+   *   Enum: http,https
+   * @param {string} otel_resource_attributes Additional resource attributes as JSON, base64 encoded
+   * @param {number} otel_timeout HTTP request timeout in seconds
+   * @param {boolean} otel_verify_ssl Verify SSL certificates
    * @param {string} path root graphite path (ex: proxmox.mycluster.mykey)
    * @param {string} proto Protocol to send graphite data. TCP or UDP (default)
    *   Enum: udp,tcp
-   * @param {int} timeout graphite TCP socket timeout (default=1)
+   * @param {number} timeout graphite TCP socket timeout (default=1)
    * @param {string} token The InfluxDB access token. Only necessary when using the http v2 api. If the v2 compatibility api is used, use 'user:password' instead.
    * @param {boolean} verify_certificate Set to 0 to disable certificate verification for https endpoints.
    * @returns {Promise<Result>}
@@ -1078,6 +1080,14 @@ class PVEItemServerMetricsClusterId {
     max_body_size,
     mtu,
     organization,
+    otel_compression,
+    otel_headers,
+    otel_max_body_size,
+    otel_path,
+    otel_protocol,
+    otel_resource_attributes,
+    otel_timeout,
+    otel_verify_ssl,
     path,
     proto,
     timeout,
@@ -1095,20 +1105,25 @@ class PVEItemServerMetricsClusterId {
       "max-body-size": max_body_size,
       mtu: mtu,
       organization: organization,
+      "otel-compression": otel_compression,
+      "otel-headers": otel_headers,
+      "otel-max-body-size": otel_max_body_size,
+      "otel-path": otel_path,
+      "otel-protocol": otel_protocol,
+      "otel-resource-attributes": otel_resource_attributes,
+      "otel-timeout": otel_timeout,
+      "otel-verify-ssl": otel_verify_ssl,
       path: path,
       proto: proto,
       timeout: timeout,
       token: token,
       "verify-certificate": verify_certificate,
     };
-    return await this.#client.create(
-      `/cluster/metrics/server/${this.#id}`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/metrics/server/${this.#id}`, parameters);
   }
   /**
    * Update metric server configuration.
-   * @param {int} port server network port
+   * @param {number} port server network port
    * @param {string} server server dns name or IP address
    * @param {string} api_path_prefix An API path prefix inserted between '&amp;lt;host&amp;gt;:&amp;lt;port&amp;gt;/' and '/api2/'. Can be useful if the InfluxDB service runs behind a reverse proxy.
    * @param {string} bucket The InfluxDB bucket/db. Only necessary when using the http v2 api.
@@ -1117,13 +1132,23 @@ class PVEItemServerMetricsClusterId {
    * @param {boolean} disable Flag to disable the plugin.
    * @param {string} influxdbproto
    *   Enum: udp,http,https
-   * @param {int} max_body_size InfluxDB max-body-size in bytes. Requests are batched up to this size.
-   * @param {int} mtu MTU for metrics transmission over UDP
+   * @param {number} max_body_size InfluxDB max-body-size in bytes. Requests are batched up to this size.
+   * @param {number} mtu MTU for metrics transmission over UDP
    * @param {string} organization The InfluxDB organization. Only necessary when using the http v2 api. Has no meaning when using v2 compatibility api.
+   * @param {string} otel_compression Compression algorithm for requests
+   *   Enum: none,gzip
+   * @param {string} otel_headers Custom HTTP headers (JSON format, base64 encoded)
+   * @param {number} otel_max_body_size Maximum request body size in bytes
+   * @param {string} otel_path OTLP endpoint path
+   * @param {string} otel_protocol HTTP protocol
+   *   Enum: http,https
+   * @param {string} otel_resource_attributes Additional resource attributes as JSON, base64 encoded
+   * @param {number} otel_timeout HTTP request timeout in seconds
+   * @param {boolean} otel_verify_ssl Verify SSL certificates
    * @param {string} path root graphite path (ex: proxmox.mycluster.mykey)
    * @param {string} proto Protocol to send graphite data. TCP or UDP (default)
    *   Enum: udp,tcp
-   * @param {int} timeout graphite TCP socket timeout (default=1)
+   * @param {number} timeout graphite TCP socket timeout (default=1)
    * @param {string} token The InfluxDB access token. Only necessary when using the http v2 api. If the v2 compatibility api is used, use 'user:password' instead.
    * @param {boolean} verify_certificate Set to 0 to disable certificate verification for https endpoints.
    * @returns {Promise<Result>}
@@ -1140,6 +1165,14 @@ class PVEItemServerMetricsClusterId {
     max_body_size,
     mtu,
     organization,
+    otel_compression,
+    otel_headers,
+    otel_max_body_size,
+    otel_path,
+    otel_protocol,
+    otel_resource_attributes,
+    otel_timeout,
+    otel_verify_ssl,
     path,
     proto,
     timeout,
@@ -1158,16 +1191,21 @@ class PVEItemServerMetricsClusterId {
       "max-body-size": max_body_size,
       mtu: mtu,
       organization: organization,
+      "otel-compression": otel_compression,
+      "otel-headers": otel_headers,
+      "otel-max-body-size": otel_max_body_size,
+      "otel-path": otel_path,
+      "otel-protocol": otel_protocol,
+      "otel-resource-attributes": otel_resource_attributes,
+      "otel-timeout": otel_timeout,
+      "otel-verify-ssl": otel_verify_ssl,
       path: path,
       proto: proto,
       timeout: timeout,
       token: token,
       "verify-certificate": verify_certificate,
     };
-    return await this.#client.set(
-      `/cluster/metrics/server/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/metrics/server/${this.#id}`, parameters);
   }
 }
 
@@ -1186,13 +1224,15 @@ class PVEMetricsClusterExport {
    * Retrieve metrics of the cluster.
    * @param {boolean} history Also return historic values. Returns full available metric history unless `start-time` is also set
    * @param {boolean} local_only Only return metrics for the current node instead of the whole cluster
-   * @param {int} start_time Only include metrics with a timestamp &amp;gt; start-time.
+   * @param {string} node_list Only return metrics from nodes passed as comma-separated list
+   * @param {number} start_time Only include metrics with a timestamp &amp;gt; start-time.
    * @returns {Promise<Result>}
    */
-  async export_(history, local_only, start_time) {
+  async export_(history, local_only, node_list, start_time) {
     const parameters = {
       history: history,
       "local-only": local_only,
+      "node-list": node_list,
       "start-time": start_time,
     };
     return await this.#client.get(`/cluster/metrics/export`, parameters);
@@ -1217,9 +1257,7 @@ class PVEClusterNotifications {
    */
   get matcherFields() {
     return this.#matcherFields == null
-      ? (this.#matcherFields = new PVENotificationsClusterMatcherFields(
-          this.#client
-        ))
+      ? (this.#matcherFields = new PVENotificationsClusterMatcherFields(this.#client))
       : this.#matcherFields;
   }
   #matcherFieldValues;
@@ -1229,8 +1267,7 @@ class PVEClusterNotifications {
    */
   get matcherFieldValues() {
     return this.#matcherFieldValues == null
-      ? (this.#matcherFieldValues =
-          new PVENotificationsClusterMatcherFieldValues(this.#client))
+      ? (this.#matcherFieldValues = new PVENotificationsClusterMatcherFieldValues(this.#client))
       : this.#matcherFieldValues;
   }
   #endpoints;
@@ -1308,9 +1345,7 @@ class PVENotificationsClusterMatcherFieldValues {
    * @returns {Promise<Result>}
    */
   async getMatcherFieldValues() {
-    return await this.#client.get(
-      `/cluster/notifications/matcher-field-values`
-    );
+    return await this.#client.get(`/cluster/notifications/matcher-field-values`);
   }
 }
 
@@ -1332,9 +1367,7 @@ class PVENotificationsClusterEndpoints {
    */
   get sendmail() {
     return this.#sendmail == null
-      ? (this.#sendmail = new PVEEndpointsNotificationsClusterSendmail(
-          this.#client
-        ))
+      ? (this.#sendmail = new PVEEndpointsNotificationsClusterSendmail(this.#client))
       : this.#sendmail;
   }
   #gotify;
@@ -1344,9 +1377,7 @@ class PVENotificationsClusterEndpoints {
    */
   get gotify() {
     return this.#gotify == null
-      ? (this.#gotify = new PVEEndpointsNotificationsClusterGotify(
-          this.#client
-        ))
+      ? (this.#gotify = new PVEEndpointsNotificationsClusterGotify(this.#client))
       : this.#gotify;
   }
   #smtp;
@@ -1366,9 +1397,7 @@ class PVENotificationsClusterEndpoints {
    */
   get webhook() {
     return this.#webhook == null
-      ? (this.#webhook = new PVEEndpointsNotificationsClusterWebhook(
-          this.#client
-        ))
+      ? (this.#webhook = new PVEEndpointsNotificationsClusterWebhook(this.#client))
       : this.#webhook;
   }
 
@@ -1397,10 +1426,7 @@ class PVEEndpointsNotificationsClusterSendmail {
    * @returns {PVEItemSendmailEndpointsNotificationsClusterName}
    */
   get(name) {
-    return new PVEItemSendmailEndpointsNotificationsClusterName(
-      this.#client,
-      name
-    );
+    return new PVEItemSendmailEndpointsNotificationsClusterName(this.#client, name);
   }
 
   /**
@@ -1417,19 +1443,11 @@ class PVEEndpointsNotificationsClusterSendmail {
    * @param {string} comment Comment
    * @param {boolean} disable Disable this target
    * @param {string} from_address `From` address for the mail
-   * @param {array} mailto List of email recipients
-   * @param {array} mailto_user List of users
+   * @param {Array} mailto List of email recipients
+   * @param {Array} mailto_user List of users
    * @returns {Promise<Result>}
    */
-  async createSendmailEndpoint(
-    name,
-    author,
-    comment,
-    disable,
-    from_address,
-    mailto,
-    mailto_user
-  ) {
+  async createSendmailEndpoint(name, author, comment, disable, from_address, mailto, mailto_user) {
     const parameters = {
       name: name,
       author: author,
@@ -1439,10 +1457,7 @@ class PVEEndpointsNotificationsClusterSendmail {
       mailto: mailto,
       "mailto-user": mailto_user,
     };
-    return await this.#client.create(
-      `/cluster/notifications/endpoints/sendmail`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/notifications/endpoints/sendmail`, parameters);
   }
 }
 /**
@@ -1463,29 +1478,25 @@ class PVEItemSendmailEndpointsNotificationsClusterName {
    * @returns {Promise<Result>}
    */
   async deleteSendmailEndpoint() {
-    return await this.#client.delete(
-      `/cluster/notifications/endpoints/sendmail/${this.#name}`
-    );
+    return await this.#client.delete(`/cluster/notifications/endpoints/sendmail/${this.#name}`);
   }
   /**
    * Return a specific sendmail endpoint
    * @returns {Promise<Result>}
    */
   async getSendmailEndpoint() {
-    return await this.#client.get(
-      `/cluster/notifications/endpoints/sendmail/${this.#name}`
-    );
+    return await this.#client.get(`/cluster/notifications/endpoints/sendmail/${this.#name}`);
   }
   /**
    * Update existing sendmail endpoint
    * @param {string} author Author of the mail
    * @param {string} comment Comment
-   * @param {array} delete_ A list of settings you want to delete.
+   * @param {Array} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Disable this target
    * @param {string} from_address `From` address for the mail
-   * @param {array} mailto List of email recipients
-   * @param {array} mailto_user List of users
+   * @param {Array} mailto List of email recipients
+   * @param {Array} mailto_user List of users
    * @returns {Promise<Result>}
    */
   async updateSendmailEndpoint(
@@ -1532,10 +1543,7 @@ class PVEEndpointsNotificationsClusterGotify {
    * @returns {PVEItemGotifyEndpointsNotificationsClusterName}
    */
   get(name) {
-    return new PVEItemGotifyEndpointsNotificationsClusterName(
-      this.#client,
-      name
-    );
+    return new PVEItemGotifyEndpointsNotificationsClusterName(this.#client, name);
   }
 
   /**
@@ -1562,10 +1570,7 @@ class PVEEndpointsNotificationsClusterGotify {
       comment: comment,
       disable: disable,
     };
-    return await this.#client.create(
-      `/cluster/notifications/endpoints/gotify`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/notifications/endpoints/gotify`, parameters);
   }
 }
 /**
@@ -1586,23 +1591,19 @@ class PVEItemGotifyEndpointsNotificationsClusterName {
    * @returns {Promise<Result>}
    */
   async deleteGotifyEndpoint() {
-    return await this.#client.delete(
-      `/cluster/notifications/endpoints/gotify/${this.#name}`
-    );
+    return await this.#client.delete(`/cluster/notifications/endpoints/gotify/${this.#name}`);
   }
   /**
    * Return a specific gotify endpoint
    * @returns {Promise<Result>}
    */
   async getGotifyEndpoint() {
-    return await this.#client.get(
-      `/cluster/notifications/endpoints/gotify/${this.#name}`
-    );
+    return await this.#client.get(`/cluster/notifications/endpoints/gotify/${this.#name}`);
   }
   /**
    * Update existing gotify endpoint
    * @param {string} comment Comment
-   * @param {array} delete_ A list of settings you want to delete.
+   * @param {Array} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Disable this target
    * @param {string} server Server URL
@@ -1660,12 +1661,12 @@ class PVEEndpointsNotificationsClusterSmtp {
    * @param {string} author Author of the mail. Defaults to 'Proxmox VE'.
    * @param {string} comment Comment
    * @param {boolean} disable Disable this target
-   * @param {array} mailto List of email recipients
-   * @param {array} mailto_user List of users
+   * @param {Array} mailto List of email recipients
+   * @param {Array} mailto_user List of users
    * @param {string} mode Determine which encryption method shall be used for the connection.
    *   Enum: insecure,starttls,tls
    * @param {string} password Password for SMTP authentication
-   * @param {int} port The port to be used. Defaults to 465 for TLS based connections, 587 for STARTTLS based connections and port 25 for insecure plain-text connections.
+   * @param {number} port The port to be used. Defaults to 465 for TLS based connections, 587 for STARTTLS based connections and port 25 for insecure plain-text connections.
    * @param {string} username Username for SMTP authentication
    * @returns {Promise<Result>}
    */
@@ -1697,10 +1698,7 @@ class PVEEndpointsNotificationsClusterSmtp {
       port: port,
       username: username,
     };
-    return await this.#client.create(
-      `/cluster/notifications/endpoints/smtp`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/notifications/endpoints/smtp`, parameters);
   }
 }
 /**
@@ -1721,33 +1719,29 @@ class PVEItemSmtpEndpointsNotificationsClusterName {
    * @returns {Promise<Result>}
    */
   async deleteSmtpEndpoint() {
-    return await this.#client.delete(
-      `/cluster/notifications/endpoints/smtp/${this.#name}`
-    );
+    return await this.#client.delete(`/cluster/notifications/endpoints/smtp/${this.#name}`);
   }
   /**
    * Return a specific smtp endpoint
    * @returns {Promise<Result>}
    */
   async getSmtpEndpoint() {
-    return await this.#client.get(
-      `/cluster/notifications/endpoints/smtp/${this.#name}`
-    );
+    return await this.#client.get(`/cluster/notifications/endpoints/smtp/${this.#name}`);
   }
   /**
    * Update existing smtp endpoint
    * @param {string} author Author of the mail. Defaults to 'Proxmox VE'.
    * @param {string} comment Comment
-   * @param {array} delete_ A list of settings you want to delete.
+   * @param {Array} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Disable this target
    * @param {string} from_address `From` address for the mail
-   * @param {array} mailto List of email recipients
-   * @param {array} mailto_user List of users
+   * @param {Array} mailto List of email recipients
+   * @param {Array} mailto_user List of users
    * @param {string} mode Determine which encryption method shall be used for the connection.
    *   Enum: insecure,starttls,tls
    * @param {string} password Password for SMTP authentication
-   * @param {int} port The port to be used. Defaults to 465 for TLS based connections, 587 for STARTTLS based connections and port 25 for insecure plain-text connections.
+   * @param {number} port The port to be used. Defaults to 465 for TLS based connections, 587 for STARTTLS based connections and port 25 for insecure plain-text connections.
    * @param {string} server The address of the SMTP server.
    * @param {string} username Username for SMTP authentication
    * @returns {Promise<Result>}
@@ -1806,10 +1800,7 @@ class PVEEndpointsNotificationsClusterWebhook {
    * @returns {PVEItemWebhookEndpointsNotificationsClusterName}
    */
   get(name) {
-    return new PVEItemWebhookEndpointsNotificationsClusterName(
-      this.#client,
-      name
-    );
+    return new PVEItemWebhookEndpointsNotificationsClusterName(this.#client, name);
   }
 
   /**
@@ -1828,20 +1819,11 @@ class PVEEndpointsNotificationsClusterWebhook {
    * @param {string} body HTTP body, base64 encoded
    * @param {string} comment Comment
    * @param {boolean} disable Disable this target
-   * @param {array} header HTTP headers to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
-   * @param {array} secret Secrets to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {Array} header HTTP headers to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {Array} secret Secrets to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
    * @returns {Promise<Result>}
    */
-  async createWebhookEndpoint(
-    method,
-    name,
-    url,
-    body,
-    comment,
-    disable,
-    header,
-    secret
-  ) {
+  async createWebhookEndpoint(method, name, url, body, comment, disable, header, secret) {
     const parameters = {
       method: method,
       name: name,
@@ -1852,10 +1834,7 @@ class PVEEndpointsNotificationsClusterWebhook {
       header: header,
       secret: secret,
     };
-    return await this.#client.create(
-      `/cluster/notifications/endpoints/webhook`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/notifications/endpoints/webhook`, parameters);
   }
 }
 /**
@@ -1876,30 +1855,26 @@ class PVEItemWebhookEndpointsNotificationsClusterName {
    * @returns {Promise<Result>}
    */
   async deleteWebhookEndpoint() {
-    return await this.#client.delete(
-      `/cluster/notifications/endpoints/webhook/${this.#name}`
-    );
+    return await this.#client.delete(`/cluster/notifications/endpoints/webhook/${this.#name}`);
   }
   /**
    * Return a specific webhook endpoint
    * @returns {Promise<Result>}
    */
   async getWebhookEndpoint() {
-    return await this.#client.get(
-      `/cluster/notifications/endpoints/webhook/${this.#name}`
-    );
+    return await this.#client.get(`/cluster/notifications/endpoints/webhook/${this.#name}`);
   }
   /**
    * Update existing webhook endpoint
    * @param {string} body HTTP body, base64 encoded
    * @param {string} comment Comment
-   * @param {array} delete_ A list of settings you want to delete.
+   * @param {Array} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Disable this target
-   * @param {array} header HTTP headers to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {Array} header HTTP headers to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
    * @param {string} method HTTP method
    *   Enum: post,put,get
-   * @param {array} secret Secrets to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
+   * @param {Array} secret Secrets to set. These have to be formatted as a property string in the format name=&amp;lt;name&amp;gt;,value=&amp;lt;base64 of value&amp;gt;
    * @param {string} url Server URL
    * @returns {Promise<Result>}
    */
@@ -1980,10 +1955,7 @@ class PVEItemTargetsNotificationsClusterName {
    */
   get test() {
     return this.#test == null
-      ? (this.#test = new PVENameTargetsNotificationsClusterTest(
-          this.#client,
-          this.#name
-        ))
+      ? (this.#test = new PVENameTargetsNotificationsClusterTest(this.#client, this.#name))
       : this.#test;
   }
 }
@@ -2005,9 +1977,7 @@ class PVENameTargetsNotificationsClusterTest {
    * @returns {Promise<Result>}
    */
   async testTarget() {
-    return await this.#client.create(
-      `/cluster/notifications/targets/${this.#name}/test`
-    );
+    return await this.#client.create(`/cluster/notifications/targets/${this.#name}/test`);
   }
 }
 
@@ -2044,12 +2014,12 @@ class PVENotificationsClusterMatchers {
    * @param {string} comment Comment
    * @param {boolean} disable Disable this matcher
    * @param {boolean} invert_match Invert match of the whole matcher
-   * @param {array} match_calendar Match notification timestamp
-   * @param {array} match_field Metadata fields to match (regex or exact match). Must be in the form (regex|exact):&amp;lt;field&amp;gt;=&amp;lt;value&amp;gt;
-   * @param {array} match_severity Notification severities to match
+   * @param {Array} match_calendar Match notification timestamp
+   * @param {Array} match_field Metadata fields to match (regex or exact match). Must be in the form (regex|exact):&amp;lt;field&amp;gt;=&amp;lt;value&amp;gt;
+   * @param {Array} match_severity Notification severities to match
    * @param {string} mode Choose between 'all' and 'any' for when multiple properties are specified
    *   Enum: all,any
-   * @param {array} target Targets to notify on match
+   * @param {Array} target Targets to notify on match
    * @returns {Promise<Result>}
    */
   async createMatcher(
@@ -2074,10 +2044,7 @@ class PVENotificationsClusterMatchers {
       mode: mode,
       target: target,
     };
-    return await this.#client.create(
-      `/cluster/notifications/matchers`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/notifications/matchers`, parameters);
   }
 }
 /**
@@ -2098,32 +2065,28 @@ class PVEItemMatchersNotificationsClusterName {
    * @returns {Promise<Result>}
    */
   async deleteMatcher() {
-    return await this.#client.delete(
-      `/cluster/notifications/matchers/${this.#name}`
-    );
+    return await this.#client.delete(`/cluster/notifications/matchers/${this.#name}`);
   }
   /**
    * Return a specific matcher
    * @returns {Promise<Result>}
    */
   async getMatcher() {
-    return await this.#client.get(
-      `/cluster/notifications/matchers/${this.#name}`
-    );
+    return await this.#client.get(`/cluster/notifications/matchers/${this.#name}`);
   }
   /**
    * Update existing matcher
    * @param {string} comment Comment
-   * @param {array} delete_ A list of settings you want to delete.
+   * @param {Array} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Disable this matcher
    * @param {boolean} invert_match Invert match of the whole matcher
-   * @param {array} match_calendar Match notification timestamp
-   * @param {array} match_field Metadata fields to match (regex or exact match). Must be in the form (regex|exact):&amp;lt;field&amp;gt;=&amp;lt;value&amp;gt;
-   * @param {array} match_severity Notification severities to match
+   * @param {Array} match_calendar Match notification timestamp
+   * @param {Array} match_field Metadata fields to match (regex or exact match). Must be in the form (regex|exact):&amp;lt;field&amp;gt;=&amp;lt;value&amp;gt;
+   * @param {Array} match_severity Notification severities to match
    * @param {string} mode Choose between 'all' and 'any' for when multiple properties are specified
    *   Enum: all,any
-   * @param {array} target Targets to notify on match
+   * @param {Array} target Targets to notify on match
    * @returns {Promise<Result>}
    */
   async updateMatcher(
@@ -2150,10 +2113,7 @@ class PVEItemMatchersNotificationsClusterName {
       mode: mode,
       target: target,
     };
-    return await this.#client.set(
-      `/cluster/notifications/matchers/${this.#name}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/notifications/matchers/${this.#name}`, parameters);
   }
 }
 
@@ -2194,9 +2154,7 @@ class PVEClusterConfig {
    * @returns {PVEConfigClusterJoin}
    */
   get join() {
-    return this.#join == null
-      ? (this.#join = new PVEConfigClusterJoin(this.#client))
-      : this.#join;
+    return this.#join == null ? (this.#join = new PVEConfigClusterJoin(this.#client)) : this.#join;
   }
   #totem;
   /**
@@ -2229,9 +2187,9 @@ class PVEClusterConfig {
   /**
    * Generate new cluster configuration. If no links given, default to local IP address as link0.
    * @param {string} clustername The name of the cluster.
-   * @param {array} linkN Address and priority information of a single corosync link. (up to 8 links supported; link0..link7)
-   * @param {int} nodeid Node id for this node.
-   * @param {int} votes Number of votes for this node.
+   * @param {Array} linkN Address and priority information of a single corosync link. (up to 8 links supported; link0..link7)
+   * @param {number} nodeid Node id for this node.
+   * @param {number} votes Number of votes for this node.
    * @returns {Promise<Result>}
    */
   async create(clustername, linkN, nodeid, votes) {
@@ -2314,12 +2272,12 @@ class PVEItemNodesConfigClusterNode {
   }
   /**
    * Adds a node to the cluster configuration. This call is for internal use.
-   * @param {int} apiversion The JOIN_API_VERSION of the new node.
+   * @param {number} apiversion The JOIN_API_VERSION of the new node.
    * @param {boolean} force Do not throw error if node already exists.
-   * @param {array} linkN Address and priority information of a single corosync link. (up to 8 links supported; link0..link7)
+   * @param {Array} linkN Address and priority information of a single corosync link. (up to 8 links supported; link0..link7)
    * @param {string} new_node_ip IP Address of node to add. Used as fallback if no links are given.
-   * @param {int} nodeid Node id for this node.
-   * @param {int} votes Number of votes for this node
+   * @param {number} nodeid Node id for this node.
+   * @param {number} votes Number of votes for this node
    * @returns {Promise<Result>}
    */
   async addnode(apiversion, force, linkN, new_node_ip, nodeid, votes) {
@@ -2331,10 +2289,7 @@ class PVEItemNodesConfigClusterNode {
       votes: votes,
     };
     this.#client.addIndexedParameter(parameters, "link", linkN);
-    return await this.#client.create(
-      `/cluster/config/nodes/${this.#node}`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/config/nodes/${this.#node}`, parameters);
   }
 }
 
@@ -2364,9 +2319,9 @@ class PVEConfigClusterJoin {
    * @param {string} hostname Hostname (or IP) of an existing cluster member.
    * @param {string} password Superuser (root) password of peer node.
    * @param {boolean} force Do not throw error if node already exists.
-   * @param {array} linkN Address and priority information of a single corosync link. (up to 8 links supported; link0..link7)
-   * @param {int} nodeid Node id for this node.
-   * @param {int} votes Number of votes for this node
+   * @param {Array} linkN Address and priority information of a single corosync link. (up to 8 links supported; link0..link7)
+   * @param {number} nodeid Node id for this node.
+   * @param {number} votes Number of votes for this node
    * @returns {Promise<Result>}
    */
   async join(fingerprint, hostname, password, force, linkN, nodeid, votes) {
@@ -2577,11 +2532,7 @@ class PVEItemGroupsFirewallClusterGroup {
    * @returns {PVEItemGroupGroupsFirewallClusterPos}
    */
   get(pos) {
-    return new PVEItemGroupGroupsFirewallClusterPos(
-      this.#client,
-      this.#group,
-      pos
-    );
+    return new PVEItemGroupGroupsFirewallClusterPos(this.#client, this.#group, pos);
   }
 
   /**
@@ -2607,13 +2558,13 @@ class PVEItemGroupsFirewallClusterGroup {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {number} pos Update rule at position &amp;lt;pos&amp;gt;.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -2653,10 +2604,7 @@ class PVEItemGroupsFirewallClusterGroup {
       source: source,
       sport: sport,
     };
-    return await this.#client.create(
-      `/cluster/firewall/groups/${this.#group}`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/firewall/groups/${this.#group}`, parameters);
   }
 }
 /**
@@ -2691,9 +2639,7 @@ class PVEItemGroupGroupsFirewallClusterPos {
    * @returns {Promise<Result>}
    */
   async getRule() {
-    return await this.#client.get(
-      `/cluster/firewall/groups/${this.#group}/${this.#pos}`
-    );
+    return await this.#client.get(`/cluster/firewall/groups/${this.#group}/${this.#pos}`);
   }
   /**
    * Modify rule data.
@@ -2703,13 +2649,13 @@ class PVEItemGroupGroupsFirewallClusterPos {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {number} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -2796,13 +2742,13 @@ class PVEFirewallClusterRules {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {number} pos Update rule at position &amp;lt;pos&amp;gt;.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -2865,10 +2811,7 @@ class PVEItemRulesFirewallClusterPos {
    */
   async deleteRule(digest) {
     const parameters = { digest: digest };
-    return await this.#client.delete(
-      `/cluster/firewall/rules/${this.#pos}`,
-      parameters
-    );
+    return await this.#client.delete(`/cluster/firewall/rules/${this.#pos}`, parameters);
   }
   /**
    * Get single rule data.
@@ -2885,13 +2828,13 @@ class PVEItemRulesFirewallClusterPos {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {number} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -2935,10 +2878,7 @@ class PVEItemRulesFirewallClusterPos {
       sport: sport,
       type: type,
     };
-    return await this.#client.set(
-      `/cluster/firewall/rules/${this.#pos}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/firewall/rules/${this.#pos}`, parameters);
   }
 }
 
@@ -3006,11 +2946,7 @@ class PVEItemIpsetFirewallClusterName {
    * @returns {PVEItemNameIpsetFirewallClusterCidr}
    */
   get(cidr) {
-    return new PVEItemNameIpsetFirewallClusterCidr(
-      this.#client,
-      this.#name,
-      cidr
-    );
+    return new PVEItemNameIpsetFirewallClusterCidr(this.#client, this.#name, cidr);
   }
 
   /**
@@ -3020,10 +2956,7 @@ class PVEItemIpsetFirewallClusterName {
    */
   async deleteIpset(force) {
     const parameters = { force: force };
-    return await this.#client.delete(
-      `/cluster/firewall/ipset/${this.#name}`,
-      parameters
-    );
+    return await this.#client.delete(`/cluster/firewall/ipset/${this.#name}`, parameters);
   }
   /**
    * List IPSet content
@@ -3045,10 +2978,7 @@ class PVEItemIpsetFirewallClusterName {
       comment: comment,
       nomatch: nomatch,
     };
-    return await this.#client.create(
-      `/cluster/firewall/ipset/${this.#name}`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/firewall/ipset/${this.#name}`, parameters);
   }
 }
 /**
@@ -3083,9 +3013,7 @@ class PVEItemNameIpsetFirewallClusterCidr {
    * @returns {Promise<Result>}
    */
   async readIp() {
-    return await this.#client.get(
-      `/cluster/firewall/ipset/${this.#name}/${this.#cidr}`
-    );
+    return await this.#client.get(`/cluster/firewall/ipset/${this.#name}/${this.#cidr}`);
   }
   /**
    * Update IP or Network settings
@@ -3170,10 +3098,7 @@ class PVEItemAliasesFirewallClusterName {
    */
   async removeAlias(digest) {
     const parameters = { digest: digest };
-    return await this.#client.delete(
-      `/cluster/firewall/aliases/${this.#name}`,
-      parameters
-    );
+    return await this.#client.delete(`/cluster/firewall/aliases/${this.#name}`, parameters);
   }
   /**
    * Read alias.
@@ -3197,10 +3122,7 @@ class PVEItemAliasesFirewallClusterName {
       digest: digest,
       rename: rename,
     };
-    return await this.#client.set(
-      `/cluster/firewall/aliases/${this.#name}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/firewall/aliases/${this.#name}`, parameters);
   }
 }
 
@@ -3227,7 +3149,7 @@ class PVEFirewallClusterOptions {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} ebtables Enable ebtables rules cluster wide.
-   * @param {int} enable Enable or disable the firewall cluster wide.
+   * @param {number} enable Enable or disable the firewall cluster wide.
    * @param {string} log_ratelimit Log ratelimiting settings
    * @param {string} policy_forward Forward policy.
    *   Enum: ACCEPT,DROP
@@ -3334,7 +3256,7 @@ class PVEClusterBackup {
   /**
    * Create new vzdump backup job.
    * @param {boolean} all Backup all known guest systems on this host.
-   * @param {int} bwlimit Limit I/O bandwidth (in KiB/s).
+   * @param {number} bwlimit Limit I/O bandwidth (in KiB/s).
    * @param {string} comment Description for the Job.
    * @param {string} compress Compress dump file.
    *   Enum: 0,1,gzip,lzo,zstd
@@ -3342,28 +3264,25 @@ class PVEClusterBackup {
    * @param {string} dumpdir Store resulting files to specified directory.
    * @param {boolean} enabled Enable or disable the job.
    * @param {string} exclude Exclude specified guest systems (assumes --all)
-   * @param {array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
+   * @param {Array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
    * @param {string} fleecing Options for backup fleecing (VM only).
    * @param {string} id Job ID (will be autogenerated).
-   * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
-   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
+   * @param {number} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
+   * @param {number} lockwait Maximal time to wait for the global lock (minutes).
    * @param {string} mailnotification Deprecated: use notification targets/matchers instead. Specify when to send a notification mail
    *   Enum: always,failure
    * @param {string} mailto Deprecated: Use notification targets/matchers instead. Comma-separated list of email addresses or users that should receive email notifications.
-   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
+   * @param {number} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
    * @param {string} mode Backup mode.
    *   Enum: snapshot,suspend,stop
    * @param {string} node Only run if executed on this node.
    * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
    * @param {string} notification_mode Determine which notification system to use. If set to 'legacy-sendmail', vzdump will consider the mailto/mailnotification parameters and send emails to the specified address(es) via the 'sendmail' command. If set to 'notification-system', a notification will be sent via PVE's notification system, and the mailto and mailnotification will be ignored. If set to 'auto' (default setting), an email will be sent if mailto is set, and the notification system will be used if not.
    *   Enum: auto,legacy-sendmail,notification-system
-   * @param {string} notification_policy Deprecated: Do not use
-   *   Enum: always,failure,never
-   * @param {string} notification_target Deprecated: Do not use
    * @param {string} pbs_change_detection_mode PBS mode used to detect file changes and switch encoding format for container backups.
    *   Enum: legacy,data,metadata
    * @param {string} performance Other performance-related settings.
-   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
+   * @param {number} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
    * @param {string} pool Backup all known guest systems included in the specified pool.
    * @param {boolean} protected_ If true, mark backup(s) as protected.
    * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
@@ -3375,11 +3294,11 @@ class PVEClusterBackup {
    * @param {string} starttime Job Start time.
    * @param {boolean} stdexcludes Exclude temporary files and logs.
    * @param {boolean} stop Stop running backup jobs on this host.
-   * @param {int} stopwait Maximal time to wait until a guest system is stopped (minutes).
+   * @param {number} stopwait Maximal time to wait until a guest system is stopped (minutes).
    * @param {string} storage Store resulting file to this storage.
    * @param {string} tmpdir Store temporary files to specified directory.
    * @param {string} vmid The ID of the guest system you want to backup.
-   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, if N is set to a value bigger than 0, N is used as thread count.
+   * @param {number} zstd Zstd threads. N=0 uses half of the available cores, if N is set to a value bigger than 0, N is used as thread count.
    * @returns {Promise<Result>}
    */
   async createJob(
@@ -3403,8 +3322,6 @@ class PVEClusterBackup {
     node,
     notes_template,
     notification_mode,
-    notification_policy,
-    notification_target,
     pbs_change_detection_mode,
     performance,
     pigz,
@@ -3446,8 +3363,6 @@ class PVEClusterBackup {
       node: node,
       "notes-template": notes_template,
       "notification-mode": notification_mode,
-      "notification-policy": notification_policy,
-      "notification-target": notification_target,
       "pbs-change-detection-mode": pbs_change_detection_mode,
       performance: performance,
       pigz: pigz,
@@ -3491,10 +3406,7 @@ class PVEItemBackupClusterId {
    */
   get includedVolumes() {
     return this.#includedVolumes == null
-      ? (this.#includedVolumes = new PVEIdBackupClusterIncludedVolumes(
-          this.#client,
-          this.#id
-        ))
+      ? (this.#includedVolumes = new PVEIdBackupClusterIncludedVolumes(this.#client, this.#id))
       : this.#includedVolumes;
   }
 
@@ -3515,7 +3427,7 @@ class PVEItemBackupClusterId {
   /**
    * Update vzdump backup job definition.
    * @param {boolean} all Backup all known guest systems on this host.
-   * @param {int} bwlimit Limit I/O bandwidth (in KiB/s).
+   * @param {number} bwlimit Limit I/O bandwidth (in KiB/s).
    * @param {string} comment Description for the Job.
    * @param {string} compress Compress dump file.
    *   Enum: 0,1,gzip,lzo,zstd
@@ -3524,27 +3436,24 @@ class PVEItemBackupClusterId {
    * @param {string} dumpdir Store resulting files to specified directory.
    * @param {boolean} enabled Enable or disable the job.
    * @param {string} exclude Exclude specified guest systems (assumes --all)
-   * @param {array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
+   * @param {Array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
    * @param {string} fleecing Options for backup fleecing (VM only).
-   * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
-   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
+   * @param {number} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
+   * @param {number} lockwait Maximal time to wait for the global lock (minutes).
    * @param {string} mailnotification Deprecated: use notification targets/matchers instead. Specify when to send a notification mail
    *   Enum: always,failure
    * @param {string} mailto Deprecated: Use notification targets/matchers instead. Comma-separated list of email addresses or users that should receive email notifications.
-   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
+   * @param {number} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
    * @param {string} mode Backup mode.
    *   Enum: snapshot,suspend,stop
    * @param {string} node Only run if executed on this node.
    * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
    * @param {string} notification_mode Determine which notification system to use. If set to 'legacy-sendmail', vzdump will consider the mailto/mailnotification parameters and send emails to the specified address(es) via the 'sendmail' command. If set to 'notification-system', a notification will be sent via PVE's notification system, and the mailto and mailnotification will be ignored. If set to 'auto' (default setting), an email will be sent if mailto is set, and the notification system will be used if not.
    *   Enum: auto,legacy-sendmail,notification-system
-   * @param {string} notification_policy Deprecated: Do not use
-   *   Enum: always,failure,never
-   * @param {string} notification_target Deprecated: Do not use
    * @param {string} pbs_change_detection_mode PBS mode used to detect file changes and switch encoding format for container backups.
    *   Enum: legacy,data,metadata
    * @param {string} performance Other performance-related settings.
-   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
+   * @param {number} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
    * @param {string} pool Backup all known guest systems included in the specified pool.
    * @param {boolean} protected_ If true, mark backup(s) as protected.
    * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
@@ -3556,11 +3465,11 @@ class PVEItemBackupClusterId {
    * @param {string} starttime Job Start time.
    * @param {boolean} stdexcludes Exclude temporary files and logs.
    * @param {boolean} stop Stop running backup jobs on this host.
-   * @param {int} stopwait Maximal time to wait until a guest system is stopped (minutes).
+   * @param {number} stopwait Maximal time to wait until a guest system is stopped (minutes).
    * @param {string} storage Store resulting file to this storage.
    * @param {string} tmpdir Store temporary files to specified directory.
    * @param {string} vmid The ID of the guest system you want to backup.
-   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, if N is set to a value bigger than 0, N is used as thread count.
+   * @param {number} zstd Zstd threads. N=0 uses half of the available cores, if N is set to a value bigger than 0, N is used as thread count.
    * @returns {Promise<Result>}
    */
   async updateJob(
@@ -3584,8 +3493,6 @@ class PVEItemBackupClusterId {
     node,
     notes_template,
     notification_mode,
-    notification_policy,
-    notification_target,
     pbs_change_detection_mode,
     performance,
     pigz,
@@ -3627,8 +3534,6 @@ class PVEItemBackupClusterId {
       node: node,
       "notes-template": notes_template,
       "notification-mode": notification_mode,
-      "notification-policy": notification_policy,
-      "notification-target": notification_target,
       "pbs-change-detection-mode": pbs_change_detection_mode,
       performance: performance,
       pigz: pigz,
@@ -3670,9 +3575,7 @@ class PVEIdBackupClusterIncludedVolumes {
    * @returns {Promise<Result>}
    */
   async getVolumeBackupIncluded() {
-    return await this.#client.get(
-      `/cluster/backup/${this.#id}/included_volumes`
-    );
+    return await this.#client.get(`/cluster/backup/${this.#id}/included_volumes`);
   }
 }
 
@@ -3757,6 +3660,14 @@ class PVEClusterHa {
       ? (this.#groups = new PVEHaClusterGroups(this.#client))
       : this.#groups;
   }
+  #rules;
+  /**
+   * Get HaClusterRules
+   * @returns {PVEHaClusterRules}
+   */
+  get rules() {
+    return this.#rules == null ? (this.#rules = new PVEHaClusterRules(this.#client)) : this.#rules;
+  }
   #status;
   /**
    * Get HaClusterStatus
@@ -3810,19 +3721,21 @@ class PVEHaClusterResources {
    * Create a new HA resource.
    * @param {string} sid HA resource ID. This consists of a resource type followed by a resource specific name, separated with colon (example: vm:100 / ct:100). For virtual machines and containers, you can simply use the VM or CT id as a shortcut (example: 100).
    * @param {string} comment Description.
+   * @param {boolean} failback Automatically migrate HA resource to the node with the highest priority according to their node affinity  rules, if a node with a higher priority than the current node comes online.
    * @param {string} group The HA group identifier.
-   * @param {int} max_relocate Maximal number of service relocate tries when a service failes to start.
-   * @param {int} max_restart Maximal number of tries to restart the service on a node after its start failed.
+   * @param {number} max_relocate Maximal number of service relocate tries when a service failes to start.
+   * @param {number} max_restart Maximal number of tries to restart the service on a node after its start failed.
    * @param {string} state Requested resource state.
    *   Enum: started,stopped,enabled,disabled,ignored
    * @param {string} type Resource type.
    *   Enum: ct,vm
    * @returns {Promise<Result>}
    */
-  async create(sid, comment, group, max_relocate, max_restart, state, type) {
+  async create(sid, comment, failback, group, max_relocate, max_restart, state, type) {
     const parameters = {
       sid: sid,
       comment: comment,
+      failback: failback,
       group: group,
       max_relocate: max_relocate,
       max_restart: max_restart,
@@ -3852,10 +3765,7 @@ class PVEItemResourcesHaClusterSid {
    */
   get migrate() {
     return this.#migrate == null
-      ? (this.#migrate = new PVESidResourcesHaClusterMigrate(
-          this.#client,
-          this.#sid
-        ))
+      ? (this.#migrate = new PVESidResourcesHaClusterMigrate(this.#client, this.#sid))
       : this.#migrate;
   }
   #relocate;
@@ -3865,19 +3775,18 @@ class PVEItemResourcesHaClusterSid {
    */
   get relocate() {
     return this.#relocate == null
-      ? (this.#relocate = new PVESidResourcesHaClusterRelocate(
-          this.#client,
-          this.#sid
-        ))
+      ? (this.#relocate = new PVESidResourcesHaClusterRelocate(this.#client, this.#sid))
       : this.#relocate;
   }
 
   /**
    * Delete resource configuration.
+   * @param {boolean} purge Remove this resource from rules that reference it, deleting the rule if this resource is the only resource in the rule
    * @returns {Promise<Result>}
    */
-  async delete_() {
-    return await this.#client.delete(`/cluster/ha/resources/${this.#sid}`);
+  async delete_(purge) {
+    const parameters = { purge: purge };
+    return await this.#client.delete(`/cluster/ha/resources/${this.#sid}`, parameters);
   }
   /**
    * Read resource configuration.
@@ -3891,35 +3800,26 @@ class PVEItemResourcesHaClusterSid {
    * @param {string} comment Description.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {boolean} failback Automatically migrate HA resource to the node with the highest priority according to their node affinity  rules, if a node with a higher priority than the current node comes online.
    * @param {string} group The HA group identifier.
-   * @param {int} max_relocate Maximal number of service relocate tries when a service failes to start.
-   * @param {int} max_restart Maximal number of tries to restart the service on a node after its start failed.
+   * @param {number} max_relocate Maximal number of service relocate tries when a service failes to start.
+   * @param {number} max_restart Maximal number of tries to restart the service on a node after its start failed.
    * @param {string} state Requested resource state.
    *   Enum: started,stopped,enabled,disabled,ignored
    * @returns {Promise<Result>}
    */
-  async update(
-    comment,
-    delete_,
-    digest,
-    group,
-    max_relocate,
-    max_restart,
-    state
-  ) {
+  async update(comment, delete_, digest, failback, group, max_relocate, max_restart, state) {
     const parameters = {
       comment: comment,
       delete: delete_,
       digest: digest,
+      failback: failback,
       group: group,
       max_relocate: max_relocate,
       max_restart: max_restart,
       state: state,
     };
-    return await this.#client.set(
-      `/cluster/ha/resources/${this.#sid}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/ha/resources/${this.#sid}`, parameters);
   }
 }
 /**
@@ -3942,10 +3842,7 @@ class PVESidResourcesHaClusterMigrate {
    */
   async migrate(node) {
     const parameters = { node: node };
-    return await this.#client.create(
-      `/cluster/ha/resources/${this.#sid}/migrate`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/ha/resources/${this.#sid}/migrate`, parameters);
   }
 }
 
@@ -3969,10 +3866,7 @@ class PVESidResourcesHaClusterRelocate {
    */
   async relocate(node) {
     const parameters = { node: node };
-    return await this.#client.create(
-      `/cluster/ha/resources/${this.#sid}/relocate`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/ha/resources/${this.#sid}/relocate`, parameters);
   }
 }
 
@@ -3997,14 +3891,14 @@ class PVEHaClusterGroups {
   }
 
   /**
-   * Get HA groups.
+   * Get HA groups. (deprecated in favor of HA rules)
    * @returns {Promise<Result>}
    */
   async index() {
     return await this.#client.get(`/cluster/ha/groups`);
   }
   /**
-   * Create a new HA group.
+   * Create a new HA group. (deprecated in favor of HA rules)
    * @param {string} group The HA group identifier.
    * @param {string} nodes List of cluster node names with optional priority.
    * @param {string} comment Description.
@@ -4040,21 +3934,21 @@ class PVEItemGroupsHaClusterGroup {
   }
 
   /**
-   * Delete ha group configuration.
+   * Delete ha group configuration. (deprecated in favor of HA rules)
    * @returns {Promise<Result>}
    */
   async delete_() {
     return await this.#client.delete(`/cluster/ha/groups/${this.#group}`);
   }
   /**
-   * Read ha group configuration.
+   * Read ha group configuration. (deprecated in favor of HA rules)
    * @returns {Promise<Result>}
    */
   async read() {
     return await this.#client.get(`/cluster/ha/groups/${this.#group}`);
   }
   /**
-   * Update ha group configuration.
+   * Update ha group configuration. (deprecated in favor of HA rules)
    * @param {string} comment Description.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -4072,10 +3966,127 @@ class PVEItemGroupsHaClusterGroup {
       nofailback: nofailback,
       restricted: restricted,
     };
-    return await this.#client.set(
-      `/cluster/ha/groups/${this.#group}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/ha/groups/${this.#group}`, parameters);
+  }
+}
+
+/**
+ * Class PVEHaClusterRules
+ */
+class PVEHaClusterRules {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Get ItemRulesHaClusterRule
+   * @param rule
+   * @returns {PVEItemRulesHaClusterRule}
+   */
+  get(rule) {
+    return new PVEItemRulesHaClusterRule(this.#client, rule);
+  }
+
+  /**
+   * Get HA rules.
+   * @param {string} resource Limit the returned list to rules affecting the specified resource.
+   * @param {string} type Limit the returned list to the specified rule type.
+   *   Enum: node-affinity,resource-affinity
+   * @returns {Promise<Result>}
+   */
+  async index(resource, type) {
+    const parameters = {
+      resource: resource,
+      type: type,
+    };
+    return await this.#client.get(`/cluster/ha/rules`, parameters);
+  }
+  /**
+   * Create HA rule.
+   * @param {string} resources List of HA resource IDs. This consists of a list of resource types followed by a resource specific name separated with a colon (example: vm:100,ct:101).
+   * @param {string} rule HA rule identifier.
+   * @param {string} type HA rule type.
+   *   Enum: node-affinity,resource-affinity
+   * @param {string} affinity Describes whether the HA resources are supposed to be kept on the same node ('positive'), or are supposed to be kept on separate nodes ('negative').
+   *   Enum: positive,negative
+   * @param {string} comment HA rule description.
+   * @param {boolean} disable Whether the HA rule is disabled.
+   * @param {string} nodes List of cluster node names with optional priority.
+   * @param {boolean} strict Describes whether the node affinity rule is strict or non-strict.
+   * @returns {Promise<Result>}
+   */
+  async createRule(resources, rule, type, affinity, comment, disable, nodes, strict) {
+    const parameters = {
+      resources: resources,
+      rule: rule,
+      type: type,
+      affinity: affinity,
+      comment: comment,
+      disable: disable,
+      nodes: nodes,
+      strict: strict,
+    };
+    return await this.#client.create(`/cluster/ha/rules`, parameters);
+  }
+}
+/**
+ * Class PVEItemRulesHaClusterRule
+ */
+class PVEItemRulesHaClusterRule {
+  #rule;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, rule) {
+    this.#client = client;
+    this.#rule = rule;
+  }
+
+  /**
+   * Delete HA rule.
+   * @returns {Promise<Result>}
+   */
+  async deleteRule() {
+    return await this.#client.delete(`/cluster/ha/rules/${this.#rule}`);
+  }
+  /**
+   * Read HA rule.
+   * @returns {Promise<Result>}
+   */
+  async readRule() {
+    return await this.#client.get(`/cluster/ha/rules/${this.#rule}`);
+  }
+  /**
+   * Update HA rule.
+   * @param {string} type HA rule type.
+   *   Enum: node-affinity,resource-affinity
+   * @param {string} affinity Describes whether the HA resources are supposed to be kept on the same node ('positive'), or are supposed to be kept on separate nodes ('negative').
+   *   Enum: positive,negative
+   * @param {string} comment HA rule description.
+   * @param {string} delete_ A list of settings you want to delete.
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {boolean} disable Whether the HA rule is disabled.
+   * @param {string} nodes List of cluster node names with optional priority.
+   * @param {string} resources List of HA resource IDs. This consists of a list of resource types followed by a resource specific name separated with a colon (example: vm:100,ct:101).
+   * @param {boolean} strict Describes whether the node affinity rule is strict or non-strict.
+   * @returns {Promise<Result>}
+   */
+  async updateRule(type, affinity, comment, delete_, digest, disable, nodes, resources, strict) {
+    const parameters = {
+      type: type,
+      affinity: affinity,
+      comment: comment,
+      delete: delete_,
+      digest: digest,
+      disable: disable,
+      nodes: nodes,
+      resources: resources,
+      strict: strict,
+    };
+    return await this.#client.set(`/cluster/ha/rules/${this.#rule}`, parameters);
   }
 }
 
@@ -4107,9 +4118,7 @@ class PVEHaClusterStatus {
    */
   get managerStatus() {
     return this.#managerStatus == null
-      ? (this.#managerStatus = new PVEStatusHaClusterManagerStatus(
-          this.#client
-        ))
+      ? (this.#managerStatus = new PVEStatusHaClusterManagerStatus(this.#client))
       : this.#managerStatus;
   }
 
@@ -4198,9 +4207,7 @@ class PVEClusterAcme {
    * @returns {PVEAcmeClusterTos}
    */
   get tos() {
-    return this.#tos == null
-      ? (this.#tos = new PVEAcmeClusterTos(this.#client))
-      : this.#tos;
+    return this.#tos == null ? (this.#tos = new PVEAcmeClusterTos(this.#client)) : this.#tos;
   }
   #meta;
   /**
@@ -4208,9 +4215,7 @@ class PVEClusterAcme {
    * @returns {PVEAcmeClusterMeta}
    */
   get meta() {
-    return this.#meta == null
-      ? (this.#meta = new PVEAcmeClusterMeta(this.#client))
-      : this.#meta;
+    return this.#meta == null ? (this.#meta = new PVEAcmeClusterMeta(this.#client)) : this.#meta;
   }
   #directories;
   /**
@@ -4229,9 +4234,7 @@ class PVEClusterAcme {
    */
   get challengeSchema() {
     return this.#challengeSchema == null
-      ? (this.#challengeSchema = new PVEAcmeClusterChallengeSchema(
-          this.#client
-        ))
+      ? (this.#challengeSchema = new PVEAcmeClusterChallengeSchema(this.#client))
       : this.#challengeSchema;
   }
 
@@ -4279,11 +4282,11 @@ class PVEAcmeClusterPlugins {
    * @param {string} type ACME challenge type.
    *   Enum: dns,standalone
    * @param {string} api API plugin name
-   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,alviy,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ionos_cloud,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,limacity,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,omglol,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,technitium,tele3,tencent,timeweb,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,west_cn,world4you,yandex360,yc,zilore,zone,zoneedit,zonomi
+   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,alviy,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,beget,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgecenter,edgedns,euserv,exoscale,fornex,freedns,freemyip,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,he_ddns,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ionos_cloud,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,limacity,linode,linode_v4,loopia,lua,maradns,me,miab,mijnhost,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,omglol,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,technitium,tele3,tencent,timeweb,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,west_cn,world4you,yandex360,yc,zilore,zone,zoneedit,zonomi
    * @param {string} data DNS plugin data. (base64 encoded)
    * @param {boolean} disable Flag to disable the config.
    * @param {string} nodes List of cluster node names.
-   * @param {int} validation_delay Extra delay in seconds to wait before requesting validation. Allows to cope with a long TTL of DNS records.
+   * @param {number} validation_delay Extra delay in seconds to wait before requesting validation. Allows to cope with a long TTL of DNS records.
    * @returns {Promise<Result>}
    */
   async addPlugin(id, type, api, data, disable, nodes, validation_delay) {
@@ -4329,24 +4332,16 @@ class PVEItemPluginsAcmeClusterId {
   /**
    * Update ACME plugin configuration.
    * @param {string} api API plugin name
-   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,alviy,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgedns,euserv,exoscale,fornex,freedns,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ionos_cloud,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,limacity,linode,linode_v4,loopia,lua,maradns,me,miab,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,omglol,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,technitium,tele3,tencent,timeweb,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,west_cn,world4you,yandex360,yc,zilore,zone,zoneedit,zonomi
+   *   Enum: 1984hosting,acmedns,acmeproxy,active24,ad,ali,alviy,anx,artfiles,arvan,aurora,autodns,aws,azion,azure,beget,bookmyname,bunny,cf,clouddns,cloudns,cn,conoha,constellix,cpanel,curanet,cyon,da,ddnss,desec,df,dgon,dnsexit,dnshome,dnsimple,dnsservices,doapi,domeneshop,dp,dpi,dreamhost,duckdns,durabledns,dyn,dynu,dynv6,easydns,edgecenter,edgedns,euserv,exoscale,fornex,freedns,freemyip,gandi_livedns,gcloud,gcore,gd,geoscaling,googledomains,he,he_ddns,hetzner,hexonet,hostingde,huaweicloud,infoblox,infomaniak,internetbs,inwx,ionos,ionos_cloud,ipv64,ispconfig,jd,joker,kappernet,kas,kinghost,knot,la,leaseweb,lexicon,limacity,linode,linode_v4,loopia,lua,maradns,me,miab,mijnhost,misaka,myapi,mydevil,mydnsjp,mythic_beasts,namecheap,namecom,namesilo,nanelo,nederhost,neodigit,netcup,netlify,nic,njalla,nm,nsd,nsone,nsupdate,nw,oci,omglol,one,online,openprovider,openstack,opnsense,ovh,pdns,pleskxml,pointhq,porkbun,rackcorp,rackspace,rage4,rcode0,regru,scaleway,schlundtech,selectel,selfhost,servercow,simply,technitium,tele3,tencent,timeweb,transip,udr,ultra,unoeuro,variomedia,veesp,vercel,vscale,vultr,websupport,west_cn,world4you,yandex360,yc,zilore,zone,zoneedit,zonomi
    * @param {string} data DNS plugin data. (base64 encoded)
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} disable Flag to disable the config.
    * @param {string} nodes List of cluster node names.
-   * @param {int} validation_delay Extra delay in seconds to wait before requesting validation. Allows to cope with a long TTL of DNS records.
+   * @param {number} validation_delay Extra delay in seconds to wait before requesting validation. Allows to cope with a long TTL of DNS records.
    * @returns {Promise<Result>}
    */
-  async updatePlugin(
-    api,
-    data,
-    delete_,
-    digest,
-    disable,
-    nodes,
-    validation_delay
-  ) {
+  async updatePlugin(api, data, delete_, digest, disable, nodes, validation_delay) {
     const parameters = {
       api: api,
       data: data,
@@ -4356,10 +4351,7 @@ class PVEItemPluginsAcmeClusterId {
       nodes: nodes,
       "validation-delay": validation_delay,
     };
-    return await this.#client.set(
-      `/cluster/acme/plugins/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/acme/plugins/${this.#id}`, parameters);
   }
 }
 
@@ -4400,14 +4392,7 @@ class PVEAcmeClusterAccount {
    * @param {string} tos_url URL of CA TermsOfService - setting this indicates agreement.
    * @returns {Promise<Result>}
    */
-  async registerAccount(
-    contact,
-    directory,
-    eab_hmac_key,
-    eab_kid,
-    name,
-    tos_url
-  ) {
+  async registerAccount(contact, directory, eab_hmac_key, eab_kid, name, tos_url) {
     const parameters = {
       contact: contact,
       directory: directory,
@@ -4453,10 +4438,7 @@ class PVEItemAccountAcmeClusterName {
    */
   async updateAccount(contact) {
     const parameters = { contact: contact };
-    return await this.#client.set(
-      `/cluster/acme/account/${this.#name}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/acme/account/${this.#name}`, parameters);
   }
 }
 
@@ -4735,10 +4717,7 @@ class PVEItemFlagsCephClusterFlag {
    */
   async updateFlag(value) {
     const parameters = { value: value };
-    return await this.#client.set(
-      `/cluster/ceph/flags/${this.#flag}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/ceph/flags/${this.#flag}`, parameters);
   }
 }
 
@@ -4770,9 +4749,7 @@ class PVEClusterJobs {
    */
   get scheduleAnalyze() {
     return this.#scheduleAnalyze == null
-      ? (this.#scheduleAnalyze = new PVEJobsClusterScheduleAnalyze(
-          this.#client
-        ))
+      ? (this.#scheduleAnalyze = new PVEJobsClusterScheduleAnalyze(this.#client))
       : this.#scheduleAnalyze;
   }
 
@@ -4851,15 +4828,7 @@ class PVEItemRealmSyncJobsClusterId {
    *   Enum: users,groups,both
    * @returns {Promise<Result>}
    */
-  async createJob(
-    schedule,
-    comment,
-    enable_new,
-    enabled,
-    realm,
-    remove_vanished,
-    scope
-  ) {
+  async createJob(schedule, comment, enable_new, enabled, realm, remove_vanished, scope) {
     const parameters = {
       schedule: schedule,
       comment: comment,
@@ -4869,10 +4838,7 @@ class PVEItemRealmSyncJobsClusterId {
       "remove-vanished": remove_vanished,
       scope: scope,
     };
-    return await this.#client.create(
-      `/cluster/jobs/realm-sync/${this.#id}`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/jobs/realm-sync/${this.#id}`, parameters);
   }
   /**
    * Update realm-sync job definition.
@@ -4886,15 +4852,7 @@ class PVEItemRealmSyncJobsClusterId {
    *   Enum: users,groups,both
    * @returns {Promise<Result>}
    */
-  async updateJob(
-    schedule,
-    comment,
-    delete_,
-    enable_new,
-    enabled,
-    remove_vanished,
-    scope
-  ) {
+  async updateJob(schedule, comment, delete_, enable_new, enabled, remove_vanished, scope) {
     const parameters = {
       schedule: schedule,
       comment: comment,
@@ -4904,10 +4862,7 @@ class PVEItemRealmSyncJobsClusterId {
       "remove-vanished": remove_vanished,
       scope: scope,
     };
-    return await this.#client.set(
-      `/cluster/jobs/realm-sync/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/jobs/realm-sync/${this.#id}`, parameters);
   }
 }
 
@@ -4925,8 +4880,8 @@ class PVEJobsClusterScheduleAnalyze {
   /**
    * Returns a list of future schedule runtimes.
    * @param {string} schedule Job schedule. The format is a subset of `systemd` calendar events.
-   * @param {int} iterations Number of event-iteration to simulate and return.
-   * @param {int} starttime UNIX timestamp to start the calculation from. Defaults to the current time.
+   * @param {number} iterations Number of event-iteration to simulate and return.
+   * @param {number} starttime UNIX timestamp to start the calculation from. Defaults to the current time.
    * @returns {Promise<Result>}
    */
   async scheduleAnalyze(schedule, iterations, starttime) {
@@ -4956,9 +4911,7 @@ class PVEClusterMapping {
    * @returns {PVEMappingClusterDir}
    */
   get dir() {
-    return this.#dir == null
-      ? (this.#dir = new PVEMappingClusterDir(this.#client))
-      : this.#dir;
+    return this.#dir == null ? (this.#dir = new PVEMappingClusterDir(this.#client)) : this.#dir;
   }
   #pci;
   /**
@@ -4966,9 +4919,7 @@ class PVEClusterMapping {
    * @returns {PVEMappingClusterPci}
    */
   get pci() {
-    return this.#pci == null
-      ? (this.#pci = new PVEMappingClusterPci(this.#client))
-      : this.#pci;
+    return this.#pci == null ? (this.#pci = new PVEMappingClusterPci(this.#client)) : this.#pci;
   }
   #usb;
   /**
@@ -4976,9 +4927,7 @@ class PVEClusterMapping {
    * @returns {PVEMappingClusterUsb}
    */
   get usb() {
-    return this.#usb == null
-      ? (this.#usb = new PVEMappingClusterUsb(this.#client))
-      : this.#usb;
+    return this.#usb == null ? (this.#usb = new PVEMappingClusterUsb(this.#client)) : this.#usb;
   }
 
   /**
@@ -5021,7 +4970,7 @@ class PVEMappingClusterDir {
   /**
    * Create a new directory mapping.
    * @param {string} id The ID of the directory mapping
-   * @param {array} map A list of maps for the cluster nodes.
+   * @param {Array} map A list of maps for the cluster nodes.
    * @param {string} description Description of the directory mapping
    * @returns {Promise<Result>}
    */
@@ -5066,7 +5015,7 @@ class PVEItemDirMappingClusterId {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description of the directory mapping
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
-   * @param {array} map A list of maps for the cluster nodes.
+   * @param {Array} map A list of maps for the cluster nodes.
    * @returns {Promise<Result>}
    */
   async update(delete_, description, digest, map) {
@@ -5076,10 +5025,7 @@ class PVEItemDirMappingClusterId {
       digest: digest,
       map: map,
     };
-    return await this.#client.set(
-      `/cluster/mapping/dir/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/mapping/dir/${this.#id}`, parameters);
   }
 }
 
@@ -5115,7 +5061,7 @@ class PVEMappingClusterPci {
   /**
    * Create a new hardware mapping.
    * @param {string} id The ID of the logical PCI mapping.
-   * @param {array} map A list of maps for the cluster nodes.
+   * @param {Array} map A list of maps for the cluster nodes.
    * @param {string} description Description of the logical PCI device.
    * @param {boolean} live_migration_capable Marks the device(s) as being able to be live-migrated (Experimental). This needs hardware and driver support to work.
    * @param {boolean} mdev Marks the device(s) as being capable of providing mediated devices.
@@ -5165,18 +5111,11 @@ class PVEItemPciMappingClusterId {
    * @param {string} description Description of the logical PCI device.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {boolean} live_migration_capable Marks the device(s) as being able to be live-migrated (Experimental). This needs hardware and driver support to work.
-   * @param {array} map A list of maps for the cluster nodes.
+   * @param {Array} map A list of maps for the cluster nodes.
    * @param {boolean} mdev Marks the device(s) as being capable of providing mediated devices.
    * @returns {Promise<Result>}
    */
-  async update(
-    delete_,
-    description,
-    digest,
-    live_migration_capable,
-    map,
-    mdev
-  ) {
+  async update(delete_, description, digest, live_migration_capable, map, mdev) {
     const parameters = {
       delete: delete_,
       description: description,
@@ -5185,10 +5124,7 @@ class PVEItemPciMappingClusterId {
       map: map,
       mdev: mdev,
     };
-    return await this.#client.set(
-      `/cluster/mapping/pci/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/mapping/pci/${this.#id}`, parameters);
   }
 }
 
@@ -5224,7 +5160,7 @@ class PVEMappingClusterUsb {
   /**
    * Create a new hardware mapping.
    * @param {string} id The ID of the logical USB mapping.
-   * @param {array} map A list of maps for the cluster nodes.
+   * @param {Array} map A list of maps for the cluster nodes.
    * @param {string} description Description of the logical USB device.
    * @returns {Promise<Result>}
    */
@@ -5266,7 +5202,7 @@ class PVEItemUsbMappingClusterId {
   }
   /**
    * Update a hardware mapping.
-   * @param {array} map A list of maps for the cluster nodes.
+   * @param {Array} map A list of maps for the cluster nodes.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description of the logical USB device.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
@@ -5279,10 +5215,217 @@ class PVEItemUsbMappingClusterId {
       description: description,
       digest: digest,
     };
-    return await this.#client.set(
-      `/cluster/mapping/usb/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/mapping/usb/${this.#id}`, parameters);
+  }
+}
+
+/**
+ * Class PVEClusterBulkAction
+ */
+class PVEClusterBulkAction {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  #guest;
+  /**
+   * Get BulkActionClusterGuest
+   * @returns {PVEBulkActionClusterGuest}
+   */
+  get guest() {
+    return this.#guest == null
+      ? (this.#guest = new PVEBulkActionClusterGuest(this.#client))
+      : this.#guest;
+  }
+
+  /**
+   * List resource types.
+   * @returns {Promise<Result>}
+   */
+  async index() {
+    return await this.#client.get(`/cluster/bulk-action`);
+  }
+}
+/**
+ * Class PVEBulkActionClusterGuest
+ */
+class PVEBulkActionClusterGuest {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  #start;
+  /**
+   * Get GuestBulkActionClusterStart
+   * @returns {PVEGuestBulkActionClusterStart}
+   */
+  get start() {
+    return this.#start == null
+      ? (this.#start = new PVEGuestBulkActionClusterStart(this.#client))
+      : this.#start;
+  }
+  #shutdown;
+  /**
+   * Get GuestBulkActionClusterShutdown
+   * @returns {PVEGuestBulkActionClusterShutdown}
+   */
+  get shutdown() {
+    return this.#shutdown == null
+      ? (this.#shutdown = new PVEGuestBulkActionClusterShutdown(this.#client))
+      : this.#shutdown;
+  }
+  #suspend;
+  /**
+   * Get GuestBulkActionClusterSuspend
+   * @returns {PVEGuestBulkActionClusterSuspend}
+   */
+  get suspend() {
+    return this.#suspend == null
+      ? (this.#suspend = new PVEGuestBulkActionClusterSuspend(this.#client))
+      : this.#suspend;
+  }
+  #migrate;
+  /**
+   * Get GuestBulkActionClusterMigrate
+   * @returns {PVEGuestBulkActionClusterMigrate}
+   */
+  get migrate() {
+    return this.#migrate == null
+      ? (this.#migrate = new PVEGuestBulkActionClusterMigrate(this.#client))
+      : this.#migrate;
+  }
+
+  /**
+   * Bulk action index.
+   * @returns {Promise<Result>}
+   */
+  async index() {
+    return await this.#client.get(`/cluster/bulk-action/guest`);
+  }
+}
+/**
+ * Class PVEGuestBulkActionClusterStart
+ */
+class PVEGuestBulkActionClusterStart {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Bulk start or resume all guests on the cluster.
+   * @param {number} maxworkers How many parallel tasks at maximum should be started.
+   * @param {number} timeout Default start timeout in seconds. Only valid for VMs. (default depends on the guest configuration).
+   * @param {Array} vms Only consider guests from this list of VMIDs.
+   * @returns {Promise<Result>}
+   */
+  async start(maxworkers, timeout, vms) {
+    const parameters = {
+      maxworkers: maxworkers,
+      timeout: timeout,
+      vms: vms,
+    };
+    return await this.#client.create(`/cluster/bulk-action/guest/start`, parameters);
+  }
+}
+
+/**
+ * Class PVEGuestBulkActionClusterShutdown
+ */
+class PVEGuestBulkActionClusterShutdown {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Bulk shutdown all guests on the cluster.
+   * @param {boolean} force_stop Makes sure the Guest stops after the timeout.
+   * @param {number} maxworkers How many parallel tasks at maximum should be started.
+   * @param {number} timeout Default shutdown timeout in seconds if none is configured for the guest.
+   * @param {Array} vms Only consider guests from this list of VMIDs.
+   * @returns {Promise<Result>}
+   */
+  async shutdown(force_stop, maxworkers, timeout, vms) {
+    const parameters = {
+      "force-stop": force_stop,
+      maxworkers: maxworkers,
+      timeout: timeout,
+      vms: vms,
+    };
+    return await this.#client.create(`/cluster/bulk-action/guest/shutdown`, parameters);
+  }
+}
+
+/**
+ * Class PVEGuestBulkActionClusterSuspend
+ */
+class PVEGuestBulkActionClusterSuspend {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Bulk suspend all guests on the cluster.
+   * @param {number} maxworkers How many parallel tasks at maximum should be started.
+   * @param {string} statestorage The storage for the VM state.
+   * @param {boolean} to_disk If set, suspends the guests to disk. Will be resumed on next start.
+   * @param {Array} vms Only consider guests from this list of VMIDs.
+   * @returns {Promise<Result>}
+   */
+  async suspend(maxworkers, statestorage, to_disk, vms) {
+    const parameters = {
+      maxworkers: maxworkers,
+      statestorage: statestorage,
+      "to-disk": to_disk,
+      vms: vms,
+    };
+    return await this.#client.create(`/cluster/bulk-action/guest/suspend`, parameters);
+  }
+}
+
+/**
+ * Class PVEGuestBulkActionClusterMigrate
+ */
+class PVEGuestBulkActionClusterMigrate {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Bulk migrate all guests on the cluster.
+   * @param {string} target Target node.
+   * @param {number} maxworkers How many parallel tasks at maximum should be started.
+   * @param {boolean} online Enable live migration for VMs and restart migration for CTs.
+   * @param {Array} vms Only consider guests from this list of VMIDs.
+   * @param {boolean} with_local_disks Enable live storage migration for local disk
+   * @returns {Promise<Result>}
+   */
+  async migrate(target, maxworkers, online, vms, with_local_disks) {
+    const parameters = {
+      target: target,
+      maxworkers: maxworkers,
+      online: online,
+      vms: vms,
+      "with-local-disks": with_local_disks,
+    };
+    return await this.#client.create(`/cluster/bulk-action/guest/migrate`, parameters);
   }
 }
 
@@ -5303,9 +5446,7 @@ class PVEClusterSdn {
    * @returns {PVESdnClusterVnets}
    */
   get vnets() {
-    return this.#vnets == null
-      ? (this.#vnets = new PVESdnClusterVnets(this.#client))
-      : this.#vnets;
+    return this.#vnets == null ? (this.#vnets = new PVESdnClusterVnets(this.#client)) : this.#vnets;
   }
   #zones;
   /**
@@ -5313,9 +5454,7 @@ class PVEClusterSdn {
    * @returns {PVESdnClusterZones}
    */
   get zones() {
-    return this.#zones == null
-      ? (this.#zones = new PVESdnClusterZones(this.#client))
-      : this.#zones;
+    return this.#zones == null ? (this.#zones = new PVESdnClusterZones(this.#client)) : this.#zones;
   }
   #controllers;
   /**
@@ -5333,9 +5472,7 @@ class PVEClusterSdn {
    * @returns {PVESdnClusterIpams}
    */
   get ipams() {
-    return this.#ipams == null
-      ? (this.#ipams = new PVESdnClusterIpams(this.#client))
-      : this.#ipams;
+    return this.#ipams == null ? (this.#ipams = new PVESdnClusterIpams(this.#client)) : this.#ipams;
   }
   #dns;
   /**
@@ -5343,9 +5480,35 @@ class PVEClusterSdn {
    * @returns {PVESdnClusterDns}
    */
   get dns() {
-    return this.#dns == null
-      ? (this.#dns = new PVESdnClusterDns(this.#client))
-      : this.#dns;
+    return this.#dns == null ? (this.#dns = new PVESdnClusterDns(this.#client)) : this.#dns;
+  }
+  #fabrics;
+  /**
+   * Get SdnClusterFabrics
+   * @returns {PVESdnClusterFabrics}
+   */
+  get fabrics() {
+    return this.#fabrics == null
+      ? (this.#fabrics = new PVESdnClusterFabrics(this.#client))
+      : this.#fabrics;
+  }
+  #lock;
+  /**
+   * Get SdnClusterLock
+   * @returns {PVESdnClusterLock}
+   */
+  get lock() {
+    return this.#lock == null ? (this.#lock = new PVESdnClusterLock(this.#client)) : this.#lock;
+  }
+  #rollback;
+  /**
+   * Get SdnClusterRollback
+   * @returns {PVESdnClusterRollback}
+   */
+  get rollback() {
+    return this.#rollback == null
+      ? (this.#rollback = new PVESdnClusterRollback(this.#client))
+      : this.#rollback;
   }
 
   /**
@@ -5357,10 +5520,16 @@ class PVEClusterSdn {
   }
   /**
    * Apply sdn controller changes &amp;&amp; reload.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {boolean} release_lock When lock-token has been provided and configuration successfully commited, release the lock automatically afterwards
    * @returns {Promise<Result>}
    */
-  async reload() {
-    return await this.#client.set(`/cluster/sdn`);
+  async reload(lock_token, release_lock) {
+    const parameters = {
+      "lock-token": lock_token,
+      "release-lock": release_lock,
+    };
+    return await this.#client.set(`/cluster/sdn`, parameters);
   }
 }
 /**
@@ -5399,21 +5568,23 @@ class PVESdnClusterVnets {
   /**
    * Create a new sdn vnet object.
    * @param {string} vnet The SDN vnet object identifier.
-   * @param {string} zone zone id
-   * @param {string} alias alias name of the vnet
-   * @param {boolean} isolate_ports If true, sets the isolated property for all members of this VNet
-   * @param {int} tag vlan or vxlan id
-   * @param {string} type Type
+   * @param {string} zone Name of the zone this VNet belongs to.
+   * @param {string} alias Alias name of the VNet.
+   * @param {boolean} isolate_ports If true, sets the isolated property for all interfaces on the bridge of this VNet.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {number} tag VLAN Tag (for VLAN or QinQ zones) or VXLAN VNI (for VXLAN or EVPN zones).
+   * @param {string} type Type of the VNet.
    *   Enum: vnet
-   * @param {boolean} vlanaware Allow vm VLANs to pass through this vnet.
+   * @param {boolean} vlanaware Allow VLANs to pass through this vnet.
    * @returns {Promise<Result>}
    */
-  async create(vnet, zone, alias, isolate_ports, tag, type, vlanaware) {
+  async create(vnet, zone, alias, isolate_ports, lock_token, tag, type, vlanaware) {
     const parameters = {
       vnet: vnet,
       zone: zone,
       alias: alias,
       "isolate-ports": isolate_ports,
+      "lock-token": lock_token,
       tag: tag,
       type: type,
       vlanaware: vlanaware,
@@ -5441,10 +5612,7 @@ class PVEItemVnetsSdnClusterVnet {
    */
   get firewall() {
     return this.#firewall == null
-      ? (this.#firewall = new PVEVnetVnetsSdnClusterFirewall(
-          this.#client,
-          this.#vnet
-        ))
+      ? (this.#firewall = new PVEVnetVnetsSdnClusterFirewall(this.#client, this.#vnet))
       : this.#firewall;
   }
   #subnets;
@@ -5454,10 +5622,7 @@ class PVEItemVnetsSdnClusterVnet {
    */
   get subnets() {
     return this.#subnets == null
-      ? (this.#subnets = new PVEVnetVnetsSdnClusterSubnets(
-          this.#client,
-          this.#vnet
-        ))
+      ? (this.#subnets = new PVEVnetVnetsSdnClusterSubnets(this.#client, this.#vnet))
       : this.#subnets;
   }
   #ips;
@@ -5473,10 +5638,12 @@ class PVEItemVnetsSdnClusterVnet {
 
   /**
    * Delete sdn vnet object configuration.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @returns {Promise<Result>}
    */
-  async delete_() {
-    return await this.#client.delete(`/cluster/sdn/vnets/${this.#vnet}`);
+  async delete_(lock_token) {
+    const parameters = { "lock-token": lock_token };
+    return await this.#client.delete(`/cluster/sdn/vnets/${this.#vnet}`, parameters);
   }
   /**
    * Read sdn vnet configuration.
@@ -5489,36 +5656,32 @@ class PVEItemVnetsSdnClusterVnet {
       pending: pending,
       running: running,
     };
-    return await this.#client.get(
-      `/cluster/sdn/vnets/${this.#vnet}`,
-      parameters
-    );
+    return await this.#client.get(`/cluster/sdn/vnets/${this.#vnet}`, parameters);
   }
   /**
    * Update sdn vnet object configuration.
-   * @param {string} alias alias name of the vnet
+   * @param {string} alias Alias name of the VNet.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
-   * @param {boolean} isolate_ports If true, sets the isolated property for all members of this VNet
-   * @param {int} tag vlan or vxlan id
-   * @param {boolean} vlanaware Allow vm VLANs to pass through this vnet.
-   * @param {string} zone zone id
+   * @param {boolean} isolate_ports If true, sets the isolated property for all interfaces on the bridge of this VNet.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {number} tag VLAN Tag (for VLAN or QinQ zones) or VXLAN VNI (for VXLAN or EVPN zones).
+   * @param {boolean} vlanaware Allow VLANs to pass through this vnet.
+   * @param {string} zone Name of the zone this VNet belongs to.
    * @returns {Promise<Result>}
    */
-  async update(alias, delete_, digest, isolate_ports, tag, vlanaware, zone) {
+  async update(alias, delete_, digest, isolate_ports, lock_token, tag, vlanaware, zone) {
     const parameters = {
       alias: alias,
       delete: delete_,
       digest: digest,
       "isolate-ports": isolate_ports,
+      "lock-token": lock_token,
       tag: tag,
       vlanaware: vlanaware,
       zone: zone,
     };
-    return await this.#client.set(
-      `/cluster/sdn/vnets/${this.#vnet}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/sdn/vnets/${this.#vnet}`, parameters);
   }
 }
 /**
@@ -5541,10 +5704,7 @@ class PVEVnetVnetsSdnClusterFirewall {
    */
   get rules() {
     return this.#rules == null
-      ? (this.#rules = new PVEFirewallVnetVnetsSdnClusterRules(
-          this.#client,
-          this.#vnet
-        ))
+      ? (this.#rules = new PVEFirewallVnetVnetsSdnClusterRules(this.#client, this.#vnet))
       : this.#rules;
   }
   #options;
@@ -5554,10 +5714,7 @@ class PVEVnetVnetsSdnClusterFirewall {
    */
   get options() {
     return this.#options == null
-      ? (this.#options = new PVEFirewallVnetVnetsSdnClusterOptions(
-          this.#client,
-          this.#vnet
-        ))
+      ? (this.#options = new PVEFirewallVnetVnetsSdnClusterOptions(this.#client, this.#vnet))
       : this.#options;
   }
 
@@ -5588,11 +5745,7 @@ class PVEFirewallVnetVnetsSdnClusterRules {
    * @returns {PVEItemRulesFirewallVnetVnetsSdnClusterPos}
    */
   get(pos) {
-    return new PVEItemRulesFirewallVnetVnetsSdnClusterPos(
-      this.#client,
-      this.#vnet,
-      pos
-    );
+    return new PVEItemRulesFirewallVnetVnetsSdnClusterPos(this.#client, this.#vnet, pos);
   }
 
   /**
@@ -5600,9 +5753,7 @@ class PVEFirewallVnetVnetsSdnClusterRules {
    * @returns {Promise<Result>}
    */
   async getRules() {
-    return await this.#client.get(
-      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules`
-    );
+    return await this.#client.get(`/cluster/sdn/vnets/${this.#vnet}/firewall/rules`);
   }
   /**
    * Create new rule.
@@ -5613,13 +5764,13 @@ class PVEFirewallVnetVnetsSdnClusterRules {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {number} pos Update rule at position &amp;lt;pos&amp;gt;.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -5659,10 +5810,7 @@ class PVEFirewallVnetVnetsSdnClusterRules {
       source: source,
       sport: sport,
     };
-    return await this.#client.create(
-      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/sdn/vnets/${this.#vnet}/firewall/rules`, parameters);
   }
 }
 /**
@@ -5697,9 +5845,7 @@ class PVEItemRulesFirewallVnetVnetsSdnClusterPos {
    * @returns {Promise<Result>}
    */
   async getRule() {
-    return await this.#client.get(
-      `/cluster/sdn/vnets/${this.#vnet}/firewall/rules/${this.#pos}`
-    );
+    return await this.#client.get(`/cluster/sdn/vnets/${this.#vnet}/firewall/rules/${this.#pos}`);
   }
   /**
    * Modify rule data.
@@ -5709,13 +5855,13 @@ class PVEItemRulesFirewallVnetVnetsSdnClusterPos {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {number} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -5784,9 +5930,7 @@ class PVEFirewallVnetVnetsSdnClusterOptions {
    * @returns {Promise<Result>}
    */
   async getOptions() {
-    return await this.#client.get(
-      `/cluster/sdn/vnets/${this.#vnet}/firewall/options`
-    );
+    return await this.#client.get(`/cluster/sdn/vnets/${this.#vnet}/firewall/options`);
   }
   /**
    * Set Firewall options.
@@ -5807,10 +5951,7 @@ class PVEFirewallVnetVnetsSdnClusterOptions {
       log_level_forward: log_level_forward,
       policy_forward: policy_forward,
     };
-    return await this.#client.set(
-      `/cluster/sdn/vnets/${this.#vnet}/firewall/options`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/sdn/vnets/${this.#vnet}/firewall/options`, parameters);
   }
 }
 
@@ -5833,11 +5974,7 @@ class PVEVnetVnetsSdnClusterSubnets {
    * @returns {PVEItemSubnetsVnetVnetsSdnClusterSubnet}
    */
   get(subnet) {
-    return new PVEItemSubnetsVnetVnetsSdnClusterSubnet(
-      this.#client,
-      this.#vnet,
-      subnet
-    );
+    return new PVEItemSubnetsVnetVnetsSdnClusterSubnet(this.#client, this.#vnet, subnet);
   }
 
   /**
@@ -5851,10 +5988,7 @@ class PVEVnetVnetsSdnClusterSubnets {
       pending: pending,
       running: running,
     };
-    return await this.#client.get(
-      `/cluster/sdn/vnets/${this.#vnet}/subnets`,
-      parameters
-    );
+    return await this.#client.get(`/cluster/sdn/vnets/${this.#vnet}/subnets`, parameters);
   }
   /**
    * Create a new sdn subnet object.
@@ -5862,9 +5996,10 @@ class PVEVnetVnetsSdnClusterSubnets {
    * @param {string} type
    *   Enum: subnet
    * @param {string} dhcp_dns_server IP address for the DNS server
-   * @param {array} dhcp_range A list of DHCP ranges for this subnet
+   * @param {Array} dhcp_range A list of DHCP ranges for this subnet
    * @param {string} dnszoneprefix dns domain zone prefix  ex: 'adm' -&amp;gt; &amp;lt;hostname&amp;gt;.adm.mydomain.com
    * @param {string} gateway Subnet Gateway: Will be assign on vnet for layer3 zones
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @param {boolean} snat enable masquerade for this subnet if pve-firewall
    * @returns {Promise<Result>}
    */
@@ -5875,6 +6010,7 @@ class PVEVnetVnetsSdnClusterSubnets {
     dhcp_range,
     dnszoneprefix,
     gateway,
+    lock_token,
     snat
   ) {
     const parameters = {
@@ -5884,12 +6020,10 @@ class PVEVnetVnetsSdnClusterSubnets {
       "dhcp-range": dhcp_range,
       dnszoneprefix: dnszoneprefix,
       gateway: gateway,
+      "lock-token": lock_token,
       snat: snat,
     };
-    return await this.#client.create(
-      `/cluster/sdn/vnets/${this.#vnet}/subnets`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/sdn/vnets/${this.#vnet}/subnets`, parameters);
   }
 }
 /**
@@ -5909,11 +6043,14 @@ class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
 
   /**
    * Delete sdn subnet object configuration.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @returns {Promise<Result>}
    */
-  async delete_() {
+  async delete_(lock_token) {
+    const parameters = { "lock-token": lock_token };
     return await this.#client.delete(
-      `/cluster/sdn/vnets/${this.#vnet}/subnets/${this.#subnet}`
+      `/cluster/sdn/vnets/${this.#vnet}/subnets/${this.#subnet}`,
+      parameters
     );
   }
   /**
@@ -5936,10 +6073,11 @@ class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
    * Update sdn subnet object configuration.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} dhcp_dns_server IP address for the DNS server
-   * @param {array} dhcp_range A list of DHCP ranges for this subnet
+   * @param {Array} dhcp_range A list of DHCP ranges for this subnet
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dnszoneprefix dns domain zone prefix  ex: 'adm' -&amp;gt; &amp;lt;hostname&amp;gt;.adm.mydomain.com
    * @param {string} gateway Subnet Gateway: Will be assign on vnet for layer3 zones
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @param {boolean} snat enable masquerade for this subnet if pve-firewall
    * @returns {Promise<Result>}
    */
@@ -5950,6 +6088,7 @@ class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
     digest,
     dnszoneprefix,
     gateway,
+    lock_token,
     snat
   ) {
     const parameters = {
@@ -5959,6 +6098,7 @@ class PVEItemSubnetsVnetVnetsSdnClusterSubnet {
       digest: digest,
       dnszoneprefix: dnszoneprefix,
       gateway: gateway,
+      "lock-token": lock_token,
       snat: snat,
     };
     return await this.#client.set(
@@ -5994,10 +6134,7 @@ class PVEVnetVnetsSdnClusterIps {
       zone: zone,
       mac: mac,
     };
-    return await this.#client.delete(
-      `/cluster/sdn/vnets/${this.#vnet}/ips`,
-      parameters
-    );
+    return await this.#client.delete(`/cluster/sdn/vnets/${this.#vnet}/ips`, parameters);
   }
   /**
    * Create IP Mapping in a VNet
@@ -6012,17 +6149,14 @@ class PVEVnetVnetsSdnClusterIps {
       zone: zone,
       mac: mac,
     };
-    return await this.#client.create(
-      `/cluster/sdn/vnets/${this.#vnet}/ips`,
-      parameters
-    );
+    return await this.#client.create(`/cluster/sdn/vnets/${this.#vnet}/ips`, parameters);
   }
   /**
    * Update IP Mapping in a VNet
    * @param {string} ip The IP address to associate with the given MAC address
    * @param {string} zone The SDN zone object identifier.
    * @param {string} mac Unicast MAC address.
-   * @param {int} vmid The (unique) ID of the VM.
+   * @param {number} vmid The (unique) ID of the VM.
    * @returns {Promise<Result>}
    */
   async ipupdate(ip, zone, mac, vmid) {
@@ -6032,10 +6166,7 @@ class PVEVnetVnetsSdnClusterIps {
       mac: mac,
       vmid: vmid,
     };
-    return await this.#client.set(
-      `/cluster/sdn/vnets/${this.#vnet}/ips`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/sdn/vnets/${this.#vnet}/ips`, parameters);
   }
 }
 
@@ -6080,31 +6211,33 @@ class PVESdnClusterZones {
    * @param {string} type Plugin type.
    *   Enum: evpn,faucet,qinq,simple,vlan,vxlan
    * @param {string} zone The SDN zone object identifier.
-   * @param {boolean} advertise_subnets Advertise evpn subnets if you have silent hosts
-   * @param {string} bridge
+   * @param {boolean} advertise_subnets Advertise IP prefixes (Type-5 routes) instead of MAC/IP pairs (Type-2 routes).
+   * @param {string} bridge The bridge for which VLANs should be managed.
    * @param {boolean} bridge_disable_mac_learning Disable auto mac learning.
-   * @param {string} controller Frr router name
+   * @param {string} controller Controller for this zone.
    * @param {string} dhcp Type of the DHCP backend for this zone
    *   Enum: dnsmasq
-   * @param {boolean} disable_arp_nd_suppression Disable ipv4 arp &amp;&amp; ipv6 neighbour discovery suppression
+   * @param {boolean} disable_arp_nd_suppression Suppress IPv4 ARP &amp;&amp; IPv6 Neighbour Discovery messages.
    * @param {string} dns dns api server
    * @param {string} dnszone dns domain zone  ex: mydomain.com
-   * @param {int} dp_id Faucet dataplane id
+   * @param {number} dp_id Faucet dataplane id
    * @param {string} exitnodes List of cluster node names.
-   * @param {boolean} exitnodes_local_routing Allow exitnodes to connect to evpn guests
-   * @param {string} exitnodes_primary Force traffic to this exitnode first.
+   * @param {boolean} exitnodes_local_routing Allow exitnodes to connect to EVPN guests.
+   * @param {string} exitnodes_primary Force traffic through this exitnode first.
+   * @param {string} fabric SDN fabric to use as underlay for this VXLAN zone.
    * @param {string} ipam use a specific ipam
-   * @param {string} mac Anycast logical router mac address
-   * @param {int} mtu MTU
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {string} mac Anycast logical router mac address.
+   * @param {number} mtu MTU of the zone, will be used for the created VNet bridges.
    * @param {string} nodes List of cluster node names.
-   * @param {string} peers peers address list.
+   * @param {string} peers Comma-separated list of peers, that are part of the VXLAN zone. Usually the IPs of the nodes.
    * @param {string} reversedns reverse dns api server
-   * @param {string} rt_import Route-Target import
-   * @param {int} tag Service-VLAN Tag
-   * @param {string} vlan_protocol
+   * @param {string} rt_import List of Route Targets that should be imported into the VRF of the zone.
+   * @param {number} tag Service-VLAN Tag (outer VLAN)
+   * @param {string} vlan_protocol Which VLAN protocol should be used for the creation of the QinQ zone.
    *   Enum: 802.1q,802.1ad
-   * @param {int} vrf_vxlan l3vni.
-   * @param {int} vxlan_port Vxlan tunnel udp port (default 4789).
+   * @param {number} vrf_vxlan VNI for the zone VRF.
+   * @param {number} vxlan_port UDP port that should be used for the VXLAN tunnel (default 4789).
    * @returns {Promise<Result>}
    */
   async create(
@@ -6122,7 +6255,9 @@ class PVESdnClusterZones {
     exitnodes,
     exitnodes_local_routing,
     exitnodes_primary,
+    fabric,
     ipam,
+    lock_token,
     mac,
     mtu,
     nodes,
@@ -6149,7 +6284,9 @@ class PVESdnClusterZones {
       exitnodes: exitnodes,
       "exitnodes-local-routing": exitnodes_local_routing,
       "exitnodes-primary": exitnodes_primary,
+      fabric: fabric,
       ipam: ipam,
+      "lock-token": lock_token,
       mac: mac,
       mtu: mtu,
       nodes: nodes,
@@ -6179,10 +6316,12 @@ class PVEItemZonesSdnClusterZone {
 
   /**
    * Delete sdn zone object configuration.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @returns {Promise<Result>}
    */
-  async delete_() {
-    return await this.#client.delete(`/cluster/sdn/zones/${this.#zone}`);
+  async delete_(lock_token) {
+    const parameters = { "lock-token": lock_token };
+    return await this.#client.delete(`/cluster/sdn/zones/${this.#zone}`, parameters);
   }
   /**
    * Read sdn zone configuration.
@@ -6195,40 +6334,39 @@ class PVEItemZonesSdnClusterZone {
       pending: pending,
       running: running,
     };
-    return await this.#client.get(
-      `/cluster/sdn/zones/${this.#zone}`,
-      parameters
-    );
+    return await this.#client.get(`/cluster/sdn/zones/${this.#zone}`, parameters);
   }
   /**
    * Update sdn zone object configuration.
-   * @param {boolean} advertise_subnets Advertise evpn subnets if you have silent hosts
-   * @param {string} bridge
+   * @param {boolean} advertise_subnets Advertise IP prefixes (Type-5 routes) instead of MAC/IP pairs (Type-2 routes).
+   * @param {string} bridge The bridge for which VLANs should be managed.
    * @param {boolean} bridge_disable_mac_learning Disable auto mac learning.
-   * @param {string} controller Frr router name
+   * @param {string} controller Controller for this zone.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} dhcp Type of the DHCP backend for this zone
    *   Enum: dnsmasq
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
-   * @param {boolean} disable_arp_nd_suppression Disable ipv4 arp &amp;&amp; ipv6 neighbour discovery suppression
+   * @param {boolean} disable_arp_nd_suppression Suppress IPv4 ARP &amp;&amp; IPv6 Neighbour Discovery messages.
    * @param {string} dns dns api server
    * @param {string} dnszone dns domain zone  ex: mydomain.com
-   * @param {int} dp_id Faucet dataplane id
+   * @param {number} dp_id Faucet dataplane id
    * @param {string} exitnodes List of cluster node names.
-   * @param {boolean} exitnodes_local_routing Allow exitnodes to connect to evpn guests
-   * @param {string} exitnodes_primary Force traffic to this exitnode first.
+   * @param {boolean} exitnodes_local_routing Allow exitnodes to connect to EVPN guests.
+   * @param {string} exitnodes_primary Force traffic through this exitnode first.
+   * @param {string} fabric SDN fabric to use as underlay for this VXLAN zone.
    * @param {string} ipam use a specific ipam
-   * @param {string} mac Anycast logical router mac address
-   * @param {int} mtu MTU
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {string} mac Anycast logical router mac address.
+   * @param {number} mtu MTU of the zone, will be used for the created VNet bridges.
    * @param {string} nodes List of cluster node names.
-   * @param {string} peers peers address list.
+   * @param {string} peers Comma-separated list of peers, that are part of the VXLAN zone. Usually the IPs of the nodes.
    * @param {string} reversedns reverse dns api server
-   * @param {string} rt_import Route-Target import
-   * @param {int} tag Service-VLAN Tag
-   * @param {string} vlan_protocol
+   * @param {string} rt_import List of Route Targets that should be imported into the VRF of the zone.
+   * @param {number} tag Service-VLAN Tag (outer VLAN)
+   * @param {string} vlan_protocol Which VLAN protocol should be used for the creation of the QinQ zone.
    *   Enum: 802.1q,802.1ad
-   * @param {int} vrf_vxlan l3vni.
-   * @param {int} vxlan_port Vxlan tunnel udp port (default 4789).
+   * @param {number} vrf_vxlan VNI for the zone VRF.
+   * @param {number} vxlan_port UDP port that should be used for the VXLAN tunnel (default 4789).
    * @returns {Promise<Result>}
    */
   async update(
@@ -6246,7 +6384,9 @@ class PVEItemZonesSdnClusterZone {
     exitnodes,
     exitnodes_local_routing,
     exitnodes_primary,
+    fabric,
     ipam,
+    lock_token,
     mac,
     mtu,
     nodes,
@@ -6273,7 +6413,9 @@ class PVEItemZonesSdnClusterZone {
       exitnodes: exitnodes,
       "exitnodes-local-routing": exitnodes_local_routing,
       "exitnodes-primary": exitnodes_primary,
+      fabric: fabric,
       ipam: ipam,
+      "lock-token": lock_token,
       mac: mac,
       mtu: mtu,
       nodes: nodes,
@@ -6285,10 +6427,7 @@ class PVEItemZonesSdnClusterZone {
       "vrf-vxlan": vrf_vxlan,
       "vxlan-port": vxlan_port,
     };
-    return await this.#client.set(
-      `/cluster/sdn/zones/${this.#zone}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/sdn/zones/${this.#zone}`, parameters);
   }
 }
 
@@ -6333,14 +6472,16 @@ class PVESdnClusterControllers {
    * @param {string} controller The SDN controller object identifier.
    * @param {string} type Plugin type.
    *   Enum: bgp,evpn,faucet,isis
-   * @param {int} asn autonomous system number
-   * @param {boolean} bgp_multipath_as_path_relax
-   * @param {boolean} ebgp Enable ebgp. (remote-as external)
-   * @param {int} ebgp_multihop
-   * @param {string} isis_domain ISIS domain.
-   * @param {string} isis_ifaces ISIS interface.
-   * @param {string} isis_net ISIS network entity title.
-   * @param {string} loopback source loopback interface.
+   * @param {number} asn autonomous system number
+   * @param {boolean} bgp_multipath_as_path_relax Consider different AS paths of equal length for multipath computation.
+   * @param {boolean} ebgp Enable eBGP (remote-as external).
+   * @param {number} ebgp_multihop Set maximum amount of hops for eBGP peers.
+   * @param {string} fabric SDN fabric to use as underlay for this EVPN controller.
+   * @param {string} isis_domain Name of the IS-IS domain.
+   * @param {string} isis_ifaces Comma-separated list of interfaces where IS-IS should be active.
+   * @param {string} isis_net Network Entity title for this node in the IS-IS network.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {string} loopback Name of the loopback/dummy interface that provides the Router-IP.
    * @param {string} node The cluster node name.
    * @param {string} peers peers address list.
    * @returns {Promise<Result>}
@@ -6352,9 +6493,11 @@ class PVESdnClusterControllers {
     bgp_multipath_as_path_relax,
     ebgp,
     ebgp_multihop,
+    fabric,
     isis_domain,
     isis_ifaces,
     isis_net,
+    lock_token,
     loopback,
     node,
     peers
@@ -6366,9 +6509,11 @@ class PVESdnClusterControllers {
       "bgp-multipath-as-path-relax": bgp_multipath_as_path_relax,
       ebgp: ebgp,
       "ebgp-multihop": ebgp_multihop,
+      fabric: fabric,
       "isis-domain": isis_domain,
       "isis-ifaces": isis_ifaces,
       "isis-net": isis_net,
+      "lock-token": lock_token,
       loopback: loopback,
       node: node,
       peers: peers,
@@ -6391,12 +6536,12 @@ class PVEItemControllersSdnClusterController {
 
   /**
    * Delete sdn controller object configuration.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @returns {Promise<Result>}
    */
-  async delete_() {
-    return await this.#client.delete(
-      `/cluster/sdn/controllers/${this.#controller}`
-    );
+  async delete_(lock_token) {
+    const parameters = { "lock-token": lock_token };
+    return await this.#client.delete(`/cluster/sdn/controllers/${this.#controller}`, parameters);
   }
   /**
    * Read sdn controller configuration.
@@ -6409,23 +6554,22 @@ class PVEItemControllersSdnClusterController {
       pending: pending,
       running: running,
     };
-    return await this.#client.get(
-      `/cluster/sdn/controllers/${this.#controller}`,
-      parameters
-    );
+    return await this.#client.get(`/cluster/sdn/controllers/${this.#controller}`, parameters);
   }
   /**
    * Update sdn controller object configuration.
-   * @param {int} asn autonomous system number
-   * @param {boolean} bgp_multipath_as_path_relax
+   * @param {number} asn autonomous system number
+   * @param {boolean} bgp_multipath_as_path_relax Consider different AS paths of equal length for multipath computation.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
-   * @param {boolean} ebgp Enable ebgp. (remote-as external)
-   * @param {int} ebgp_multihop
-   * @param {string} isis_domain ISIS domain.
-   * @param {string} isis_ifaces ISIS interface.
-   * @param {string} isis_net ISIS network entity title.
-   * @param {string} loopback source loopback interface.
+   * @param {boolean} ebgp Enable eBGP (remote-as external).
+   * @param {number} ebgp_multihop Set maximum amount of hops for eBGP peers.
+   * @param {string} fabric SDN fabric to use as underlay for this EVPN controller.
+   * @param {string} isis_domain Name of the IS-IS domain.
+   * @param {string} isis_ifaces Comma-separated list of interfaces where IS-IS should be active.
+   * @param {string} isis_net Network Entity title for this node in the IS-IS network.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {string} loopback Name of the loopback/dummy interface that provides the Router-IP.
    * @param {string} node The cluster node name.
    * @param {string} peers peers address list.
    * @returns {Promise<Result>}
@@ -6437,9 +6581,11 @@ class PVEItemControllersSdnClusterController {
     digest,
     ebgp,
     ebgp_multihop,
+    fabric,
     isis_domain,
     isis_ifaces,
     isis_net,
+    lock_token,
     loopback,
     node,
     peers
@@ -6451,17 +6597,16 @@ class PVEItemControllersSdnClusterController {
       digest: digest,
       ebgp: ebgp,
       "ebgp-multihop": ebgp_multihop,
+      fabric: fabric,
       "isis-domain": isis_domain,
       "isis-ifaces": isis_ifaces,
       "isis-net": isis_net,
+      "lock-token": lock_token,
       loopback: loopback,
       node: node,
       peers: peers,
     };
-    return await this.#client.set(
-      `/cluster/sdn/controllers/${this.#controller}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/sdn/controllers/${this.#controller}`, parameters);
   }
 }
 
@@ -6501,16 +6646,18 @@ class PVESdnClusterIpams {
    * @param {string} type Plugin type.
    *   Enum: netbox,phpipam,pve
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
-   * @param {int} section
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {number} section
    * @param {string} token
    * @param {string} url
    * @returns {Promise<Result>}
    */
-  async create(ipam, type, fingerprint, section, token, url) {
+  async create(ipam, type, fingerprint, lock_token, section, token, url) {
     const parameters = {
       ipam: ipam,
       type: type,
       fingerprint: fingerprint,
+      "lock-token": lock_token,
       section: section,
       token: token,
       url: url,
@@ -6538,19 +6685,18 @@ class PVEItemIpamsSdnClusterIpam {
    */
   get status() {
     return this.#status == null
-      ? (this.#status = new PVEIpamIpamsSdnClusterStatus(
-          this.#client,
-          this.#ipam
-        ))
+      ? (this.#status = new PVEIpamIpamsSdnClusterStatus(this.#client, this.#ipam))
       : this.#status;
   }
 
   /**
    * Delete sdn ipam object configuration.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @returns {Promise<Result>}
    */
-  async delete_() {
-    return await this.#client.delete(`/cluster/sdn/ipams/${this.#ipam}`);
+  async delete_(lock_token) {
+    const parameters = { "lock-token": lock_token };
+    return await this.#client.delete(`/cluster/sdn/ipams/${this.#ipam}`, parameters);
   }
   /**
    * Read sdn ipam configuration.
@@ -6564,24 +6710,23 @@ class PVEItemIpamsSdnClusterIpam {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
-   * @param {int} section
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {number} section
    * @param {string} token
    * @param {string} url
    * @returns {Promise<Result>}
    */
-  async update(delete_, digest, fingerprint, section, token, url) {
+  async update(delete_, digest, fingerprint, lock_token, section, token, url) {
     const parameters = {
       delete: delete_,
       digest: digest,
       fingerprint: fingerprint,
+      "lock-token": lock_token,
       section: section,
       token: token,
       url: url,
     };
-    return await this.#client.set(
-      `/cluster/sdn/ipams/${this.#ipam}`,
-      parameters
-    );
+    return await this.#client.set(`/cluster/sdn/ipams/${this.#ipam}`, parameters);
   }
 }
 /**
@@ -6644,27 +6789,20 @@ class PVESdnClusterDns {
    *   Enum: powerdns
    * @param {string} url
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
-   * @param {int} reversemaskv6
-   * @param {int} reversev6mask
-   * @param {int} ttl
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {number} reversemaskv6
+   * @param {number} reversev6mask
+   * @param {number} ttl
    * @returns {Promise<Result>}
    */
-  async create(
-    dns,
-    key,
-    type,
-    url,
-    fingerprint,
-    reversemaskv6,
-    reversev6mask,
-    ttl
-  ) {
+  async create(dns, key, type, url, fingerprint, lock_token, reversemaskv6, reversev6mask, ttl) {
     const parameters = {
       dns: dns,
       key: key,
       type: type,
       url: url,
       fingerprint: fingerprint,
+      "lock-token": lock_token,
       reversemaskv6: reversemaskv6,
       reversev6mask: reversev6mask,
       ttl: ttl,
@@ -6687,10 +6825,12 @@ class PVEItemDnsSdnClusterDns {
 
   /**
    * Delete sdn dns object configuration.
+   * @param {string} lock_token the token for unlocking the global SDN configuration
    * @returns {Promise<Result>}
    */
-  async delete_() {
-    return await this.#client.delete(`/cluster/sdn/dns/${this.#dns}`);
+  async delete_(lock_token) {
+    const parameters = { "lock-token": lock_token };
+    return await this.#client.delete(`/cluster/sdn/dns/${this.#dns}`, parameters);
   }
   /**
    * Read sdn dns configuration.
@@ -6705,22 +6845,452 @@ class PVEItemDnsSdnClusterDns {
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
    * @param {string} key
-   * @param {int} reversemaskv6
-   * @param {int} ttl
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {number} reversemaskv6
+   * @param {number} ttl
    * @param {string} url
    * @returns {Promise<Result>}
    */
-  async update(delete_, digest, fingerprint, key, reversemaskv6, ttl, url) {
+  async update(delete_, digest, fingerprint, key, lock_token, reversemaskv6, ttl, url) {
     const parameters = {
       delete: delete_,
       digest: digest,
       fingerprint: fingerprint,
       key: key,
+      "lock-token": lock_token,
       reversemaskv6: reversemaskv6,
       ttl: ttl,
       url: url,
     };
     return await this.#client.set(`/cluster/sdn/dns/${this.#dns}`, parameters);
+  }
+}
+
+/**
+ * Class PVESdnClusterFabrics
+ */
+class PVESdnClusterFabrics {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  #fabric;
+  /**
+   * Get FabricsSdnClusterFabric
+   * @returns {PVEFabricsSdnClusterFabric}
+   */
+  get fabric() {
+    return this.#fabric == null
+      ? (this.#fabric = new PVEFabricsSdnClusterFabric(this.#client))
+      : this.#fabric;
+  }
+  #node;
+  /**
+   * Get FabricsSdnClusterNode
+   * @returns {PVEFabricsSdnClusterNode}
+   */
+  get node() {
+    return this.#node == null
+      ? (this.#node = new PVEFabricsSdnClusterNode(this.#client))
+      : this.#node;
+  }
+  #all;
+  /**
+   * Get FabricsSdnClusterAll
+   * @returns {PVEFabricsSdnClusterAll}
+   */
+  get all() {
+    return this.#all == null ? (this.#all = new PVEFabricsSdnClusterAll(this.#client)) : this.#all;
+  }
+
+  /**
+   * SDN Fabrics Index
+   * @returns {Promise<Result>}
+   */
+  async index() {
+    return await this.#client.get(`/cluster/sdn/fabrics`);
+  }
+}
+/**
+ * Class PVEFabricsSdnClusterFabric
+ */
+class PVEFabricsSdnClusterFabric {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Get ItemFabricFabricsSdnClusterId
+   * @param id
+   * @returns {PVEItemFabricFabricsSdnClusterId}
+   */
+  get(id) {
+    return new PVEItemFabricFabricsSdnClusterId(this.#client, id);
+  }
+
+  /**
+   * SDN Fabrics Index
+   * @param {boolean} pending Display pending config.
+   * @param {boolean} running Display running config.
+   * @returns {Promise<Result>}
+   */
+  async index(pending, running) {
+    const parameters = {
+      pending: pending,
+      running: running,
+    };
+    return await this.#client.get(`/cluster/sdn/fabrics/fabric`, parameters);
+  }
+  /**
+   * Add a fabric
+   * @param {string} id Identifier for SDN fabrics
+   * @param {string} protocol Type of configuration entry in an SDN Fabric section config
+   *   Enum: openfabric,ospf
+   * @param {string} area OSPF area. Either a IPv4 address or a 32-bit number. Gets validated in rust.
+   * @param {number} csnp_interval The csnp_interval property for Openfabric
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {number} hello_interval The hello_interval property for Openfabric
+   * @param {string} ip6_prefix The IP prefix for Node IPs
+   * @param {string} ip_prefix The IP prefix for Node IPs
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @returns {Promise<Result>}
+   */
+  async addFabric(
+    id,
+    protocol,
+    area,
+    csnp_interval,
+    digest,
+    hello_interval,
+    ip6_prefix,
+    ip_prefix,
+    lock_token
+  ) {
+    const parameters = {
+      id: id,
+      protocol: protocol,
+      area: area,
+      csnp_interval: csnp_interval,
+      digest: digest,
+      hello_interval: hello_interval,
+      ip6_prefix: ip6_prefix,
+      ip_prefix: ip_prefix,
+      "lock-token": lock_token,
+    };
+    return await this.#client.create(`/cluster/sdn/fabrics/fabric`, parameters);
+  }
+}
+/**
+ * Class PVEItemFabricFabricsSdnClusterId
+ */
+class PVEItemFabricFabricsSdnClusterId {
+  #id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, id) {
+    this.#client = client;
+    this.#id = id;
+  }
+
+  /**
+   * Add a fabric
+   * @returns {Promise<Result>}
+   */
+  async deleteFabric() {
+    return await this.#client.delete(`/cluster/sdn/fabrics/fabric/${this.#id}`);
+  }
+  /**
+   * Update a fabric
+   * @returns {Promise<Result>}
+   */
+  async getFabric() {
+    return await this.#client.get(`/cluster/sdn/fabrics/fabric/${this.#id}`);
+  }
+  /**
+   * Update a fabric
+   * @param {Array} delete_
+   * @param {string} protocol Type of configuration entry in an SDN Fabric section config
+   *   Enum: openfabric,ospf
+   * @param {string} area OSPF area. Either a IPv4 address or a 32-bit number. Gets validated in rust.
+   * @param {number} csnp_interval The csnp_interval property for Openfabric
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {number} hello_interval The hello_interval property for Openfabric
+   * @param {string} ip6_prefix The IP prefix for Node IPs
+   * @param {string} ip_prefix The IP prefix for Node IPs
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @returns {Promise<Result>}
+   */
+  async updateFabric(
+    delete_,
+    protocol,
+    area,
+    csnp_interval,
+    digest,
+    hello_interval,
+    ip6_prefix,
+    ip_prefix,
+    lock_token
+  ) {
+    const parameters = {
+      delete: delete_,
+      protocol: protocol,
+      area: area,
+      csnp_interval: csnp_interval,
+      digest: digest,
+      hello_interval: hello_interval,
+      ip6_prefix: ip6_prefix,
+      ip_prefix: ip_prefix,
+      "lock-token": lock_token,
+    };
+    return await this.#client.set(`/cluster/sdn/fabrics/fabric/${this.#id}`, parameters);
+  }
+}
+
+/**
+ * Class PVEFabricsSdnClusterNode
+ */
+class PVEFabricsSdnClusterNode {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Get ItemNodeFabricsSdnClusterFabricId
+   * @param fabric_id
+   * @returns {PVEItemNodeFabricsSdnClusterFabricId}
+   */
+  get(fabric_id) {
+    return new PVEItemNodeFabricsSdnClusterFabricId(this.#client, fabric_id);
+  }
+
+  /**
+   * SDN Fabrics Index
+   * @param {boolean} pending Display pending config.
+   * @param {boolean} running Display running config.
+   * @returns {Promise<Result>}
+   */
+  async listNodes(pending, running) {
+    const parameters = {
+      pending: pending,
+      running: running,
+    };
+    return await this.#client.get(`/cluster/sdn/fabrics/node`, parameters);
+  }
+}
+/**
+ * Class PVEItemNodeFabricsSdnClusterFabricId
+ */
+class PVEItemNodeFabricsSdnClusterFabricId {
+  #fabric_id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, fabric_id) {
+    this.#client = client;
+    this.#fabric_id = fabric_id;
+  }
+
+  /**
+   * Get ItemFabricIdNodeFabricsSdnClusterNodeId
+   * @param node_id
+   * @returns {PVEItemFabricIdNodeFabricsSdnClusterNodeId}
+   */
+  get(node_id) {
+    return new PVEItemFabricIdNodeFabricsSdnClusterNodeId(this.#client, this.#fabric_id, node_id);
+  }
+
+  /**
+   * SDN Fabrics Index
+   * @param {boolean} pending Display pending config.
+   * @param {boolean} running Display running config.
+   * @returns {Promise<Result>}
+   */
+  async listNodesFabric(pending, running) {
+    const parameters = {
+      pending: pending,
+      running: running,
+    };
+    return await this.#client.get(`/cluster/sdn/fabrics/node/${this.#fabric_id}`, parameters);
+  }
+  /**
+   * Add a node
+   * @param {Array} interfaces
+   * @param {string} node_id Identifier for nodes in an SDN fabric
+   * @param {string} protocol Type of configuration entry in an SDN Fabric section config
+   *   Enum: openfabric,ospf
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {string} ip IPv4 address for this node
+   * @param {string} ip6 IPv6 address for this node
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @returns {Promise<Result>}
+   */
+  async addNode(interfaces, node_id, protocol, digest, ip, ip6, lock_token) {
+    const parameters = {
+      interfaces: interfaces,
+      node_id: node_id,
+      protocol: protocol,
+      digest: digest,
+      ip: ip,
+      ip6: ip6,
+      "lock-token": lock_token,
+    };
+    return await this.#client.create(`/cluster/sdn/fabrics/node/${this.#fabric_id}`, parameters);
+  }
+}
+/**
+ * Class PVEItemFabricIdNodeFabricsSdnClusterNodeId
+ */
+class PVEItemFabricIdNodeFabricsSdnClusterNodeId {
+  #fabric_id;
+  #node_id;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, fabric_id, node_id) {
+    this.#client = client;
+    this.#fabric_id = fabric_id;
+    this.#node_id = node_id;
+  }
+
+  /**
+   * Add a node
+   * @returns {Promise<Result>}
+   */
+  async deleteNode() {
+    return await this.#client.delete(
+      `/cluster/sdn/fabrics/node/${this.#fabric_id}/${this.#node_id}`
+    );
+  }
+  /**
+   * Get a node
+   * @returns {Promise<Result>}
+   */
+  async getNode() {
+    return await this.#client.get(`/cluster/sdn/fabrics/node/${this.#fabric_id}/${this.#node_id}`);
+  }
+  /**
+   * Update a node
+   * @param {Array} interfaces
+   * @param {string} protocol Type of configuration entry in an SDN Fabric section config
+   *   Enum: openfabric,ospf
+   * @param {Array} delete_
+   * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
+   * @param {string} ip IPv4 address for this node
+   * @param {string} ip6 IPv6 address for this node
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @returns {Promise<Result>}
+   */
+  async updateNode(interfaces, protocol, delete_, digest, ip, ip6, lock_token) {
+    const parameters = {
+      interfaces: interfaces,
+      protocol: protocol,
+      delete: delete_,
+      digest: digest,
+      ip: ip,
+      ip6: ip6,
+      "lock-token": lock_token,
+    };
+    return await this.#client.set(
+      `/cluster/sdn/fabrics/node/${this.#fabric_id}/${this.#node_id}`,
+      parameters
+    );
+  }
+}
+
+/**
+ * Class PVEFabricsSdnClusterAll
+ */
+class PVEFabricsSdnClusterAll {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * SDN Fabrics Index
+   * @param {boolean} pending Display pending config.
+   * @param {boolean} running Display running config.
+   * @returns {Promise<Result>}
+   */
+  async listAll(pending, running) {
+    const parameters = {
+      pending: pending,
+      running: running,
+    };
+    return await this.#client.get(`/cluster/sdn/fabrics/all`, parameters);
+  }
+}
+
+/**
+ * Class PVESdnClusterLock
+ */
+class PVESdnClusterLock {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Release global lock for SDN configuration
+   * @param {boolean} force if true, allow releasing lock without providing the token
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @returns {Promise<Result>}
+   */
+  async releaseLock(force, lock_token) {
+    const parameters = {
+      force: force,
+      "lock-token": lock_token,
+    };
+    return await this.#client.delete(`/cluster/sdn/lock`, parameters);
+  }
+  /**
+   * Acquire global lock for SDN configuration
+   * @param {boolean} allow_pending if true, allow acquiring lock even though there are pending changes
+   * @returns {Promise<Result>}
+   */
+  async lock(allow_pending) {
+    const parameters = { "allow-pending": allow_pending };
+    return await this.#client.create(`/cluster/sdn/lock`, parameters);
+  }
+}
+
+/**
+ * Class PVESdnClusterRollback
+ */
+class PVESdnClusterRollback {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * Rollback pending changes to SDN configuration
+   * @param {string} lock_token the token for unlocking the global SDN configuration
+   * @param {boolean} release_lock When lock-token has been provided and configuration successfully rollbacked, release the lock automatically afterwards
+   * @returns {Promise<Result>}
+   */
+  async rollback(lock_token, release_lock) {
+    const parameters = {
+      "lock-token": lock_token,
+      "release-lock": release_lock,
+    };
+    return await this.#client.create(`/cluster/sdn/rollback`, parameters);
   }
 }
 
@@ -6737,7 +7307,7 @@ class PVEClusterLog {
 
   /**
    * Read cluster log
-   * @param {int} max Maximum number of entries.
+   * @param {number} max Maximum number of entries.
    * @returns {Promise<Result>}
    */
   async log(max) {
@@ -6826,12 +7396,13 @@ class PVEClusterOptions {
    * @param {string} language Default GUI language.
    *   Enum: ar,ca,da,de,en,es,eu,fa,fr,hr,he,it,ja,ka,kr,nb,nl,nn,pl,pt_BR,ru,sl,sv,tr,ukr,zh_CN,zh_TW
    * @param {string} mac_prefix Prefix for the auto-generated MAC addresses of virtual guests. The default 'BC:24:11' is the OUI assigned by the IEEE to Proxmox Server Solutions GmbH for a 24-bit large MAC block. You're allowed to use this in local networks, i.e., those not directly reachable by the public (e.g., in a LAN or behind NAT).
-   * @param {int} max_workers Defines how many workers (per node) are maximal started  on actions like 'stopall VMs' or task from the ha-manager.
+   * @param {number} max_workers Defines how many workers (per node) are maximal started  on actions like 'stopall VMs' or task from the ha-manager.
    * @param {string} migration For cluster wide migration settings.
    * @param {boolean} migration_unsecure Migration is secure using SSH tunnel by default. For secure private networks you can disable it to speed up migration. Deprecated, use the 'migration' property instead!
    * @param {string} next_id Control the range for the free VMID auto-selection pool.
    * @param {string} notify Cluster-wide notification settings.
    * @param {string} registered_tags A list of tags that require a `Sys.Modify` on '/' to set and delete. Tags set here that are also in 'user-tag-access' also require `Sys.Modify`.
+   * @param {string} replication For cluster wide replication settings.
    * @param {string} tag_style Tag style options.
    * @param {string} u2f u2f
    * @param {string} user_tag_access Privilege options for user-settable tags
@@ -6858,6 +7429,7 @@ class PVEClusterOptions {
     next_id,
     notify,
     registered_tags,
+    replication,
     tag_style,
     u2f,
     user_tag_access,
@@ -6883,6 +7455,7 @@ class PVEClusterOptions {
       "next-id": next_id,
       notify: notify,
       "registered-tags": registered_tags,
+      replication: replication,
       "tag-style": tag_style,
       u2f: u2f,
       "user-tag-access": user_tag_access,
@@ -6925,7 +7498,7 @@ class PVEClusterNextid {
 
   /**
    * Get next free VMID. Pass a VMID to assert that its free (at time of check).
-   * @param {int} vmid The (unique) ID of the VM.
+   * @param {number} vmid The (unique) ID of the VM.
    * @returns {Promise<Result>}
    */
   async nextid(vmid) {
@@ -7032,10 +7605,7 @@ class PVEItemNodesNode {
    */
   get subscription() {
     return this.#subscription == null
-      ? (this.#subscription = new PVENodeNodesSubscription(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#subscription = new PVENodeNodesSubscription(this.#client, this.#node))
       : this.#subscription;
   }
   #network;
@@ -7085,10 +7655,7 @@ class PVEItemNodesNode {
    */
   get capabilities() {
     return this.#capabilities == null
-      ? (this.#capabilities = new PVENodeNodesCapabilities(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#capabilities = new PVENodeNodesCapabilities(this.#client, this.#node))
       : this.#capabilities;
   }
   #storage;
@@ -7138,10 +7705,7 @@ class PVEItemNodesNode {
    */
   get replication() {
     return this.#replication == null
-      ? (this.#replication = new PVENodeNodesReplication(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#replication = new PVENodeNodesReplication(this.#client, this.#node))
       : this.#replication;
   }
   #certificates;
@@ -7151,10 +7715,7 @@ class PVEItemNodesNode {
    */
   get certificates() {
     return this.#certificates == null
-      ? (this.#certificates = new PVENodeNodesCertificates(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#certificates = new PVENodeNodesCertificates(this.#client, this.#node))
       : this.#certificates;
   }
   #config;
@@ -7294,10 +7855,7 @@ class PVEItemNodesNode {
    */
   get vncwebsocket() {
     return this.#vncwebsocket == null
-      ? (this.#vncwebsocket = new PVENodeNodesVncwebsocket(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#vncwebsocket = new PVENodeNodesVncwebsocket(this.#client, this.#node))
       : this.#vncwebsocket;
   }
   #spiceshell;
@@ -7307,10 +7865,7 @@ class PVEItemNodesNode {
    */
   get spiceshell() {
     return this.#spiceshell == null
-      ? (this.#spiceshell = new PVENodeNodesSpiceshell(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#spiceshell = new PVENodeNodesSpiceshell(this.#client, this.#node))
       : this.#spiceshell;
   }
   #dns;
@@ -7343,6 +7898,16 @@ class PVEItemNodesNode {
       ? (this.#aplinfo = new PVENodeNodesAplinfo(this.#client, this.#node))
       : this.#aplinfo;
   }
+  #queryOciRepoTags;
+  /**
+   * Get NodeNodesQueryOciRepoTags
+   * @returns {PVENodeNodesQueryOciRepoTags}
+   */
+  get queryOciRepoTags() {
+    return this.#queryOciRepoTags == null
+      ? (this.#queryOciRepoTags = new PVENodeNodesQueryOciRepoTags(this.#client, this.#node))
+      : this.#queryOciRepoTags;
+  }
   #queryUrlMetadata;
   /**
    * Get NodeNodesQueryUrlMetadata
@@ -7350,10 +7915,7 @@ class PVEItemNodesNode {
    */
   get queryUrlMetadata() {
     return this.#queryUrlMetadata == null
-      ? (this.#queryUrlMetadata = new PVENodeNodesQueryUrlMetadata(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#queryUrlMetadata = new PVENodeNodesQueryUrlMetadata(this.#client, this.#node))
       : this.#queryUrlMetadata;
   }
   #report;
@@ -7393,10 +7955,7 @@ class PVEItemNodesNode {
    */
   get suspendall() {
     return this.#suspendall == null
-      ? (this.#suspendall = new PVENodeNodesSuspendall(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#suspendall = new PVENodeNodesSuspendall(this.#client, this.#node))
       : this.#suspendall;
   }
   #migrateall;
@@ -7406,10 +7965,7 @@ class PVEItemNodesNode {
    */
   get migrateall() {
     return this.#migrateall == null
-      ? (this.#migrateall = new PVENodeNodesMigrateall(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#migrateall = new PVENodeNodesMigrateall(this.#client, this.#node))
       : this.#migrateall;
   }
   #hosts;
@@ -7464,10 +8020,11 @@ class PVENodeNodesQemu {
   }
   /**
    * Create or restore a virtual machine.
-   * @param {int} vmid The (unique) ID of the VM.
+   * @param {number} vmid The (unique) ID of the VM.
    * @param {boolean} acpi Enable/disable ACPI.
    * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
    * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
+   * @param {boolean} allow_ksm Allow memory pages of this guest to be merged via KSM (Kernel Samepage Merging).
    * @param {string} amd_sev Secure Encrypted Virtualization (SEV) features by AMD CPUs
    * @param {string} arch Virtual processor architecture. Defaults to the host.
    *   Enum: x86_64,aarch64
@@ -7475,12 +8032,12 @@ class PVENodeNodesQemu {
    * @param {string} args Arbitrary arguments passed to kvm.
    * @param {string} audio0 Configure a audio device, useful in combination with QXL/Spice.
    * @param {boolean} autostart Automatic restart after crash (currently ignored).
-   * @param {int} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
+   * @param {number} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
    * @param {string} bios Select BIOS implementation.
    *   Enum: seabios,ovmf
    * @param {string} boot Specify guest boot order. Use the 'order=' sub-property as usage with no key or 'legacy=' is deprecated.
    * @param {string} bootdisk Enable booting from specified disk. Deprecated: Use 'boot: order=foo;bar' instead.
-   * @param {int} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {string} cdrom This is an alias for option -ide2
    * @param {string} cicustom cloud-init: Specify custom files to replace the automatically generated ones at start.
    * @param {string} cipassword cloud-init: Password to assign the user. Using this is generally not recommended. Use ssh keys instead. Also note that older cloud-init versions do not support hashed passwords.
@@ -7488,22 +8045,24 @@ class PVENodeNodesQemu {
    *   Enum: configdrive2,nocloud,opennebula
    * @param {boolean} ciupgrade cloud-init: do an automatic package upgrade after the first boot.
    * @param {string} ciuser cloud-init: User name to change ssh keys and password for instead of the image's configured default user.
-   * @param {int} cores The number of cores per socket.
+   * @param {number} cores The number of cores per socket.
    * @param {string} cpu Emulated CPU type.
-   * @param {float} cpulimit Limit of CPU usage.
-   * @param {int} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
+   * @param {number} cpulimit Limit of CPU usage.
+   * @param {number} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
    * @param {string} description Description for the VM. Shown in the web-interface VM's summary. This is saved as comment inside the configuration file.
    * @param {string} efidisk0 Configure a disk for storing EFI vars. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and that the default EFI vars are copied to the volume instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {boolean} force Allow to overwrite existing VM.
    * @param {boolean} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
+   * @param {boolean} ha_managed Add the VM as a HA resource after it was created.
    * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
-   * @param {array} hostpciN Map host PCI devices into guest.
+   * @param {Array} hostpciN Map host PCI devices into guest.
    * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory', 'usb' and 'cloudinit'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`. USB hotplugging is possible for guests with machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7.
-   * @param {string} hugepages Enable/disable hugepages memory.
+   * @param {string} hugepages Enables hugepages memory.  Sets the size of hugepages in MiB. If the value is set to 'any' then 1 GiB hugepages will be used if possible, otherwise the size will fall back to 2 MiB.
    *   Enum: any,2,1024
-   * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {string} import_working_storage A file-based storage with 'images' content-type enabled, which is used as an intermediary extraction storage during import. Defaults to the source storage.
-   * @param {array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
+   * @param {string} intel_tdx Trusted Domain Extension (TDX) features by Intel CPUs
+   * @param {Array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
    * @param {string} ivshmem Inter-VM shared memory. Useful for direct communication between VMs, or to the host.
    * @param {boolean} keephugepages Use together with hugepages. If enabled, hugepages will not not be deleted after VM shutdown and can be used for subsequent starts.
    * @param {string} keyboard Keyboard layout for VNC server. This option is generally not required and is often better handled from within the guest OS.
@@ -7515,31 +8074,31 @@ class PVENodeNodesQemu {
    *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
    * @param {string} machine Specify the QEMU machine.
    * @param {string} memory Memory properties.
-   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
-   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
+   * @param {number} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
+   * @param {number} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
    * @param {string} name Set a name for the VM. Only used on the configuration web interface.
    * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
-   * @param {array} netN Specify network devices.
+   * @param {Array} netN Specify network devices.
    * @param {boolean} numa Enable/disable NUMA.
-   * @param {array} numaN NUMA topology.
+   * @param {Array} numaN NUMA topology.
    * @param {boolean} onboot Specifies whether a VM will be started during system bootup.
    * @param {string} ostype Specify guest operating system.
    *   Enum: other,wxp,w2k,w2k3,w2k8,wvista,win7,win8,win10,win11,l24,l26,solaris
-   * @param {array} parallelN Map host parallel devices (n is 0 to 2).
+   * @param {Array} parallelN Map host parallel devices (n is 0 to 2).
    * @param {string} pool Add the VM to the specified pool.
    * @param {boolean} protection Sets the protection flag of the VM. This will disable the remove VM and remove disk operations.
    * @param {boolean} reboot Allow reboot. If set to '0' the VM exit on reboot.
    * @param {string} rng0 Configure a VirtIO-based Random Number Generator.
-   * @param {array} sataN Use volume as SATA hard disk or CD-ROM (n is 0 to 5). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} sataN Use volume as SATA hard disk or CD-ROM (n is 0 to 5). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {string} scsihw SCSI controller model
    *   Enum: lsi,lsi53c810,virtio-scsi-pci,virtio-scsi-single,megasas,pvscsi
    * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
-   * @param {array} serialN Create a serial device inside the VM (n is 0 to 3)
-   * @param {int} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
+   * @param {Array} serialN Create a serial device inside the VM (n is 0 to 3)
+   * @param {number} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
    * @param {string} smbios1 Specify SMBIOS type 1 fields.
-   * @param {int} smp The number of CPUs. Please use option -sockets instead.
-   * @param {int} sockets The number of CPU sockets.
+   * @param {number} smp The number of CPUs. Please use option -sockets instead.
+   * @param {number} sockets The number of CPU sockets.
    * @param {string} spice_enhancements Configure additional enhancements for SPICE.
    * @param {string} sshkeys cloud-init: Setup public SSH keys (one key per line, OpenSSH format).
    * @param {boolean} start Start VM after it was created successfully.
@@ -7552,12 +8111,12 @@ class PVENodeNodesQemu {
    * @param {boolean} template Enable/disable Template.
    * @param {string} tpmstate0 Configure a Disk for storing TPM state. The format is fixed to 'raw'. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and 4 MiB will be used instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {boolean} unique Assign a unique random ethernet address.
-   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
-   * @param {array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
-   * @param {int} vcpus Number of hotplugged vcpus.
+   * @param {Array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
+   * @param {Array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
+   * @param {number} vcpus Number of hotplugged vcpus.
    * @param {string} vga Configure the VGA hardware.
-   * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
+   * @param {Array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
    * @param {string} vmgenid Set VM Generation ID. Use '1' to autogenerate on create or update, pass '0' to disable explicitly.
    * @param {string} vmstatestorage Default storage for VM state volumes/files.
    * @param {string} watchdog Create a virtual hardware watchdog device.
@@ -7568,6 +8127,7 @@ class PVENodeNodesQemu {
     acpi,
     affinity,
     agent,
+    allow_ksm,
     amd_sev,
     arch,
     archive,
@@ -7593,12 +8153,14 @@ class PVENodeNodesQemu {
     efidisk0,
     force,
     freeze,
+    ha_managed,
     hookscript,
     hostpciN,
     hotplug,
     hugepages,
     ideN,
     import_working_storage,
+    intel_tdx,
     ipconfigN,
     ivshmem,
     keephugepages,
@@ -7659,6 +8221,7 @@ class PVENodeNodesQemu {
       acpi: acpi,
       affinity: affinity,
       agent: agent,
+      "allow-ksm": allow_ksm,
       "amd-sev": amd_sev,
       arch: arch,
       archive: archive,
@@ -7684,10 +8247,12 @@ class PVENodeNodesQemu {
       efidisk0: efidisk0,
       force: force,
       freeze: freeze,
+      "ha-managed": ha_managed,
       hookscript: hookscript,
       hotplug: hotplug,
       hugepages: hugepages,
       "import-working-storage": import_working_storage,
+      "intel-tdx": intel_tdx,
       ivshmem: ivshmem,
       keephugepages: keephugepages,
       keyboard: keyboard,
@@ -7770,11 +8335,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get firewall() {
     return this.#firewall == null
-      ? (this.#firewall = new PVEVmidQemuNodeNodesFirewall(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#firewall = new PVEVmidQemuNodeNodesFirewall(this.#client, this.#node, this.#vmid))
       : this.#firewall;
   }
   #agent;
@@ -7784,11 +8345,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get agent() {
     return this.#agent == null
-      ? (this.#agent = new PVEVmidQemuNodeNodesAgent(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#agent = new PVEVmidQemuNodeNodesAgent(this.#client, this.#node, this.#vmid))
       : this.#agent;
   }
   #rrd;
@@ -7798,11 +8355,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get rrd() {
     return this.#rrd == null
-      ? (this.#rrd = new PVEVmidQemuNodeNodesRrd(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#rrd = new PVEVmidQemuNodeNodesRrd(this.#client, this.#node, this.#vmid))
       : this.#rrd;
   }
   #rrddata;
@@ -7812,11 +8365,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get rrddata() {
     return this.#rrddata == null
-      ? (this.#rrddata = new PVEVmidQemuNodeNodesRrddata(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#rrddata = new PVEVmidQemuNodeNodesRrddata(this.#client, this.#node, this.#vmid))
       : this.#rrddata;
   }
   #config;
@@ -7826,11 +8375,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get config() {
     return this.#config == null
-      ? (this.#config = new PVEVmidQemuNodeNodesConfig(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#config = new PVEVmidQemuNodeNodesConfig(this.#client, this.#node, this.#vmid))
       : this.#config;
   }
   #pending;
@@ -7840,11 +8385,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get pending() {
     return this.#pending == null
-      ? (this.#pending = new PVEVmidQemuNodeNodesPending(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#pending = new PVEVmidQemuNodeNodesPending(this.#client, this.#node, this.#vmid))
       : this.#pending;
   }
   #cloudinit;
@@ -7854,11 +8395,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get cloudinit() {
     return this.#cloudinit == null
-      ? (this.#cloudinit = new PVEVmidQemuNodeNodesCloudinit(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#cloudinit = new PVEVmidQemuNodeNodesCloudinit(this.#client, this.#node, this.#vmid))
       : this.#cloudinit;
   }
   #unlink;
@@ -7868,11 +8405,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get unlink() {
     return this.#unlink == null
-      ? (this.#unlink = new PVEVmidQemuNodeNodesUnlink(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#unlink = new PVEVmidQemuNodeNodesUnlink(this.#client, this.#node, this.#vmid))
       : this.#unlink;
   }
   #vncproxy;
@@ -7882,11 +8415,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get vncproxy() {
     return this.#vncproxy == null
-      ? (this.#vncproxy = new PVEVmidQemuNodeNodesVncproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#vncproxy = new PVEVmidQemuNodeNodesVncproxy(this.#client, this.#node, this.#vmid))
       : this.#vncproxy;
   }
   #termproxy;
@@ -7896,11 +8425,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get termproxy() {
     return this.#termproxy == null
-      ? (this.#termproxy = new PVEVmidQemuNodeNodesTermproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#termproxy = new PVEVmidQemuNodeNodesTermproxy(this.#client, this.#node, this.#vmid))
       : this.#termproxy;
   }
   #vncwebsocket;
@@ -7938,11 +8463,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get status() {
     return this.#status == null
-      ? (this.#status = new PVEVmidQemuNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#status = new PVEVmidQemuNodeNodesStatus(this.#client, this.#node, this.#vmid))
       : this.#status;
   }
   #sendkey;
@@ -7952,11 +8473,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get sendkey() {
     return this.#sendkey == null
-      ? (this.#sendkey = new PVEVmidQemuNodeNodesSendkey(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#sendkey = new PVEVmidQemuNodeNodesSendkey(this.#client, this.#node, this.#vmid))
       : this.#sendkey;
   }
   #feature;
@@ -7966,11 +8483,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get feature() {
     return this.#feature == null
-      ? (this.#feature = new PVEVmidQemuNodeNodesFeature(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#feature = new PVEVmidQemuNodeNodesFeature(this.#client, this.#node, this.#vmid))
       : this.#feature;
   }
   #clone;
@@ -7980,11 +8493,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get clone() {
     return this.#clone == null
-      ? (this.#clone = new PVEVmidQemuNodeNodesClone(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#clone = new PVEVmidQemuNodeNodesClone(this.#client, this.#node, this.#vmid))
       : this.#clone;
   }
   #moveDisk;
@@ -7994,11 +8503,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get moveDisk() {
     return this.#moveDisk == null
-      ? (this.#moveDisk = new PVEVmidQemuNodeNodesMoveDisk(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#moveDisk = new PVEVmidQemuNodeNodesMoveDisk(this.#client, this.#node, this.#vmid))
       : this.#moveDisk;
   }
   #migrate;
@@ -8008,11 +8513,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get migrate() {
     return this.#migrate == null
-      ? (this.#migrate = new PVEVmidQemuNodeNodesMigrate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#migrate = new PVEVmidQemuNodeNodesMigrate(this.#client, this.#node, this.#vmid))
       : this.#migrate;
   }
   #remoteMigrate;
@@ -8036,11 +8537,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get monitor() {
     return this.#monitor == null
-      ? (this.#monitor = new PVEVmidQemuNodeNodesMonitor(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#monitor = new PVEVmidQemuNodeNodesMonitor(this.#client, this.#node, this.#vmid))
       : this.#monitor;
   }
   #resize;
@@ -8050,11 +8547,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get resize() {
     return this.#resize == null
-      ? (this.#resize = new PVEVmidQemuNodeNodesResize(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#resize = new PVEVmidQemuNodeNodesResize(this.#client, this.#node, this.#vmid))
       : this.#resize;
   }
   #snapshot;
@@ -8064,11 +8557,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get snapshot() {
     return this.#snapshot == null
-      ? (this.#snapshot = new PVEVmidQemuNodeNodesSnapshot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#snapshot = new PVEVmidQemuNodeNodesSnapshot(this.#client, this.#node, this.#vmid))
       : this.#snapshot;
   }
   #template;
@@ -8078,11 +8567,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get template() {
     return this.#template == null
-      ? (this.#template = new PVEVmidQemuNodeNodesTemplate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#template = new PVEVmidQemuNodeNodesTemplate(this.#client, this.#node, this.#vmid))
       : this.#template;
   }
   #mtunnel;
@@ -8092,11 +8577,7 @@ class PVEItemQemuNodeNodesVmid {
    */
   get mtunnel() {
     return this.#mtunnel == null
-      ? (this.#mtunnel = new PVEVmidQemuNodeNodesMtunnel(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#mtunnel = new PVEVmidQemuNodeNodesMtunnel(this.#client, this.#node, this.#vmid))
       : this.#mtunnel;
   }
   #mtunnelwebsocket;
@@ -8113,6 +8594,20 @@ class PVEItemQemuNodeNodesVmid {
         ))
       : this.#mtunnelwebsocket;
   }
+  #dbusVmstate;
+  /**
+   * Get VmidQemuNodeNodesDbusVmstate
+   * @returns {PVEVmidQemuNodeNodesDbusVmstate}
+   */
+  get dbusVmstate() {
+    return this.#dbusVmstate == null
+      ? (this.#dbusVmstate = new PVEVmidQemuNodeNodesDbusVmstate(
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
+      : this.#dbusVmstate;
+  }
 
   /**
    * Destroy the VM and  all used/owned volumes. Removes any VM specific permissions and firewall rules
@@ -8127,10 +8622,7 @@ class PVEItemQemuNodeNodesVmid {
       purge: purge,
       skiplock: skiplock,
     };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/qemu/${this.#vmid}`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/qemu/${this.#vmid}`, parameters);
   }
   /**
    * Directory index
@@ -8162,11 +8654,7 @@ class PVEVmidQemuNodeNodesFirewall {
    */
   get rules() {
     return this.#rules == null
-      ? (this.#rules = new PVEFirewallVmidQemuNodeNodesRules(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#rules = new PVEFirewallVmidQemuNodeNodesRules(this.#client, this.#node, this.#vmid))
       : this.#rules;
   }
   #aliases;
@@ -8190,11 +8678,7 @@ class PVEVmidQemuNodeNodesFirewall {
    */
   get ipset() {
     return this.#ipset == null
-      ? (this.#ipset = new PVEFirewallVmidQemuNodeNodesIpset(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#ipset = new PVEFirewallVmidQemuNodeNodesIpset(this.#client, this.#node, this.#vmid))
       : this.#ipset;
   }
   #options;
@@ -8218,11 +8702,7 @@ class PVEVmidQemuNodeNodesFirewall {
    */
   get log() {
     return this.#log == null
-      ? (this.#log = new PVEFirewallVmidQemuNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#log = new PVEFirewallVmidQemuNodeNodesLog(this.#client, this.#node, this.#vmid))
       : this.#log;
   }
   #refs;
@@ -8232,11 +8712,7 @@ class PVEVmidQemuNodeNodesFirewall {
    */
   get refs() {
     return this.#refs == null
-      ? (this.#refs = new PVEFirewallVmidQemuNodeNodesRefs(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#refs = new PVEFirewallVmidQemuNodeNodesRefs(this.#client, this.#node, this.#vmid))
       : this.#refs;
   }
 
@@ -8245,9 +8721,7 @@ class PVEVmidQemuNodeNodesFirewall {
    * @returns {Promise<Result>}
    */
   async index() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall`);
   }
 }
 /**
@@ -8271,12 +8745,7 @@ class PVEFirewallVmidQemuNodeNodesRules {
    * @returns {PVEItemRulesFirewallVmidQemuNodeNodesPos}
    */
   get(pos) {
-    return new PVEItemRulesFirewallVmidQemuNodeNodesPos(
-      this.#client,
-      this.#node,
-      this.#vmid,
-      pos
-    );
+    return new PVEItemRulesFirewallVmidQemuNodeNodesPos(this.#client, this.#node, this.#vmid, pos);
   }
 
   /**
@@ -8284,9 +8753,7 @@ class PVEFirewallVmidQemuNodeNodesRules {
    * @returns {Promise<Result>}
    */
   async getRules() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/rules`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/rules`);
   }
   /**
    * Create new rule.
@@ -8297,13 +8764,13 @@ class PVEFirewallVmidQemuNodeNodesRules {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {number} pos Update rule at position &amp;lt;pos&amp;gt;.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -8395,13 +8862,13 @@ class PVEItemRulesFirewallVmidQemuNodeNodesPos {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {number} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -8486,9 +8953,7 @@ class PVEFirewallVmidQemuNodeNodesAliases {
    * @returns {Promise<Result>}
    */
   async getAliases() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/aliases`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/aliases`);
   }
   /**
    * Create IP or Network Alias.
@@ -8603,9 +9068,7 @@ class PVEFirewallVmidQemuNodeNodesIpset {
    * @returns {Promise<Result>}
    */
   async ipsetIndex() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset`);
   }
   /**
    * Create new IPSet
@@ -8727,9 +9190,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
   async removeIp(digest) {
     const parameters = { digest: digest };
     return await this.#client.delete(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
-      }`,
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr}`,
       parameters
     );
   }
@@ -8739,9 +9200,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
    */
   async readIp() {
     return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
-      }`
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr}`
     );
   }
   /**
@@ -8758,9 +9217,7 @@ class PVEItemNameIpsetFirewallVmidQemuNodeNodesCidr {
       nomatch: nomatch,
     };
     return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
-      }`,
+      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr}`,
       parameters
     );
   }
@@ -8786,9 +9243,7 @@ class PVEFirewallVmidQemuNodeNodesOptions {
    * @returns {Promise<Result>}
    */
   async getOptions() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/firewall/options`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/firewall/options`);
   }
   /**
    * Set Firewall options.
@@ -8862,10 +9317,10 @@ class PVEFirewallVmidQemuNodeNodesLog {
 
   /**
    * Read firewall log
-   * @param {int} limit
-   * @param {int} since Display log since this UNIX epoch.
-   * @param {int} start
-   * @param {int} until Display log until this UNIX epoch.
+   * @param {number} limit
+   * @param {number} since Display log since this UNIX epoch.
+   * @param {number} start
+   * @param {number} until Display log until this UNIX epoch.
    * @returns {Promise<Result>}
    */
   async log(limit, since, start, until) {
@@ -8976,11 +9431,7 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get fstrim() {
     return this.#fstrim == null
-      ? (this.#fstrim = new PVEAgentVmidQemuNodeNodesFstrim(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#fstrim = new PVEAgentVmidQemuNodeNodesFstrim(this.#client, this.#node, this.#vmid))
       : this.#fstrim;
   }
   #getFsinfo;
@@ -9018,12 +9469,11 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get getMemoryBlockInfo() {
     return this.#getMemoryBlockInfo == null
-      ? (this.#getMemoryBlockInfo =
-          new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(
-            this.#client,
-            this.#node,
-            this.#vmid
-          ))
+      ? (this.#getMemoryBlockInfo = new PVEAgentVmidQemuNodeNodesGetMemoryBlockInfo(
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#getMemoryBlockInfo;
   }
   #getMemoryBlocks;
@@ -9061,11 +9511,7 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get getTime() {
     return this.#getTime == null
-      ? (this.#getTime = new PVEAgentVmidQemuNodeNodesGetTime(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#getTime = new PVEAgentVmidQemuNodeNodesGetTime(this.#client, this.#node, this.#vmid))
       : this.#getTime;
   }
   #getTimezone;
@@ -9117,11 +9563,7 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get info() {
     return this.#info == null
-      ? (this.#info = new PVEAgentVmidQemuNodeNodesInfo(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#info = new PVEAgentVmidQemuNodeNodesInfo(this.#client, this.#node, this.#vmid))
       : this.#info;
   }
   #networkGetInterfaces;
@@ -9131,12 +9573,11 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get networkGetInterfaces() {
     return this.#networkGetInterfaces == null
-      ? (this.#networkGetInterfaces =
-          new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(
-            this.#client,
-            this.#node,
-            this.#vmid
-          ))
+      ? (this.#networkGetInterfaces = new PVEAgentVmidQemuNodeNodesNetworkGetInterfaces(
+          this.#client,
+          this.#node,
+          this.#vmid
+        ))
       : this.#networkGetInterfaces;
   }
   #ping;
@@ -9146,11 +9587,7 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get ping() {
     return this.#ping == null
-      ? (this.#ping = new PVEAgentVmidQemuNodeNodesPing(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#ping = new PVEAgentVmidQemuNodeNodesPing(this.#client, this.#node, this.#vmid))
       : this.#ping;
   }
   #shutdown;
@@ -9230,11 +9667,7 @@ class PVEVmidQemuNodeNodesAgent {
    */
   get exec() {
     return this.#exec == null
-      ? (this.#exec = new PVEAgentVmidQemuNodeNodesExec(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#exec = new PVEAgentVmidQemuNodeNodesExec(this.#client, this.#node, this.#vmid))
       : this.#exec;
   }
   #execStatus;
@@ -9285,9 +9718,7 @@ class PVEVmidQemuNodeNodesAgent {
    * @returns {Promise<Result>}
    */
   async index() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent`);
   }
   /**
    * Execute QEMU Guest Agent commands.
@@ -9297,10 +9728,7 @@ class PVEVmidQemuNodeNodesAgent {
    */
   async agent(command) {
     const parameters = { command: command };
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent`, parameters);
   }
 }
 /**
@@ -9375,9 +9803,7 @@ class PVEAgentVmidQemuNodeNodesFsfreezeThaw {
    * @returns {Promise<Result>}
    */
   async fsfreezeThaw() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/fsfreeze-thaw`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/fsfreeze-thaw`);
   }
 }
 
@@ -9401,9 +9827,7 @@ class PVEAgentVmidQemuNodeNodesFstrim {
    * @returns {Promise<Result>}
    */
   async fstrim() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/fstrim`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/fstrim`);
   }
 }
 
@@ -9427,9 +9851,7 @@ class PVEAgentVmidQemuNodeNodesGetFsinfo {
    * @returns {Promise<Result>}
    */
   async getFsinfo() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-fsinfo`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-fsinfo`);
   }
 }
 
@@ -9453,9 +9875,7 @@ class PVEAgentVmidQemuNodeNodesGetHostName {
    * @returns {Promise<Result>}
    */
   async getHostName() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-host-name`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-host-name`);
   }
 }
 
@@ -9531,9 +9951,7 @@ class PVEAgentVmidQemuNodeNodesGetOsinfo {
    * @returns {Promise<Result>}
    */
   async getOsinfo() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-osinfo`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-osinfo`);
   }
 }
 
@@ -9557,9 +9975,7 @@ class PVEAgentVmidQemuNodeNodesGetTime {
    * @returns {Promise<Result>}
    */
   async getTime() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-time`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-time`);
   }
 }
 
@@ -9583,9 +9999,7 @@ class PVEAgentVmidQemuNodeNodesGetTimezone {
    * @returns {Promise<Result>}
    */
   async getTimezone() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-timezone`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-timezone`);
   }
 }
 
@@ -9609,9 +10023,7 @@ class PVEAgentVmidQemuNodeNodesGetUsers {
    * @returns {Promise<Result>}
    */
   async getUsers() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-users`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-users`);
   }
 }
 
@@ -9635,9 +10047,7 @@ class PVEAgentVmidQemuNodeNodesGetVcpus {
    * @returns {Promise<Result>}
    */
   async getVcpus() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-vcpus`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/get-vcpus`);
   }
 }
 
@@ -9661,9 +10071,7 @@ class PVEAgentVmidQemuNodeNodesInfo {
    * @returns {Promise<Result>}
    */
   async info() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/info`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/info`);
   }
 }
 
@@ -9713,9 +10121,7 @@ class PVEAgentVmidQemuNodeNodesPing {
    * @returns {Promise<Result>}
    */
   async ping() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/ping`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/ping`);
   }
 }
 
@@ -9739,9 +10145,7 @@ class PVEAgentVmidQemuNodeNodesShutdown {
    * @returns {Promise<Result>}
    */
   async shutdown() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/shutdown`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/shutdown`);
   }
 }
 
@@ -9765,9 +10169,7 @@ class PVEAgentVmidQemuNodeNodesSuspendDisk {
    * @returns {Promise<Result>}
    */
   async suspendDisk() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/suspend-disk`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/suspend-disk`);
   }
 }
 
@@ -9817,9 +10219,7 @@ class PVEAgentVmidQemuNodeNodesSuspendRam {
    * @returns {Promise<Result>}
    */
   async suspendRam() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/agent/suspend-ram`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/agent/suspend-ram`);
   }
 }
 
@@ -9875,7 +10275,7 @@ class PVEAgentVmidQemuNodeNodesExec {
 
   /**
    * Executes the given command in the vm via the guest-agent and returns an object with the pid.
-   * @param {array} command The command as a list of program + arguments.
+   * @param {Array} command The command as a list of program + arguments.
    * @param {string} input_data Data to pass as 'input-data' to the guest. Usually treated as STDIN to 'command'.
    * @returns {Promise<Result>}
    */
@@ -9908,7 +10308,7 @@ class PVEAgentVmidQemuNodeNodesExecStatus {
 
   /**
    * Gets the status of the given pid started by the guest-agent
-   * @param {int} pid The PID to query
+   * @param {number} pid The PID to query
    * @returns {Promise<Result>}
    */
   async execStatus(pid) {
@@ -10014,10 +10414,7 @@ class PVEVmidQemuNodeNodesRrd {
       timeframe: timeframe,
       cf: cf,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/rrd`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/rrd`, parameters);
   }
 }
 
@@ -10049,10 +10446,7 @@ class PVEVmidQemuNodeNodesRrddata {
       timeframe: timeframe,
       cf: cf,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/rrddata`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/rrddata`, parameters);
   }
 }
 
@@ -10082,24 +10476,22 @@ class PVEVmidQemuNodeNodesConfig {
       current: current,
       snapshot: snapshot,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/config`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/config`, parameters);
   }
   /**
    * Set virtual machine options (asynchronous API).
    * @param {boolean} acpi Enable/disable ACPI.
    * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
    * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
+   * @param {boolean} allow_ksm Allow memory pages of this guest to be merged via KSM (Kernel Samepage Merging).
    * @param {string} amd_sev Secure Encrypted Virtualization (SEV) features by AMD CPUs
    * @param {string} arch Virtual processor architecture. Defaults to the host.
    *   Enum: x86_64,aarch64
    * @param {string} args Arbitrary arguments passed to kvm.
    * @param {string} audio0 Configure a audio device, useful in combination with QXL/Spice.
    * @param {boolean} autostart Automatic restart after crash (currently ignored).
-   * @param {int} background_delay Time to wait for the task to finish. We return 'null' if the task finish within that time.
-   * @param {int} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
+   * @param {number} background_delay Time to wait for the task to finish. We return 'null' if the task finish within that time.
+   * @param {number} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
    * @param {string} bios Select BIOS implementation.
    *   Enum: seabios,ovmf
    * @param {string} boot Specify guest boot order. Use the 'order=' sub-property as usage with no key or 'legacy=' is deprecated.
@@ -10111,10 +10503,10 @@ class PVEVmidQemuNodeNodesConfig {
    *   Enum: configdrive2,nocloud,opennebula
    * @param {boolean} ciupgrade cloud-init: do an automatic package upgrade after the first boot.
    * @param {string} ciuser cloud-init: User name to change ssh keys and password for instead of the image's configured default user.
-   * @param {int} cores The number of cores per socket.
+   * @param {number} cores The number of cores per socket.
    * @param {string} cpu Emulated CPU type.
-   * @param {float} cpulimit Limit of CPU usage.
-   * @param {int} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
+   * @param {number} cpulimit Limit of CPU usage.
+   * @param {number} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description for the VM. Shown in the web-interface VM's summary. This is saved as comment inside the configuration file.
    * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -10122,13 +10514,14 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {boolean} force Force physical removal. Without this, we simple remove the disk from the config file and create an additional configuration entry called 'unused[n]', which contains the volume ID. Unlink of unused[n] always cause physical removal.
    * @param {boolean} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
    * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
-   * @param {array} hostpciN Map host PCI devices into guest.
+   * @param {Array} hostpciN Map host PCI devices into guest.
    * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory', 'usb' and 'cloudinit'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`. USB hotplugging is possible for guests with machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7.
-   * @param {string} hugepages Enable/disable hugepages memory.
+   * @param {string} hugepages Enables hugepages memory.  Sets the size of hugepages in MiB. If the value is set to 'any' then 1 GiB hugepages will be used if possible, otherwise the size will fall back to 2 MiB.
    *   Enum: any,2,1024
-   * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {string} import_working_storage A file-based storage with 'images' content-type enabled, which is used as an intermediary extraction storage during import. Defaults to the source storage.
-   * @param {array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
+   * @param {string} intel_tdx Trusted Domain Extension (TDX) features by Intel CPUs
+   * @param {Array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
    * @param {string} ivshmem Inter-VM shared memory. Useful for direct communication between VMs, or to the host.
    * @param {boolean} keephugepages Use together with hugepages. If enabled, hugepages will not not be deleted after VM shutdown and can be used for subsequent starts.
    * @param {string} keyboard Keyboard layout for VNC server. This option is generally not required and is often better handled from within the guest OS.
@@ -10139,32 +10532,32 @@ class PVEVmidQemuNodeNodesConfig {
    *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
    * @param {string} machine Specify the QEMU machine.
    * @param {string} memory Memory properties.
-   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
-   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
+   * @param {number} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
+   * @param {number} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
    * @param {string} name Set a name for the VM. Only used on the configuration web interface.
    * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
-   * @param {array} netN Specify network devices.
+   * @param {Array} netN Specify network devices.
    * @param {boolean} numa Enable/disable NUMA.
-   * @param {array} numaN NUMA topology.
+   * @param {Array} numaN NUMA topology.
    * @param {boolean} onboot Specifies whether a VM will be started during system bootup.
    * @param {string} ostype Specify guest operating system.
    *   Enum: other,wxp,w2k,w2k3,w2k8,wvista,win7,win8,win10,win11,l24,l26,solaris
-   * @param {array} parallelN Map host parallel devices (n is 0 to 2).
+   * @param {Array} parallelN Map host parallel devices (n is 0 to 2).
    * @param {boolean} protection Sets the protection flag of the VM. This will disable the remove VM and remove disk operations.
    * @param {boolean} reboot Allow reboot. If set to '0' the VM exit on reboot.
    * @param {string} revert Revert a pending change.
    * @param {string} rng0 Configure a VirtIO-based Random Number Generator.
-   * @param {array} sataN Use volume as SATA hard disk or CD-ROM (n is 0 to 5). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} sataN Use volume as SATA hard disk or CD-ROM (n is 0 to 5). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {string} scsihw SCSI controller model
    *   Enum: lsi,lsi53c810,virtio-scsi-pci,virtio-scsi-single,megasas,pvscsi
    * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
-   * @param {array} serialN Create a serial device inside the VM (n is 0 to 3)
-   * @param {int} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
+   * @param {Array} serialN Create a serial device inside the VM (n is 0 to 3)
+   * @param {number} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
    * @param {boolean} skiplock Ignore locks - only root is allowed to use this option.
    * @param {string} smbios1 Specify SMBIOS type 1 fields.
-   * @param {int} smp The number of CPUs. Please use option -sockets instead.
-   * @param {int} sockets The number of CPU sockets.
+   * @param {number} smp The number of CPUs. Please use option -sockets instead.
+   * @param {number} sockets The number of CPU sockets.
    * @param {string} spice_enhancements Configure additional enhancements for SPICE.
    * @param {string} sshkeys cloud-init: Setup public SSH keys (one key per line, OpenSSH format).
    * @param {string} startdate Set the initial date of the real time clock. Valid format for date are:'now' or '2006-06-17T16:01:21' or '2006-06-17'.
@@ -10174,12 +10567,12 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {boolean} tdf Enable/disable time drift fix.
    * @param {boolean} template Enable/disable Template.
    * @param {string} tpmstate0 Configure a Disk for storing TPM state. The format is fixed to 'raw'. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and 4 MiB will be used instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
-   * @param {array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
-   * @param {int} vcpus Number of hotplugged vcpus.
+   * @param {Array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
+   * @param {Array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
+   * @param {number} vcpus Number of hotplugged vcpus.
    * @param {string} vga Configure the VGA hardware.
-   * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
+   * @param {Array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
    * @param {string} vmgenid Set VM Generation ID. Use '1' to autogenerate on create or update, pass '0' to disable explicitly.
    * @param {string} vmstatestorage Default storage for VM state volumes/files.
    * @param {string} watchdog Create a virtual hardware watchdog device.
@@ -10189,6 +10582,7 @@ class PVEVmidQemuNodeNodesConfig {
     acpi,
     affinity,
     agent,
+    allow_ksm,
     amd_sev,
     arch,
     args,
@@ -10221,6 +10615,7 @@ class PVEVmidQemuNodeNodesConfig {
     hugepages,
     ideN,
     import_working_storage,
+    intel_tdx,
     ipconfigN,
     ivshmem,
     keephugepages,
@@ -10277,6 +10672,7 @@ class PVEVmidQemuNodeNodesConfig {
       acpi: acpi,
       affinity: affinity,
       agent: agent,
+      "allow-ksm": allow_ksm,
       "amd-sev": amd_sev,
       arch: arch,
       args: args,
@@ -10307,6 +10703,7 @@ class PVEVmidQemuNodeNodesConfig {
       hotplug: hotplug,
       hugepages: hugepages,
       "import-working-storage": import_working_storage,
+      "intel-tdx": intel_tdx,
       ivshmem: ivshmem,
       keephugepages: keephugepages,
       keyboard: keyboard,
@@ -10361,23 +10758,21 @@ class PVEVmidQemuNodeNodesConfig {
     this.#client.addIndexedParameter(parameters, "usb", usbN);
     this.#client.addIndexedParameter(parameters, "virtio", virtioN);
     this.#client.addIndexedParameter(parameters, "virtiofs", virtiofsN);
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/config`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/config`, parameters);
   }
   /**
    * Set virtual machine options (synchronous API) - You should consider using the POST method instead for any actions involving hotplug or storage allocation.
    * @param {boolean} acpi Enable/disable ACPI.
    * @param {string} affinity List of host cores used to execute guest processes, for example: 0,5,8-11
    * @param {string} agent Enable/disable communication with the QEMU Guest Agent and its properties.
+   * @param {boolean} allow_ksm Allow memory pages of this guest to be merged via KSM (Kernel Samepage Merging).
    * @param {string} amd_sev Secure Encrypted Virtualization (SEV) features by AMD CPUs
    * @param {string} arch Virtual processor architecture. Defaults to the host.
    *   Enum: x86_64,aarch64
    * @param {string} args Arbitrary arguments passed to kvm.
    * @param {string} audio0 Configure a audio device, useful in combination with QXL/Spice.
    * @param {boolean} autostart Automatic restart after crash (currently ignored).
-   * @param {int} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
+   * @param {number} balloon Amount of target RAM for the VM in MiB. Using zero disables the ballon driver.
    * @param {string} bios Select BIOS implementation.
    *   Enum: seabios,ovmf
    * @param {string} boot Specify guest boot order. Use the 'order=' sub-property as usage with no key or 'legacy=' is deprecated.
@@ -10389,10 +10784,10 @@ class PVEVmidQemuNodeNodesConfig {
    *   Enum: configdrive2,nocloud,opennebula
    * @param {boolean} ciupgrade cloud-init: do an automatic package upgrade after the first boot.
    * @param {string} ciuser cloud-init: User name to change ssh keys and password for instead of the image's configured default user.
-   * @param {int} cores The number of cores per socket.
+   * @param {number} cores The number of cores per socket.
    * @param {string} cpu Emulated CPU type.
-   * @param {float} cpulimit Limit of CPU usage.
-   * @param {int} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
+   * @param {number} cpulimit Limit of CPU usage.
+   * @param {number} cpuunits CPU weight for a VM, will be clamped to [1, 10000] in cgroup v2.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description for the VM. Shown in the web-interface VM's summary. This is saved as comment inside the configuration file.
    * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
@@ -10400,12 +10795,13 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {boolean} force Force physical removal. Without this, we simple remove the disk from the config file and create an additional configuration entry called 'unused[n]', which contains the volume ID. Unlink of unused[n] always cause physical removal.
    * @param {boolean} freeze Freeze CPU at startup (use 'c' monitor command to start execution).
    * @param {string} hookscript Script that will be executed during various steps in the vms lifetime.
-   * @param {array} hostpciN Map host PCI devices into guest.
+   * @param {Array} hostpciN Map host PCI devices into guest.
    * @param {string} hotplug Selectively enable hotplug features. This is a comma separated list of hotplug features: 'network', 'disk', 'cpu', 'memory', 'usb' and 'cloudinit'. Use '0' to disable hotplug completely. Using '1' as value is an alias for the default `network,disk,usb`. USB hotplugging is possible for guests with machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7.
-   * @param {string} hugepages Enable/disable hugepages memory.
+   * @param {string} hugepages Enables hugepages memory.  Sets the size of hugepages in MiB. If the value is set to 'any' then 1 GiB hugepages will be used if possible, otherwise the size will fall back to 2 MiB.
    *   Enum: any,2,1024
-   * @param {array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
+   * @param {Array} ideN Use volume as IDE hard disk or CD-ROM (n is 0 to 3). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {string} intel_tdx Trusted Domain Extension (TDX) features by Intel CPUs
+   * @param {Array} ipconfigN cloud-init: Specify IP addresses and gateways for the corresponding interface.  IP addresses use CIDR notation, gateways are optional but need an IP of the same type specified.  The special string 'dhcp' can be used for IP addresses to use DHCP, in which case no explicit gateway should be provided. For IPv6 the special string 'auto' can be used to use stateless autoconfiguration. This requires cloud-init 19.4 or newer.  If cloud-init is enabled and neither an IPv4 nor an IPv6 address is specified, it defaults to using dhcp on IPv4.
    * @param {string} ivshmem Inter-VM shared memory. Useful for direct communication between VMs, or to the host.
    * @param {boolean} keephugepages Use together with hugepages. If enabled, hugepages will not not be deleted after VM shutdown and can be used for subsequent starts.
    * @param {string} keyboard Keyboard layout for VNC server. This option is generally not required and is often better handled from within the guest OS.
@@ -10416,32 +10812,32 @@ class PVEVmidQemuNodeNodesConfig {
    *   Enum: backup,clone,create,migrate,rollback,snapshot,snapshot-delete,suspending,suspended
    * @param {string} machine Specify the QEMU machine.
    * @param {string} memory Memory properties.
-   * @param {float} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
-   * @param {int} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
+   * @param {number} migrate_downtime Set maximum tolerated downtime (in seconds) for migrations. Should the migration not be able to converge in the very end, because too much newly dirtied RAM needs to be transferred, the limit will be increased automatically step-by-step until migration can converge.
+   * @param {number} migrate_speed Set maximum speed (in MB/s) for migrations. Value 0 is no limit.
    * @param {string} name Set a name for the VM. Only used on the configuration web interface.
    * @param {string} nameserver cloud-init: Sets DNS server IP address for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
-   * @param {array} netN Specify network devices.
+   * @param {Array} netN Specify network devices.
    * @param {boolean} numa Enable/disable NUMA.
-   * @param {array} numaN NUMA topology.
+   * @param {Array} numaN NUMA topology.
    * @param {boolean} onboot Specifies whether a VM will be started during system bootup.
    * @param {string} ostype Specify guest operating system.
    *   Enum: other,wxp,w2k,w2k3,w2k8,wvista,win7,win8,win10,win11,l24,l26,solaris
-   * @param {array} parallelN Map host parallel devices (n is 0 to 2).
+   * @param {Array} parallelN Map host parallel devices (n is 0 to 2).
    * @param {boolean} protection Sets the protection flag of the VM. This will disable the remove VM and remove disk operations.
    * @param {boolean} reboot Allow reboot. If set to '0' the VM exit on reboot.
    * @param {string} revert Revert a pending change.
    * @param {string} rng0 Configure a VirtIO-based Random Number Generator.
-   * @param {array} sataN Use volume as SATA hard disk or CD-ROM (n is 0 to 5). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} sataN Use volume as SATA hard disk or CD-ROM (n is 0 to 5). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} scsiN Use volume as SCSI hard disk or CD-ROM (n is 0 to 30). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
    * @param {string} scsihw SCSI controller model
    *   Enum: lsi,lsi53c810,virtio-scsi-pci,virtio-scsi-single,megasas,pvscsi
    * @param {string} searchdomain cloud-init: Sets DNS search domains for a container. Create will automatically use the setting from the host if neither searchdomain nor nameserver are set.
-   * @param {array} serialN Create a serial device inside the VM (n is 0 to 3)
-   * @param {int} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
+   * @param {Array} serialN Create a serial device inside the VM (n is 0 to 3)
+   * @param {number} shares Amount of memory shares for auto-ballooning. The larger the number is, the more memory this VM gets. Number is relative to weights of all other running VMs. Using zero disables auto-ballooning. Auto-ballooning is done by pvestatd.
    * @param {boolean} skiplock Ignore locks - only root is allowed to use this option.
    * @param {string} smbios1 Specify SMBIOS type 1 fields.
-   * @param {int} smp The number of CPUs. Please use option -sockets instead.
-   * @param {int} sockets The number of CPU sockets.
+   * @param {number} smp The number of CPUs. Please use option -sockets instead.
+   * @param {number} sockets The number of CPU sockets.
    * @param {string} spice_enhancements Configure additional enhancements for SPICE.
    * @param {string} sshkeys cloud-init: Setup public SSH keys (one key per line, OpenSSH format).
    * @param {string} startdate Set the initial date of the real time clock. Valid format for date are:'now' or '2006-06-17T16:01:21' or '2006-06-17'.
@@ -10451,12 +10847,12 @@ class PVEVmidQemuNodeNodesConfig {
    * @param {boolean} tdf Enable/disable time drift fix.
    * @param {boolean} template Enable/disable Template.
    * @param {string} tpmstate0 Configure a Disk for storing TPM state. The format is fixed to 'raw'. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Note that SIZE_IN_GiB is ignored here and 4 MiB will be used instead. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
-   * @param {array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
-   * @param {int} vcpus Number of hotplugged vcpus.
+   * @param {Array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
+   * @param {Array} usbN Configure an USB device (n is 0 to 4, for machine version &amp;gt;= 7.1 and ostype l26 or windows &amp;gt; 7, n can be up to 14).
+   * @param {number} vcpus Number of hotplugged vcpus.
    * @param {string} vga Configure the VGA hardware.
-   * @param {array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
-   * @param {array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
+   * @param {Array} virtioN Use volume as VIRTIO hard disk (n is 0 to 15). Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume. Use STORAGE_ID:0 and the 'import-from' parameter to import from an existing volume.
+   * @param {Array} virtiofsN Configuration for sharing a directory between host and guest using Virtio-fs.
    * @param {string} vmgenid Set VM Generation ID. Use '1' to autogenerate on create or update, pass '0' to disable explicitly.
    * @param {string} vmstatestorage Default storage for VM state volumes/files.
    * @param {string} watchdog Create a virtual hardware watchdog device.
@@ -10466,6 +10862,7 @@ class PVEVmidQemuNodeNodesConfig {
     acpi,
     affinity,
     agent,
+    allow_ksm,
     amd_sev,
     arch,
     args,
@@ -10496,6 +10893,7 @@ class PVEVmidQemuNodeNodesConfig {
     hotplug,
     hugepages,
     ideN,
+    intel_tdx,
     ipconfigN,
     ivshmem,
     keephugepages,
@@ -10552,6 +10950,7 @@ class PVEVmidQemuNodeNodesConfig {
       acpi: acpi,
       affinity: affinity,
       agent: agent,
+      "allow-ksm": allow_ksm,
       "amd-sev": amd_sev,
       arch: arch,
       args: args,
@@ -10580,6 +10979,7 @@ class PVEVmidQemuNodeNodesConfig {
       hookscript: hookscript,
       hotplug: hotplug,
       hugepages: hugepages,
+      "intel-tdx": intel_tdx,
       ivshmem: ivshmem,
       keephugepages: keephugepages,
       keyboard: keyboard,
@@ -10634,10 +11034,7 @@ class PVEVmidQemuNodeNodesConfig {
     this.#client.addIndexedParameter(parameters, "usb", usbN);
     this.#client.addIndexedParameter(parameters, "virtio", virtioN);
     this.#client.addIndexedParameter(parameters, "virtiofs", virtiofsN);
-    return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/config`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/qemu/${this.#vmid}/config`, parameters);
   }
 }
 
@@ -10661,9 +11058,7 @@ class PVEVmidQemuNodeNodesPending {
    * @returns {Promise<Result>}
    */
   async vmPending() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/pending`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/pending`);
   }
 }
 
@@ -10689,11 +11084,7 @@ class PVEVmidQemuNodeNodesCloudinit {
    */
   get dump() {
     return this.#dump == null
-      ? (this.#dump = new PVECloudinitVmidQemuNodeNodesDump(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#dump = new PVECloudinitVmidQemuNodeNodesDump(this.#client, this.#node, this.#vmid))
       : this.#dump;
   }
 
@@ -10702,18 +11093,14 @@ class PVEVmidQemuNodeNodesCloudinit {
    * @returns {Promise<Result>}
    */
   async cloudinitPending() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit`);
   }
   /**
    * Regenerate and change cloudinit config drive.
    * @returns {Promise<Result>}
    */
   async cloudinitUpdate() {
-    return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit`
-    );
+    return await this.#client.set(`/nodes/${this.#node}/qemu/${this.#vmid}/cloudinit`);
   }
 }
 /**
@@ -10772,10 +11159,7 @@ class PVEVmidQemuNodeNodesUnlink {
       idlist: idlist,
       force: force,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/unlink`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/qemu/${this.#vmid}/unlink`, parameters);
   }
 }
 
@@ -10858,8 +11242,8 @@ class PVEVmidQemuNodeNodesVncwebsocket {
   }
 
   /**
-   * Opens a weksocket for VNC traffic.
-   * @param {int} port Port number returned by previous vncproxy call.
+   * Opens a websocket for VNC traffic.
+   * @param {number} port Port number returned by previous vncproxy call.
    * @param {string} vncticket Ticket from previous call to vncproxy.
    * @returns {Promise<Result>}
    */
@@ -10940,11 +11324,7 @@ class PVEVmidQemuNodeNodesStatus {
    */
   get start() {
     return this.#start == null
-      ? (this.#start = new PVEStatusVmidQemuNodeNodesStart(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#start = new PVEStatusVmidQemuNodeNodesStart(this.#client, this.#node, this.#vmid))
       : this.#start;
   }
   #stop;
@@ -10954,11 +11334,7 @@ class PVEVmidQemuNodeNodesStatus {
    */
   get stop() {
     return this.#stop == null
-      ? (this.#stop = new PVEStatusVmidQemuNodeNodesStop(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#stop = new PVEStatusVmidQemuNodeNodesStop(this.#client, this.#node, this.#vmid))
       : this.#stop;
   }
   #reset;
@@ -10968,11 +11344,7 @@ class PVEVmidQemuNodeNodesStatus {
    */
   get reset() {
     return this.#reset == null
-      ? (this.#reset = new PVEStatusVmidQemuNodeNodesReset(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#reset = new PVEStatusVmidQemuNodeNodesReset(this.#client, this.#node, this.#vmid))
       : this.#reset;
   }
   #shutdown;
@@ -10996,11 +11368,7 @@ class PVEVmidQemuNodeNodesStatus {
    */
   get reboot() {
     return this.#reboot == null
-      ? (this.#reboot = new PVEStatusVmidQemuNodeNodesReboot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#reboot = new PVEStatusVmidQemuNodeNodesReboot(this.#client, this.#node, this.#vmid))
       : this.#reboot;
   }
   #suspend;
@@ -11024,11 +11392,7 @@ class PVEVmidQemuNodeNodesStatus {
    */
   get resume() {
     return this.#resume == null
-      ? (this.#resume = new PVEStatusVmidQemuNodeNodesResume(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#resume = new PVEStatusVmidQemuNodeNodesResume(this.#client, this.#node, this.#vmid))
       : this.#resume;
   }
 
@@ -11037,9 +11401,7 @@ class PVEVmidQemuNodeNodesStatus {
    * @returns {Promise<Result>}
    */
   async vmcmdidx() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/status`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/status`);
   }
 }
 /**
@@ -11062,9 +11424,7 @@ class PVEStatusVmidQemuNodeNodesCurrent {
    * @returns {Promise<Result>}
    */
   async vmStatus() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/status/current`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/status/current`);
   }
 }
 
@@ -11091,10 +11451,12 @@ class PVEStatusVmidQemuNodeNodesStart {
    * @param {string} migration_network CIDR of the (sub) network that is used for migration.
    * @param {string} migration_type Migration traffic is encrypted using an SSH tunnel by default. On secure, completely private networks this can be disabled to increase performance.
    *   Enum: secure,insecure
+   * @param {string} nets_host_mtu Used for migration compat. List of VirtIO network devices and their effective host_mtu setting according to the QEMU object model on the source side of the migration. A value of 0 means that the host_mtu parameter is to be avoided for the corresponding device.
    * @param {boolean} skiplock Ignore locks - only root is allowed to use this option.
    * @param {string} stateuri Some command save/restore state from this location.
    * @param {string} targetstorage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
-   * @param {int} timeout Wait maximal timeout seconds.
+   * @param {number} timeout Wait maximal timeout seconds.
+   * @param {boolean} with_conntrack_state Whether to migrate conntrack entries for running VMs.
    * @returns {Promise<Result>}
    */
   async vmStart(
@@ -11103,10 +11465,12 @@ class PVEStatusVmidQemuNodeNodesStart {
     migratedfrom,
     migration_network,
     migration_type,
+    nets_host_mtu,
     skiplock,
     stateuri,
     targetstorage,
-    timeout
+    timeout,
+    with_conntrack_state
   ) {
     const parameters = {
       "force-cpu": force_cpu,
@@ -11114,10 +11478,12 @@ class PVEStatusVmidQemuNodeNodesStart {
       migratedfrom: migratedfrom,
       migration_network: migration_network,
       migration_type: migration_type,
+      "nets-host-mtu": nets_host_mtu,
       skiplock: skiplock,
       stateuri: stateuri,
       targetstorage: targetstorage,
       timeout: timeout,
+      "with-conntrack-state": with_conntrack_state,
     };
     return await this.#client.create(
       `/nodes/${this.#node}/qemu/${this.#vmid}/status/start`,
@@ -11147,7 +11513,7 @@ class PVEStatusVmidQemuNodeNodesStop {
    * @param {string} migratedfrom The cluster node name.
    * @param {boolean} overrule_shutdown Try to abort active 'qmshutdown' tasks before stopping.
    * @param {boolean} skiplock Ignore locks - only root is allowed to use this option.
-   * @param {int} timeout Wait maximal timeout seconds.
+   * @param {number} timeout Wait maximal timeout seconds.
    * @returns {Promise<Result>}
    */
   async vmStop(keepActive, migratedfrom, overrule_shutdown, skiplock, timeout) {
@@ -11214,7 +11580,7 @@ class PVEStatusVmidQemuNodeNodesShutdown {
    * @param {boolean} forceStop Make sure the VM stops.
    * @param {boolean} keepActive Do not deactivate storage volumes.
    * @param {boolean} skiplock Ignore locks - only root is allowed to use this option.
-   * @param {int} timeout Wait maximal timeout seconds.
+   * @param {number} timeout Wait maximal timeout seconds.
    * @returns {Promise<Result>}
    */
   async vmShutdown(forceStop, keepActive, skiplock, timeout) {
@@ -11248,7 +11614,7 @@ class PVEStatusVmidQemuNodeNodesReboot {
 
   /**
    * Reboot the VM by shutting it down, and starting it again. Applies pending changes.
-   * @param {int} timeout Wait maximal timeout seconds for the shutdown.
+   * @param {number} timeout Wait maximal timeout seconds for the shutdown.
    * @returns {Promise<Result>}
    */
   async vmReboot(timeout) {
@@ -11354,10 +11720,7 @@ class PVEVmidQemuNodeNodesSendkey {
       key: key,
       skiplock: skiplock,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/sendkey`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/qemu/${this.#vmid}/sendkey`, parameters);
   }
 }
 
@@ -11388,10 +11751,7 @@ class PVEVmidQemuNodeNodesFeature {
       feature: feature,
       snapname: snapname,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/feature`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/feature`, parameters);
   }
 }
 
@@ -11412,8 +11772,8 @@ class PVEVmidQemuNodeNodesClone {
 
   /**
    * Create a copy of virtual machine/template.
-   * @param {int} newid VMID for the clone.
-   * @param {int} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} newid VMID for the clone.
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {string} description Description for the new VM.
    * @param {string} format Target format for file storage. Only valid for full clone.
    *   Enum: raw,qcow2,vmdk
@@ -11425,18 +11785,7 @@ class PVEVmidQemuNodeNodesClone {
    * @param {string} target Target node. Only allowed if the original VM is on shared storage.
    * @returns {Promise<Result>}
    */
-  async cloneVm(
-    newid,
-    bwlimit,
-    description,
-    format,
-    full,
-    name,
-    pool,
-    snapname,
-    storage,
-    target
-  ) {
+  async cloneVm(newid, bwlimit, description, format, full, name, pool, snapname, storage, target) {
     const parameters = {
       newid: newid,
       bwlimit: bwlimit,
@@ -11449,10 +11798,7 @@ class PVEVmidQemuNodeNodesClone {
       storage: storage,
       target: target,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/clone`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/clone`, parameters);
   }
 }
 
@@ -11475,16 +11821,16 @@ class PVEVmidQemuNodeNodesMoveDisk {
    * Move volume to different storage or to a different VM.
    * @param {string} disk The disk you want to move.
    *   Enum: ide0,ide1,ide2,ide3,scsi0,scsi1,scsi2,scsi3,scsi4,scsi5,scsi6,scsi7,scsi8,scsi9,scsi10,scsi11,scsi12,scsi13,scsi14,scsi15,scsi16,scsi17,scsi18,scsi19,scsi20,scsi21,scsi22,scsi23,scsi24,scsi25,scsi26,scsi27,scsi28,scsi29,scsi30,virtio0,virtio1,virtio2,virtio3,virtio4,virtio5,virtio6,virtio7,virtio8,virtio9,virtio10,virtio11,virtio12,virtio13,virtio14,virtio15,sata0,sata1,sata2,sata3,sata4,sata5,efidisk0,tpmstate0,unused0,unused1,unused2,unused3,unused4,unused5,unused6,unused7,unused8,unused9,unused10,unused11,unused12,unused13,unused14,unused15,unused16,unused17,unused18,unused19,unused20,unused21,unused22,unused23,unused24,unused25,unused26,unused27,unused28,unused29,unused30,unused31,unused32,unused33,unused34,unused35,unused36,unused37,unused38,unused39,unused40,unused41,unused42,unused43,unused44,unused45,unused46,unused47,unused48,unused49,unused50,unused51,unused52,unused53,unused54,unused55,unused56,unused57,unused58,unused59,unused60,unused61,unused62,unused63,unused64,unused65,unused66,unused67,unused68,unused69,unused70,unused71,unused72,unused73,unused74,unused75,unused76,unused77,unused78,unused79,unused80,unused81,unused82,unused83,unused84,unused85,unused86,unused87,unused88,unused89,unused90,unused91,unused92,unused93,unused94,unused95,unused96,unused97,unused98,unused99,unused100,unused101,unused102,unused103,unused104,unused105,unused106,unused107,unused108,unused109,unused110,unused111,unused112,unused113,unused114,unused115,unused116,unused117,unused118,unused119,unused120,unused121,unused122,unused123,unused124,unused125,unused126,unused127,unused128,unused129,unused130,unused131,unused132,unused133,unused134,unused135,unused136,unused137,unused138,unused139,unused140,unused141,unused142,unused143,unused144,unused145,unused146,unused147,unused148,unused149,unused150,unused151,unused152,unused153,unused154,unused155,unused156,unused157,unused158,unused159,unused160,unused161,unused162,unused163,unused164,unused165,unused166,unused167,unused168,unused169,unused170,unused171,unused172,unused173,unused174,unused175,unused176,unused177,unused178,unused179,unused180,unused181,unused182,unused183,unused184,unused185,unused186,unused187,unused188,unused189,unused190,unused191,unused192,unused193,unused194,unused195,unused196,unused197,unused198,unused199,unused200,unused201,unused202,unused203,unused204,unused205,unused206,unused207,unused208,unused209,unused210,unused211,unused212,unused213,unused214,unused215,unused216,unused217,unused218,unused219,unused220,unused221,unused222,unused223,unused224,unused225,unused226,unused227,unused228,unused229,unused230,unused231,unused232,unused233,unused234,unused235,unused236,unused237,unused238,unused239,unused240,unused241,unused242,unused243,unused244,unused245,unused246,unused247,unused248,unused249,unused250,unused251,unused252,unused253,unused254,unused255
-   * @param {int} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {boolean} delete_ Delete the original disk after successful copy. By default the original disk is kept as unused disk.
-   * @param {string} digest Prevent changes if current configuration file has different SHA1" 		    ." digest. This can be used to prevent concurrent modifications.
+   * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
    * @param {string} format Target Format.
    *   Enum: raw,qcow2,vmdk
    * @param {string} storage Target storage.
-   * @param {string} target_digest Prevent changes if the current config file of the target VM has a" 		    ." different SHA1 digest. This can be used to detect concurrent modifications.
+   * @param {string} target_digest Prevent changes if the current config file of the target VM has a different SHA1 digest. This can be used to detect concurrent modifications.
    * @param {string} target_disk The config key the disk will be moved to on the target VM (for example, ide0 or scsi1). Default is the source disk key.
    *   Enum: ide0,ide1,ide2,ide3,scsi0,scsi1,scsi2,scsi3,scsi4,scsi5,scsi6,scsi7,scsi8,scsi9,scsi10,scsi11,scsi12,scsi13,scsi14,scsi15,scsi16,scsi17,scsi18,scsi19,scsi20,scsi21,scsi22,scsi23,scsi24,scsi25,scsi26,scsi27,scsi28,scsi29,scsi30,virtio0,virtio1,virtio2,virtio3,virtio4,virtio5,virtio6,virtio7,virtio8,virtio9,virtio10,virtio11,virtio12,virtio13,virtio14,virtio15,sata0,sata1,sata2,sata3,sata4,sata5,efidisk0,tpmstate0,unused0,unused1,unused2,unused3,unused4,unused5,unused6,unused7,unused8,unused9,unused10,unused11,unused12,unused13,unused14,unused15,unused16,unused17,unused18,unused19,unused20,unused21,unused22,unused23,unused24,unused25,unused26,unused27,unused28,unused29,unused30,unused31,unused32,unused33,unused34,unused35,unused36,unused37,unused38,unused39,unused40,unused41,unused42,unused43,unused44,unused45,unused46,unused47,unused48,unused49,unused50,unused51,unused52,unused53,unused54,unused55,unused56,unused57,unused58,unused59,unused60,unused61,unused62,unused63,unused64,unused65,unused66,unused67,unused68,unused69,unused70,unused71,unused72,unused73,unused74,unused75,unused76,unused77,unused78,unused79,unused80,unused81,unused82,unused83,unused84,unused85,unused86,unused87,unused88,unused89,unused90,unused91,unused92,unused93,unused94,unused95,unused96,unused97,unused98,unused99,unused100,unused101,unused102,unused103,unused104,unused105,unused106,unused107,unused108,unused109,unused110,unused111,unused112,unused113,unused114,unused115,unused116,unused117,unused118,unused119,unused120,unused121,unused122,unused123,unused124,unused125,unused126,unused127,unused128,unused129,unused130,unused131,unused132,unused133,unused134,unused135,unused136,unused137,unused138,unused139,unused140,unused141,unused142,unused143,unused144,unused145,unused146,unused147,unused148,unused149,unused150,unused151,unused152,unused153,unused154,unused155,unused156,unused157,unused158,unused159,unused160,unused161,unused162,unused163,unused164,unused165,unused166,unused167,unused168,unused169,unused170,unused171,unused172,unused173,unused174,unused175,unused176,unused177,unused178,unused179,unused180,unused181,unused182,unused183,unused184,unused185,unused186,unused187,unused188,unused189,unused190,unused191,unused192,unused193,unused194,unused195,unused196,unused197,unused198,unused199,unused200,unused201,unused202,unused203,unused204,unused205,unused206,unused207,unused208,unused209,unused210,unused211,unused212,unused213,unused214,unused215,unused216,unused217,unused218,unused219,unused220,unused221,unused222,unused223,unused224,unused225,unused226,unused227,unused228,unused229,unused230,unused231,unused232,unused233,unused234,unused235,unused236,unused237,unused238,unused239,unused240,unused241,unused242,unused243,unused244,unused245,unused246,unused247,unused248,unused249,unused250,unused251,unused252,unused253,unused254,unused255
-   * @param {int} target_vmid The (unique) ID of the VM.
+   * @param {number} target_vmid The (unique) ID of the VM.
    * @returns {Promise<Result>}
    */
   async moveVmDisk(
@@ -11538,21 +11884,19 @@ class PVEVmidQemuNodeNodesMigrate {
    */
   async migrateVmPrecondition(target) {
     const parameters = { target: target };
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/migrate`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/migrate`, parameters);
   }
   /**
    * Migrate virtual machine. Creates a new migration task.
    * @param {string} target Target node.
-   * @param {int} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {boolean} force Allow to migrate VMs which use local devices. Only root may use this option.
    * @param {string} migration_network CIDR of the (sub) network that is used for migration.
    * @param {string} migration_type Migration traffic is encrypted using an SSH tunnel by default. On secure, completely private networks this can be disabled to increase performance.
    *   Enum: secure,insecure
    * @param {boolean} online Use online/live migration if VM is running. Ignored if VM is stopped.
    * @param {string} targetstorage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
+   * @param {boolean} with_conntrack_state Whether to migrate conntrack entries for running VMs.
    * @param {boolean} with_local_disks Enable live storage migration for local disk
    * @returns {Promise<Result>}
    */
@@ -11564,6 +11908,7 @@ class PVEVmidQemuNodeNodesMigrate {
     migration_type,
     online,
     targetstorage,
+    with_conntrack_state,
     with_local_disks
   ) {
     const parameters = {
@@ -11574,12 +11919,10 @@ class PVEVmidQemuNodeNodesMigrate {
       migration_type: migration_type,
       online: online,
       targetstorage: targetstorage,
+      "with-conntrack-state": with_conntrack_state,
       "with-local-disks": with_local_disks,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/migrate`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/migrate`, parameters);
   }
 }
 
@@ -11603,10 +11946,10 @@ class PVEVmidQemuNodeNodesRemoteMigrate {
    * @param {string} target_bridge Mapping from source to target bridges. Providing only a single bridge ID maps all source bridges to that bridge. Providing the special value '1' will map each source bridge to itself.
    * @param {string} target_endpoint Remote target endpoint
    * @param {string} target_storage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
-   * @param {int} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {boolean} delete_ Delete the original VM and related data after successful migration. By default the original VM is kept on the source cluster in a stopped state.
    * @param {boolean} online Use online/live migration if VM is running. Ignored if VM is stopped.
-   * @param {int} target_vmid The (unique) ID of the VM.
+   * @param {number} target_vmid The (unique) ID of the VM.
    * @returns {Promise<Result>}
    */
   async remoteMigrateVm(
@@ -11656,10 +11999,7 @@ class PVEVmidQemuNodeNodesMonitor {
    */
   async monitor(command) {
     const parameters = { command: command };
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/monitor`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/monitor`, parameters);
   }
 }
 
@@ -11694,10 +12034,7 @@ class PVEVmidQemuNodeNodesResize {
       digest: digest,
       skiplock: skiplock,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/resize`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/qemu/${this.#vmid}/resize`, parameters);
   }
 }
 
@@ -11735,9 +12072,7 @@ class PVEVmidQemuNodeNodesSnapshot {
    * @returns {Promise<Result>}
    */
   async snapshotList() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/qemu/${this.#vmid}/snapshot`);
   }
   /**
    * Snapshot a VM.
@@ -11851,9 +12186,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
    */
   async getSnapshotConfig() {
     return await this.#client.get(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
-        this.#snapname
-      }/config`
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname}/config`
     );
   }
   /**
@@ -11864,9 +12197,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesConfig {
   async updateSnapshotConfig(description) {
     const parameters = { description: description };
     return await this.#client.set(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
-        this.#snapname
-      }/config`,
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname}/config`,
       parameters
     );
   }
@@ -11897,9 +12228,7 @@ class PVESnapnameSnapshotVmidQemuNodeNodesRollback {
   async rollback(start) {
     const parameters = { start: start };
     return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${
-        this.#snapname
-      }/rollback`,
+      `/nodes/${this.#node}/qemu/${this.#vmid}/snapshot/${this.#snapname}/rollback`,
       parameters
     );
   }
@@ -11961,10 +12290,7 @@ class PVEVmidQemuNodeNodesMtunnel {
       bridges: bridges,
       storages: storages,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/qemu/${this.#vmid}/mtunnel`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/qemu/${this.#vmid}/mtunnel`, parameters);
   }
 }
 
@@ -12002,6 +12328,36 @@ class PVEVmidQemuNodeNodesMtunnelwebsocket {
 }
 
 /**
+ * Class PVEVmidQemuNodeNodesDbusVmstate
+ */
+class PVEVmidQemuNodeNodesDbusVmstate {
+  #node;
+  #vmid;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vmid) {
+    this.#client = client;
+    this.#node = node;
+    this.#vmid = vmid;
+  }
+
+  /**
+   * Control the dbus-vmstate helper for a given running VM.
+   * @param {string} action Action to perform on the DBus VMState helper.
+   *   Enum: start,stop
+   * @returns {Promise<Result>}
+   */
+  async dbusVmstate(action) {
+    const parameters = { action: action };
+    return await this.#client.create(
+      `/nodes/${this.#node}/qemu/${this.#vmid}/dbus-vmstate`,
+      parameters
+    );
+  }
+}
+
+/**
  * Class PVENodeNodesLxc
  */
 class PVENodeNodesLxc {
@@ -12033,30 +12389,33 @@ class PVENodeNodesLxc {
   /**
    * Create or restore a container.
    * @param {string} ostemplate The OS template or backup file.
-   * @param {int} vmid The (unique) ID of the VM.
+   * @param {number} vmid The (unique) ID of the VM.
    * @param {string} arch OS architecture type.
    *   Enum: amd64,i386,arm64,armhf,riscv32,riscv64
-   * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {string} cmode Console mode. By default, the console command tries to open a connection to one of the available tty devices. By setting cmode to 'console' it tries to attach to /dev/console instead. If you set cmode to 'shell', it simply invokes a shell inside the container (no login).
    *   Enum: shell,console,tty
    * @param {boolean} console Attach a console device (/dev/console) to the container.
-   * @param {int} cores The number of cores assigned to the container. A container can use all available cores by default.
-   * @param {float} cpulimit Limit of CPU usage.  NOTE: If the computer has 2 CPUs, it has a total of '2' CPU time. Value '0' indicates no CPU limit.
-   * @param {int} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
+   * @param {number} cores The number of cores assigned to the container. A container can use all available cores by default.
+   * @param {number} cpulimit Limit of CPU usage.  NOTE: If the computer has 2 CPUs, it has a total of '2' CPU time. Value '0' indicates no CPU limit.
+   * @param {number} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
    * @param {boolean} debug Try to be more verbose. For now this only enables debug log-level on start.
    * @param {string} description Description for the Container. Shown in the web-interface CT's summary. This is saved as comment inside the configuration file.
-   * @param {array} devN Device to pass through to the container
+   * @param {Array} devN Device to pass through to the container
+   * @param {string} entrypoint Command to run as init, optionally with arguments; may start with an absolute path, relative path, or a binary in $PATH.
+   * @param {string} env The container runtime environment as NUL-separated list. Replaces any lxc.environment.runtime entries in the config.
    * @param {string} features Allow containers access to advanced features.
    * @param {boolean} force Allow to overwrite existing container.
+   * @param {boolean} ha_managed Add the CT as a HA resource after it was created.
    * @param {string} hookscript Script that will be executed during various steps in the containers lifetime.
    * @param {string} hostname Set a host name for the container.
    * @param {boolean} ignore_unpack_errors Ignore errors when extracting the template.
    * @param {string} lock Lock/unlock the container.
    *   Enum: backup,create,destroyed,disk,fstrim,migrate,mounted,rollback,snapshot,snapshot-delete
-   * @param {int} memory Amount of RAM for the container in MB.
-   * @param {array} mpN Use volume as container mount point. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume.
+   * @param {number} memory Amount of RAM for the container in MB.
+   * @param {Array} mpN Use volume as container mount point. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume.
    * @param {string} nameserver Sets DNS server IP address for a container. Create will automatically use the setting from the host if you neither set searchdomain nor nameserver.
-   * @param {array} netN Specifies network interfaces for the container.
+   * @param {Array} netN Specifies network interfaces for the container.
    * @param {boolean} onboot Specifies whether a container will be started during system bootup.
    * @param {string} ostype OS type. This is used to setup configuration inside the container, and corresponds to lxc setup scripts in /usr/share/lxc/config/&amp;lt;ostype&amp;gt;.common.conf. Value 'unmanaged' can be used to skip and OS specific setup.
    *   Enum: debian,devuan,ubuntu,centos,fedora,opensuse,archlinux,alpine,gentoo,nixos,unmanaged
@@ -12070,14 +12429,14 @@ class PVENodeNodesLxc {
    * @param {boolean} start Start the CT after its creation finished successfully.
    * @param {string} startup Startup and shutdown behavior. Order is a non-negative number defining the general startup order. Shutdown in done with reverse ordering. Additionally you can set the 'up' or 'down' delay in seconds, which specifies a delay to wait before the next VM is started or stopped.
    * @param {string} storage Default Storage.
-   * @param {int} swap Amount of SWAP for the container in MB.
+   * @param {number} swap Amount of SWAP for the container in MB.
    * @param {string} tags Tags of the Container. This is only meta information.
    * @param {boolean} template Enable/disable Template.
    * @param {string} timezone Time zone to use in the container. If option isn't set, then nothing will be done. Can be set to 'host' to match the host time zone, or an arbitrary time zone option from /usr/share/zoneinfo/zone.tab
-   * @param {int} tty Specify the number of tty available to the container
+   * @param {number} tty Specify the number of tty available to the container
    * @param {boolean} unique Assign a unique random ethernet address.
-   * @param {boolean} unprivileged Makes the container run as unprivileged user. (Should not be modified manually.)
-   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
+   * @param {boolean} unprivileged Makes the container run as unprivileged user. For creation, the default is 1. For restore, the default is the value from the backup. (Should not be modified manually.)
+   * @param {Array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
    * @returns {Promise<Result>}
    */
   async createVm(
@@ -12093,8 +12452,11 @@ class PVENodeNodesLxc {
     debug,
     description,
     devN,
+    entrypoint,
+    env,
     features,
     force,
+    ha_managed,
     hookscript,
     hostname,
     ignore_unpack_errors,
@@ -12136,8 +12498,11 @@ class PVENodeNodesLxc {
       cpuunits: cpuunits,
       debug: debug,
       description: description,
+      entrypoint: entrypoint,
+      env: env,
       features: features,
       force: force,
+      "ha-managed": ha_managed,
       hookscript: hookscript,
       hostname: hostname,
       "ignore-unpack-errors": ignore_unpack_errors,
@@ -12193,11 +12558,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get config() {
     return this.#config == null
-      ? (this.#config = new PVEVmidLxcNodeNodesConfig(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#config = new PVEVmidLxcNodeNodesConfig(this.#client, this.#node, this.#vmid))
       : this.#config;
   }
   #status;
@@ -12207,11 +12568,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get status() {
     return this.#status == null
-      ? (this.#status = new PVEVmidLxcNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#status = new PVEVmidLxcNodeNodesStatus(this.#client, this.#node, this.#vmid))
       : this.#status;
   }
   #snapshot;
@@ -12221,11 +12578,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get snapshot() {
     return this.#snapshot == null
-      ? (this.#snapshot = new PVEVmidLxcNodeNodesSnapshot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#snapshot = new PVEVmidLxcNodeNodesSnapshot(this.#client, this.#node, this.#vmid))
       : this.#snapshot;
   }
   #firewall;
@@ -12235,11 +12588,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get firewall() {
     return this.#firewall == null
-      ? (this.#firewall = new PVEVmidLxcNodeNodesFirewall(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#firewall = new PVEVmidLxcNodeNodesFirewall(this.#client, this.#node, this.#vmid))
       : this.#firewall;
   }
   #rrd;
@@ -12249,11 +12598,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get rrd() {
     return this.#rrd == null
-      ? (this.#rrd = new PVEVmidLxcNodeNodesRrd(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#rrd = new PVEVmidLxcNodeNodesRrd(this.#client, this.#node, this.#vmid))
       : this.#rrd;
   }
   #rrddata;
@@ -12263,11 +12608,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get rrddata() {
     return this.#rrddata == null
-      ? (this.#rrddata = new PVEVmidLxcNodeNodesRrddata(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#rrddata = new PVEVmidLxcNodeNodesRrddata(this.#client, this.#node, this.#vmid))
       : this.#rrddata;
   }
   #vncproxy;
@@ -12277,11 +12618,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get vncproxy() {
     return this.#vncproxy == null
-      ? (this.#vncproxy = new PVEVmidLxcNodeNodesVncproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#vncproxy = new PVEVmidLxcNodeNodesVncproxy(this.#client, this.#node, this.#vmid))
       : this.#vncproxy;
   }
   #termproxy;
@@ -12291,11 +12628,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get termproxy() {
     return this.#termproxy == null
-      ? (this.#termproxy = new PVEVmidLxcNodeNodesTermproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#termproxy = new PVEVmidLxcNodeNodesTermproxy(this.#client, this.#node, this.#vmid))
       : this.#termproxy;
   }
   #vncwebsocket;
@@ -12319,11 +12652,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get spiceproxy() {
     return this.#spiceproxy == null
-      ? (this.#spiceproxy = new PVEVmidLxcNodeNodesSpiceproxy(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#spiceproxy = new PVEVmidLxcNodeNodesSpiceproxy(this.#client, this.#node, this.#vmid))
       : this.#spiceproxy;
   }
   #remoteMigrate;
@@ -12347,11 +12676,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get migrate() {
     return this.#migrate == null
-      ? (this.#migrate = new PVEVmidLxcNodeNodesMigrate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#migrate = new PVEVmidLxcNodeNodesMigrate(this.#client, this.#node, this.#vmid))
       : this.#migrate;
   }
   #feature;
@@ -12361,11 +12686,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get feature() {
     return this.#feature == null
-      ? (this.#feature = new PVEVmidLxcNodeNodesFeature(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#feature = new PVEVmidLxcNodeNodesFeature(this.#client, this.#node, this.#vmid))
       : this.#feature;
   }
   #template;
@@ -12375,11 +12696,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get template() {
     return this.#template == null
-      ? (this.#template = new PVEVmidLxcNodeNodesTemplate(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#template = new PVEVmidLxcNodeNodesTemplate(this.#client, this.#node, this.#vmid))
       : this.#template;
   }
   #clone;
@@ -12389,11 +12706,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get clone() {
     return this.#clone == null
-      ? (this.#clone = new PVEVmidLxcNodeNodesClone(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#clone = new PVEVmidLxcNodeNodesClone(this.#client, this.#node, this.#vmid))
       : this.#clone;
   }
   #resize;
@@ -12403,11 +12716,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get resize() {
     return this.#resize == null
-      ? (this.#resize = new PVEVmidLxcNodeNodesResize(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#resize = new PVEVmidLxcNodeNodesResize(this.#client, this.#node, this.#vmid))
       : this.#resize;
   }
   #moveVolume;
@@ -12417,11 +12726,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get moveVolume() {
     return this.#moveVolume == null
-      ? (this.#moveVolume = new PVEVmidLxcNodeNodesMoveVolume(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#moveVolume = new PVEVmidLxcNodeNodesMoveVolume(this.#client, this.#node, this.#vmid))
       : this.#moveVolume;
   }
   #pending;
@@ -12431,11 +12736,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get pending() {
     return this.#pending == null
-      ? (this.#pending = new PVEVmidLxcNodeNodesPending(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#pending = new PVEVmidLxcNodeNodesPending(this.#client, this.#node, this.#vmid))
       : this.#pending;
   }
   #interfaces;
@@ -12445,11 +12746,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get interfaces() {
     return this.#interfaces == null
-      ? (this.#interfaces = new PVEVmidLxcNodeNodesInterfaces(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#interfaces = new PVEVmidLxcNodeNodesInterfaces(this.#client, this.#node, this.#vmid))
       : this.#interfaces;
   }
   #mtunnel;
@@ -12459,11 +12756,7 @@ class PVEItemLxcNodeNodesVmid {
    */
   get mtunnel() {
     return this.#mtunnel == null
-      ? (this.#mtunnel = new PVEVmidLxcNodeNodesMtunnel(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#mtunnel = new PVEVmidLxcNodeNodesMtunnel(this.#client, this.#node, this.#vmid))
       : this.#mtunnel;
   }
   #mtunnelwebsocket;
@@ -12494,10 +12787,7 @@ class PVEItemLxcNodeNodesVmid {
       force: force,
       purge: purge,
     };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/lxc/${this.#vmid}`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/lxc/${this.#vmid}`, parameters);
   }
   /**
    * Directory index
@@ -12533,10 +12823,7 @@ class PVEVmidLxcNodeNodesConfig {
       current: current,
       snapshot: snapshot,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/config`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/config`, parameters);
   }
   /**
    * Set container options.
@@ -12545,23 +12832,25 @@ class PVEVmidLxcNodeNodesConfig {
    * @param {string} cmode Console mode. By default, the console command tries to open a connection to one of the available tty devices. By setting cmode to 'console' it tries to attach to /dev/console instead. If you set cmode to 'shell', it simply invokes a shell inside the container (no login).
    *   Enum: shell,console,tty
    * @param {boolean} console Attach a console device (/dev/console) to the container.
-   * @param {int} cores The number of cores assigned to the container. A container can use all available cores by default.
-   * @param {float} cpulimit Limit of CPU usage.  NOTE: If the computer has 2 CPUs, it has a total of '2' CPU time. Value '0' indicates no CPU limit.
-   * @param {int} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
+   * @param {number} cores The number of cores assigned to the container. A container can use all available cores by default.
+   * @param {number} cpulimit Limit of CPU usage.  NOTE: If the computer has 2 CPUs, it has a total of '2' CPU time. Value '0' indicates no CPU limit.
+   * @param {number} cpuunits CPU weight for a container, will be clamped to [1, 10000] in cgroup v2.
    * @param {boolean} debug Try to be more verbose. For now this only enables debug log-level on start.
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description for the Container. Shown in the web-interface CT's summary. This is saved as comment inside the configuration file.
-   * @param {array} devN Device to pass through to the container
+   * @param {Array} devN Device to pass through to the container
    * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
+   * @param {string} entrypoint Command to run as init, optionally with arguments; may start with an absolute path, relative path, or a binary in $PATH.
+   * @param {string} env The container runtime environment as NUL-separated list. Replaces any lxc.environment.runtime entries in the config.
    * @param {string} features Allow containers access to advanced features.
    * @param {string} hookscript Script that will be executed during various steps in the containers lifetime.
    * @param {string} hostname Set a host name for the container.
    * @param {string} lock Lock/unlock the container.
    *   Enum: backup,create,destroyed,disk,fstrim,migrate,mounted,rollback,snapshot,snapshot-delete
-   * @param {int} memory Amount of RAM for the container in MB.
-   * @param {array} mpN Use volume as container mount point. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume.
+   * @param {number} memory Amount of RAM for the container in MB.
+   * @param {Array} mpN Use volume as container mount point. Use the special syntax STORAGE_ID:SIZE_IN_GiB to allocate a new volume.
    * @param {string} nameserver Sets DNS server IP address for a container. Create will automatically use the setting from the host if you neither set searchdomain nor nameserver.
-   * @param {array} netN Specifies network interfaces for the container.
+   * @param {Array} netN Specifies network interfaces for the container.
    * @param {boolean} onboot Specifies whether a container will be started during system bootup.
    * @param {string} ostype OS type. This is used to setup configuration inside the container, and corresponds to lxc setup scripts in /usr/share/lxc/config/&amp;lt;ostype&amp;gt;.common.conf. Value 'unmanaged' can be used to skip and OS specific setup.
    *   Enum: debian,devuan,ubuntu,centos,fedora,opensuse,archlinux,alpine,gentoo,nixos,unmanaged
@@ -12570,13 +12859,13 @@ class PVEVmidLxcNodeNodesConfig {
    * @param {string} rootfs Use volume as container root.
    * @param {string} searchdomain Sets DNS search domains for a container. Create will automatically use the setting from the host if you neither set searchdomain nor nameserver.
    * @param {string} startup Startup and shutdown behavior. Order is a non-negative number defining the general startup order. Shutdown in done with reverse ordering. Additionally you can set the 'up' or 'down' delay in seconds, which specifies a delay to wait before the next VM is started or stopped.
-   * @param {int} swap Amount of SWAP for the container in MB.
+   * @param {number} swap Amount of SWAP for the container in MB.
    * @param {string} tags Tags of the Container. This is only meta information.
    * @param {boolean} template Enable/disable Template.
    * @param {string} timezone Time zone to use in the container. If option isn't set, then nothing will be done. Can be set to 'host' to match the host time zone, or an arbitrary time zone option from /usr/share/zoneinfo/zone.tab
-   * @param {int} tty Specify the number of tty available to the container
-   * @param {boolean} unprivileged Makes the container run as unprivileged user. (Should not be modified manually.)
-   * @param {array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
+   * @param {number} tty Specify the number of tty available to the container
+   * @param {boolean} unprivileged Makes the container run as unprivileged user. For creation, the default is 1. For restore, the default is the value from the backup. (Should not be modified manually.)
+   * @param {Array} unusedN Reference to unused volumes. This is used internally, and should not be modified manually.
    * @returns {Promise<Result>}
    */
   async updateVm(
@@ -12591,6 +12880,8 @@ class PVEVmidLxcNodeNodesConfig {
     description,
     devN,
     digest,
+    entrypoint,
+    env,
     features,
     hookscript,
     hostname,
@@ -12625,6 +12916,8 @@ class PVEVmidLxcNodeNodesConfig {
       delete: delete_,
       description: description,
       digest: digest,
+      entrypoint: entrypoint,
+      env: env,
       features: features,
       hookscript: hookscript,
       hostname: hostname,
@@ -12649,10 +12942,7 @@ class PVEVmidLxcNodeNodesConfig {
     this.#client.addIndexedParameter(parameters, "mp", mpN);
     this.#client.addIndexedParameter(parameters, "net", netN);
     this.#client.addIndexedParameter(parameters, "unused", unusedN);
-    return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/config`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/lxc/${this.#vmid}/config`, parameters);
   }
 }
 
@@ -12678,11 +12968,7 @@ class PVEVmidLxcNodeNodesStatus {
    */
   get current() {
     return this.#current == null
-      ? (this.#current = new PVEStatusVmidLxcNodeNodesCurrent(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#current = new PVEStatusVmidLxcNodeNodesCurrent(this.#client, this.#node, this.#vmid))
       : this.#current;
   }
   #start;
@@ -12692,11 +12978,7 @@ class PVEVmidLxcNodeNodesStatus {
    */
   get start() {
     return this.#start == null
-      ? (this.#start = new PVEStatusVmidLxcNodeNodesStart(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#start = new PVEStatusVmidLxcNodeNodesStart(this.#client, this.#node, this.#vmid))
       : this.#start;
   }
   #stop;
@@ -12706,11 +12988,7 @@ class PVEVmidLxcNodeNodesStatus {
    */
   get stop() {
     return this.#stop == null
-      ? (this.#stop = new PVEStatusVmidLxcNodeNodesStop(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#stop = new PVEStatusVmidLxcNodeNodesStop(this.#client, this.#node, this.#vmid))
       : this.#stop;
   }
   #shutdown;
@@ -12734,11 +13012,7 @@ class PVEVmidLxcNodeNodesStatus {
    */
   get suspend() {
     return this.#suspend == null
-      ? (this.#suspend = new PVEStatusVmidLxcNodeNodesSuspend(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#suspend = new PVEStatusVmidLxcNodeNodesSuspend(this.#client, this.#node, this.#vmid))
       : this.#suspend;
   }
   #resume;
@@ -12748,11 +13022,7 @@ class PVEVmidLxcNodeNodesStatus {
    */
   get resume() {
     return this.#resume == null
-      ? (this.#resume = new PVEStatusVmidLxcNodeNodesResume(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#resume = new PVEStatusVmidLxcNodeNodesResume(this.#client, this.#node, this.#vmid))
       : this.#resume;
   }
   #reboot;
@@ -12762,11 +13032,7 @@ class PVEVmidLxcNodeNodesStatus {
    */
   get reboot() {
     return this.#reboot == null
-      ? (this.#reboot = new PVEStatusVmidLxcNodeNodesReboot(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#reboot = new PVEStatusVmidLxcNodeNodesReboot(this.#client, this.#node, this.#vmid))
       : this.#reboot;
   }
 
@@ -12775,9 +13041,7 @@ class PVEVmidLxcNodeNodesStatus {
    * @returns {Promise<Result>}
    */
   async vmcmdidx() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/status`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/status`);
   }
 }
 /**
@@ -12800,9 +13064,7 @@ class PVEStatusVmidLxcNodeNodesCurrent {
    * @returns {Promise<Result>}
    */
   async vmStatus() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/status/current`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/status/current`);
   }
 }
 
@@ -12890,7 +13152,7 @@ class PVEStatusVmidLxcNodeNodesShutdown {
   /**
    * Shutdown the container. This will trigger a clean shutdown of the container, see lxc-stop(1) for details.
    * @param {boolean} forceStop Make sure the Container stops.
-   * @param {int} timeout Wait maximal timeout seconds.
+   * @param {number} timeout Wait maximal timeout seconds.
    * @returns {Promise<Result>}
    */
   async vmShutdown(forceStop, timeout) {
@@ -12925,9 +13187,7 @@ class PVEStatusVmidLxcNodeNodesSuspend {
    * @returns {Promise<Result>}
    */
   async vmSuspend() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/status/suspend`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/status/suspend`);
   }
 }
 
@@ -12951,9 +13211,7 @@ class PVEStatusVmidLxcNodeNodesResume {
    * @returns {Promise<Result>}
    */
   async vmResume() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/status/resume`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/status/resume`);
   }
 }
 
@@ -12974,7 +13232,7 @@ class PVEStatusVmidLxcNodeNodesReboot {
 
   /**
    * Reboot the container by shutting it down, and starting it again. Applies pending changes.
-   * @param {int} timeout Wait maximal timeout seconds for the shutdown.
+   * @param {number} timeout Wait maximal timeout seconds for the shutdown.
    * @returns {Promise<Result>}
    */
   async vmReboot(timeout) {
@@ -13020,9 +13278,7 @@ class PVEVmidLxcNodeNodesSnapshot {
    * @returns {Promise<Result>}
    */
   async list() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/snapshot`);
   }
   /**
    * Snapshot a container.
@@ -13035,10 +13291,7 @@ class PVEVmidLxcNodeNodesSnapshot {
       snapname: snapname,
       description: description,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/snapshot`, parameters);
   }
 }
 /**
@@ -13136,9 +13389,7 @@ class PVESnapnameSnapshotVmidLxcNodeNodesRollback {
   async rollback(start) {
     const parameters = { start: start };
     return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${
-        this.#snapname
-      }/rollback`,
+      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname}/rollback`,
       parameters
     );
   }
@@ -13178,9 +13429,7 @@ class PVESnapnameSnapshotVmidLxcNodeNodesConfig {
   async updateSnapshotConfig(description) {
     const parameters = { description: description };
     return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${
-        this.#snapname
-      }/config`,
+      `/nodes/${this.#node}/lxc/${this.#vmid}/snapshot/${this.#snapname}/config`,
       parameters
     );
   }
@@ -13208,11 +13457,7 @@ class PVEVmidLxcNodeNodesFirewall {
    */
   get rules() {
     return this.#rules == null
-      ? (this.#rules = new PVEFirewallVmidLxcNodeNodesRules(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#rules = new PVEFirewallVmidLxcNodeNodesRules(this.#client, this.#node, this.#vmid))
       : this.#rules;
   }
   #aliases;
@@ -13236,11 +13481,7 @@ class PVEVmidLxcNodeNodesFirewall {
    */
   get ipset() {
     return this.#ipset == null
-      ? (this.#ipset = new PVEFirewallVmidLxcNodeNodesIpset(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#ipset = new PVEFirewallVmidLxcNodeNodesIpset(this.#client, this.#node, this.#vmid))
       : this.#ipset;
   }
   #options;
@@ -13264,11 +13505,7 @@ class PVEVmidLxcNodeNodesFirewall {
    */
   get log() {
     return this.#log == null
-      ? (this.#log = new PVEFirewallVmidLxcNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#log = new PVEFirewallVmidLxcNodeNodesLog(this.#client, this.#node, this.#vmid))
       : this.#log;
   }
   #refs;
@@ -13278,11 +13515,7 @@ class PVEVmidLxcNodeNodesFirewall {
    */
   get refs() {
     return this.#refs == null
-      ? (this.#refs = new PVEFirewallVmidLxcNodeNodesRefs(
-          this.#client,
-          this.#node,
-          this.#vmid
-        ))
+      ? (this.#refs = new PVEFirewallVmidLxcNodeNodesRefs(this.#client, this.#node, this.#vmid))
       : this.#refs;
   }
 
@@ -13291,9 +13524,7 @@ class PVEVmidLxcNodeNodesFirewall {
    * @returns {Promise<Result>}
    */
   async index() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall`);
   }
 }
 /**
@@ -13317,12 +13548,7 @@ class PVEFirewallVmidLxcNodeNodesRules {
    * @returns {PVEItemRulesFirewallVmidLxcNodeNodesPos}
    */
   get(pos) {
-    return new PVEItemRulesFirewallVmidLxcNodeNodesPos(
-      this.#client,
-      this.#node,
-      this.#vmid,
-      pos
-    );
+    return new PVEItemRulesFirewallVmidLxcNodeNodesPos(this.#client, this.#node, this.#vmid, pos);
   }
 
   /**
@@ -13330,9 +13556,7 @@ class PVEFirewallVmidLxcNodeNodesRules {
    * @returns {Promise<Result>}
    */
   async getRules() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/rules`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/rules`);
   }
   /**
    * Create new rule.
@@ -13343,13 +13567,13 @@ class PVEFirewallVmidLxcNodeNodesRules {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {number} pos Update rule at position &amp;lt;pos&amp;gt;.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -13441,13 +13665,13 @@ class PVEItemRulesFirewallVmidLxcNodeNodesPos {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {number} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -13532,9 +13756,7 @@ class PVEFirewallVmidLxcNodeNodesAliases {
    * @returns {Promise<Result>}
    */
   async getAliases() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/aliases`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/aliases`);
   }
   /**
    * Create IP or Network Alias.
@@ -13636,12 +13858,7 @@ class PVEFirewallVmidLxcNodeNodesIpset {
    * @returns {PVEItemIpsetFirewallVmidLxcNodeNodesName}
    */
   get(name) {
-    return new PVEItemIpsetFirewallVmidLxcNodeNodesName(
-      this.#client,
-      this.#node,
-      this.#vmid,
-      name
-    );
+    return new PVEItemIpsetFirewallVmidLxcNodeNodesName(this.#client, this.#node, this.#vmid, name);
   }
 
   /**
@@ -13649,9 +13866,7 @@ class PVEFirewallVmidLxcNodeNodesIpset {
    * @returns {Promise<Result>}
    */
   async ipsetIndex() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset`);
   }
   /**
    * Create new IPSet
@@ -13773,9 +13988,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
   async removeIp(digest) {
     const parameters = { digest: digest };
     return await this.#client.delete(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
-      }`,
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr}`,
       parameters
     );
   }
@@ -13785,9 +13998,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
    */
   async readIp() {
     return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
-      }`
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr}`
     );
   }
   /**
@@ -13804,9 +14015,7 @@ class PVEItemNameIpsetFirewallVmidLxcNodeNodesCidr {
       nomatch: nomatch,
     };
     return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${
-        this.#cidr
-      }`,
+      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/ipset/${this.#name}/${this.#cidr}`,
       parameters
     );
   }
@@ -13832,9 +14041,7 @@ class PVEFirewallVmidLxcNodeNodesOptions {
    * @returns {Promise<Result>}
    */
   async getOptions() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/firewall/options`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/firewall/options`);
   }
   /**
    * Set Firewall options.
@@ -13908,10 +14115,10 @@ class PVEFirewallVmidLxcNodeNodesLog {
 
   /**
    * Read firewall log
-   * @param {int} limit
-   * @param {int} since Display log since this UNIX epoch.
-   * @param {int} start
-   * @param {int} until Display log until this UNIX epoch.
+   * @param {number} limit
+   * @param {number} since Display log since this UNIX epoch.
+   * @param {number} start
+   * @param {number} until Display log until this UNIX epoch.
    * @returns {Promise<Result>}
    */
   async log(limit, since, start, until) {
@@ -13988,10 +14195,7 @@ class PVEVmidLxcNodeNodesRrd {
       timeframe: timeframe,
       cf: cf,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/rrd`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/rrd`, parameters);
   }
 }
 
@@ -14023,10 +14227,7 @@ class PVEVmidLxcNodeNodesRrddata {
       timeframe: timeframe,
       cf: cf,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/rrddata`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/rrddata`, parameters);
   }
 }
 
@@ -14047,9 +14248,9 @@ class PVEVmidLxcNodeNodesVncproxy {
 
   /**
    * Creates a TCP VNC proxy connections.
-   * @param {int} height sets the height of the console in pixels.
+   * @param {number} height sets the height of the console in pixels.
    * @param {boolean} websocket use websocket instead of standard VNC.
-   * @param {int} width sets the width of the console in pixels.
+   * @param {number} width sets the width of the console in pixels.
    * @returns {Promise<Result>}
    */
   async vncproxy(height, websocket, width) {
@@ -14058,10 +14259,7 @@ class PVEVmidLxcNodeNodesVncproxy {
       websocket: websocket,
       width: width,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/vncproxy`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/vncproxy`, parameters);
   }
 }
 
@@ -14085,9 +14283,7 @@ class PVEVmidLxcNodeNodesTermproxy {
    * @returns {Promise<Result>}
    */
   async termproxy() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/termproxy`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/termproxy`);
   }
 }
 
@@ -14107,8 +14303,8 @@ class PVEVmidLxcNodeNodesVncwebsocket {
   }
 
   /**
-   * Opens a weksocket for VNC traffic.
-   * @param {int} port Port number returned by previous vncproxy call.
+   * Opens a websocket for VNC traffic.
+   * @param {number} port Port number returned by previous vncproxy call.
    * @param {string} vncticket Ticket from previous call to vncproxy.
    * @returns {Promise<Result>}
    */
@@ -14173,12 +14369,12 @@ class PVEVmidLxcNodeNodesRemoteMigrate {
    * @param {string} target_bridge Mapping from source to target bridges. Providing only a single bridge ID maps all source bridges to that bridge. Providing the special value '1' will map each source bridge to itself.
    * @param {string} target_endpoint Remote target endpoint
    * @param {string} target_storage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
-   * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {boolean} delete_ Delete the original CT and related data after successful migration. By default the original CT is kept on the source cluster in a stopped state.
    * @param {boolean} online Use online/live migration.
    * @param {boolean} restart Use restart migration
-   * @param {int} target_vmid The (unique) ID of the VM.
-   * @param {int} timeout Timeout in seconds for shutdown for restart migration
+   * @param {number} target_vmid The (unique) ID of the VM.
+   * @param {number} timeout Timeout in seconds for shutdown for restart migration
    * @returns {Promise<Result>}
    */
   async remoteMigrateVm(
@@ -14226,13 +14422,22 @@ class PVEVmidLxcNodeNodesMigrate {
   }
 
   /**
+   * Get preconditions for migration.
+   * @param {string} target Target node.
+   * @returns {Promise<Result>}
+   */
+  async migrateVmPrecondition(target) {
+    const parameters = { target: target };
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/migrate`, parameters);
+  }
+  /**
    * Migrate the container to another node. Creates a new migration task.
    * @param {string} target Target node.
-   * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {boolean} online Use online/live migration.
    * @param {boolean} restart Use restart migration
    * @param {string} target_storage Mapping from source to target storages. Providing only a single storage ID maps all source storages to that storage. Providing the special value '1' will map each source storage to itself.
-   * @param {int} timeout Timeout in seconds for shutdown for restart migration
+   * @param {number} timeout Timeout in seconds for shutdown for restart migration
    * @returns {Promise<Result>}
    */
   async migrateVm(target, bwlimit, online, restart, target_storage, timeout) {
@@ -14244,10 +14449,7 @@ class PVEVmidLxcNodeNodesMigrate {
       "target-storage": target_storage,
       timeout: timeout,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/migrate`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/migrate`, parameters);
   }
 }
 
@@ -14278,10 +14480,7 @@ class PVEVmidLxcNodeNodesFeature {
       feature: feature,
       snapname: snapname,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/feature`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/feature`, parameters);
   }
 }
 
@@ -14305,9 +14504,7 @@ class PVEVmidLxcNodeNodesTemplate {
    * @returns {Promise<Result>}
    */
   async template() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/template`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/template`);
   }
 }
 
@@ -14328,8 +14525,8 @@ class PVEVmidLxcNodeNodesClone {
 
   /**
    * Create a container clone/copy
-   * @param {int} newid VMID for the clone.
-   * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} newid VMID for the clone.
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {string} description Description for the new CT.
    * @param {boolean} full Create a full copy of all disks. This is always done when you clone a normal CT. For CT templates, we try to create a linked clone by default.
    * @param {string} hostname Set a hostname for the new CT.
@@ -14339,17 +14536,7 @@ class PVEVmidLxcNodeNodesClone {
    * @param {string} target Target node. Only allowed if the original VM is on shared storage.
    * @returns {Promise<Result>}
    */
-  async cloneVm(
-    newid,
-    bwlimit,
-    description,
-    full,
-    hostname,
-    pool,
-    snapname,
-    storage,
-    target
-  ) {
+  async cloneVm(newid, bwlimit, description, full, hostname, pool, snapname, storage, target) {
     const parameters = {
       newid: newid,
       bwlimit: bwlimit,
@@ -14361,10 +14548,7 @@ class PVEVmidLxcNodeNodesClone {
       storage: storage,
       target: target,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/clone`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/clone`, parameters);
   }
 }
 
@@ -14397,10 +14581,7 @@ class PVEVmidLxcNodeNodesResize {
       size: size,
       digest: digest,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/resize`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/lxc/${this.#vmid}/resize`, parameters);
   }
 }
 
@@ -14423,12 +14604,12 @@ class PVEVmidLxcNodeNodesMoveVolume {
    * Move a rootfs-/mp-volume to a different storage or to a different container.
    * @param {string} volume Volume which will be moved.
    *   Enum: rootfs,mp0,mp1,mp2,mp3,mp4,mp5,mp6,mp7,mp8,mp9,mp10,mp11,mp12,mp13,mp14,mp15,mp16,mp17,mp18,mp19,mp20,mp21,mp22,mp23,mp24,mp25,mp26,mp27,mp28,mp29,mp30,mp31,mp32,mp33,mp34,mp35,mp36,mp37,mp38,mp39,mp40,mp41,mp42,mp43,mp44,mp45,mp46,mp47,mp48,mp49,mp50,mp51,mp52,mp53,mp54,mp55,mp56,mp57,mp58,mp59,mp60,mp61,mp62,mp63,mp64,mp65,mp66,mp67,mp68,mp69,mp70,mp71,mp72,mp73,mp74,mp75,mp76,mp77,mp78,mp79,mp80,mp81,mp82,mp83,mp84,mp85,mp86,mp87,mp88,mp89,mp90,mp91,mp92,mp93,mp94,mp95,mp96,mp97,mp98,mp99,mp100,mp101,mp102,mp103,mp104,mp105,mp106,mp107,mp108,mp109,mp110,mp111,mp112,mp113,mp114,mp115,mp116,mp117,mp118,mp119,mp120,mp121,mp122,mp123,mp124,mp125,mp126,mp127,mp128,mp129,mp130,mp131,mp132,mp133,mp134,mp135,mp136,mp137,mp138,mp139,mp140,mp141,mp142,mp143,mp144,mp145,mp146,mp147,mp148,mp149,mp150,mp151,mp152,mp153,mp154,mp155,mp156,mp157,mp158,mp159,mp160,mp161,mp162,mp163,mp164,mp165,mp166,mp167,mp168,mp169,mp170,mp171,mp172,mp173,mp174,mp175,mp176,mp177,mp178,mp179,mp180,mp181,mp182,mp183,mp184,mp185,mp186,mp187,mp188,mp189,mp190,mp191,mp192,mp193,mp194,mp195,mp196,mp197,mp198,mp199,mp200,mp201,mp202,mp203,mp204,mp205,mp206,mp207,mp208,mp209,mp210,mp211,mp212,mp213,mp214,mp215,mp216,mp217,mp218,mp219,mp220,mp221,mp222,mp223,mp224,mp225,mp226,mp227,mp228,mp229,mp230,mp231,mp232,mp233,mp234,mp235,mp236,mp237,mp238,mp239,mp240,mp241,mp242,mp243,mp244,mp245,mp246,mp247,mp248,mp249,mp250,mp251,mp252,mp253,mp254,mp255,unused0,unused1,unused2,unused3,unused4,unused5,unused6,unused7,unused8,unused9,unused10,unused11,unused12,unused13,unused14,unused15,unused16,unused17,unused18,unused19,unused20,unused21,unused22,unused23,unused24,unused25,unused26,unused27,unused28,unused29,unused30,unused31,unused32,unused33,unused34,unused35,unused36,unused37,unused38,unused39,unused40,unused41,unused42,unused43,unused44,unused45,unused46,unused47,unused48,unused49,unused50,unused51,unused52,unused53,unused54,unused55,unused56,unused57,unused58,unused59,unused60,unused61,unused62,unused63,unused64,unused65,unused66,unused67,unused68,unused69,unused70,unused71,unused72,unused73,unused74,unused75,unused76,unused77,unused78,unused79,unused80,unused81,unused82,unused83,unused84,unused85,unused86,unused87,unused88,unused89,unused90,unused91,unused92,unused93,unused94,unused95,unused96,unused97,unused98,unused99,unused100,unused101,unused102,unused103,unused104,unused105,unused106,unused107,unused108,unused109,unused110,unused111,unused112,unused113,unused114,unused115,unused116,unused117,unused118,unused119,unused120,unused121,unused122,unused123,unused124,unused125,unused126,unused127,unused128,unused129,unused130,unused131,unused132,unused133,unused134,unused135,unused136,unused137,unused138,unused139,unused140,unused141,unused142,unused143,unused144,unused145,unused146,unused147,unused148,unused149,unused150,unused151,unused152,unused153,unused154,unused155,unused156,unused157,unused158,unused159,unused160,unused161,unused162,unused163,unused164,unused165,unused166,unused167,unused168,unused169,unused170,unused171,unused172,unused173,unused174,unused175,unused176,unused177,unused178,unused179,unused180,unused181,unused182,unused183,unused184,unused185,unused186,unused187,unused188,unused189,unused190,unused191,unused192,unused193,unused194,unused195,unused196,unused197,unused198,unused199,unused200,unused201,unused202,unused203,unused204,unused205,unused206,unused207,unused208,unused209,unused210,unused211,unused212,unused213,unused214,unused215,unused216,unused217,unused218,unused219,unused220,unused221,unused222,unused223,unused224,unused225,unused226,unused227,unused228,unused229,unused230,unused231,unused232,unused233,unused234,unused235,unused236,unused237,unused238,unused239,unused240,unused241,unused242,unused243,unused244,unused245,unused246,unused247,unused248,unused249,unused250,unused251,unused252,unused253,unused254,unused255
-   * @param {float} bwlimit Override I/O bandwidth limit (in KiB/s).
+   * @param {number} bwlimit Override I/O bandwidth limit (in KiB/s).
    * @param {boolean} delete_ Delete the original volume after successful copy. By default the original is kept as an unused volume entry.
    * @param {string} digest Prevent changes if current configuration file has different SHA1 " . 		    "digest. This can be used to prevent concurrent modifications.
    * @param {string} storage Target Storage.
    * @param {string} target_digest Prevent changes if current configuration file of the target " . 		    "container has a different SHA1 digest. This can be used to prevent " . 		    "concurrent modifications.
-   * @param {int} target_vmid The (unique) ID of the VM.
+   * @param {number} target_vmid The (unique) ID of the VM.
    * @param {string} target_volume The config key the volume will be moved to. Default is the source volume key.
    *   Enum: rootfs,mp0,mp1,mp2,mp3,mp4,mp5,mp6,mp7,mp8,mp9,mp10,mp11,mp12,mp13,mp14,mp15,mp16,mp17,mp18,mp19,mp20,mp21,mp22,mp23,mp24,mp25,mp26,mp27,mp28,mp29,mp30,mp31,mp32,mp33,mp34,mp35,mp36,mp37,mp38,mp39,mp40,mp41,mp42,mp43,mp44,mp45,mp46,mp47,mp48,mp49,mp50,mp51,mp52,mp53,mp54,mp55,mp56,mp57,mp58,mp59,mp60,mp61,mp62,mp63,mp64,mp65,mp66,mp67,mp68,mp69,mp70,mp71,mp72,mp73,mp74,mp75,mp76,mp77,mp78,mp79,mp80,mp81,mp82,mp83,mp84,mp85,mp86,mp87,mp88,mp89,mp90,mp91,mp92,mp93,mp94,mp95,mp96,mp97,mp98,mp99,mp100,mp101,mp102,mp103,mp104,mp105,mp106,mp107,mp108,mp109,mp110,mp111,mp112,mp113,mp114,mp115,mp116,mp117,mp118,mp119,mp120,mp121,mp122,mp123,mp124,mp125,mp126,mp127,mp128,mp129,mp130,mp131,mp132,mp133,mp134,mp135,mp136,mp137,mp138,mp139,mp140,mp141,mp142,mp143,mp144,mp145,mp146,mp147,mp148,mp149,mp150,mp151,mp152,mp153,mp154,mp155,mp156,mp157,mp158,mp159,mp160,mp161,mp162,mp163,mp164,mp165,mp166,mp167,mp168,mp169,mp170,mp171,mp172,mp173,mp174,mp175,mp176,mp177,mp178,mp179,mp180,mp181,mp182,mp183,mp184,mp185,mp186,mp187,mp188,mp189,mp190,mp191,mp192,mp193,mp194,mp195,mp196,mp197,mp198,mp199,mp200,mp201,mp202,mp203,mp204,mp205,mp206,mp207,mp208,mp209,mp210,mp211,mp212,mp213,mp214,mp215,mp216,mp217,mp218,mp219,mp220,mp221,mp222,mp223,mp224,mp225,mp226,mp227,mp228,mp229,mp230,mp231,mp232,mp233,mp234,mp235,mp236,mp237,mp238,mp239,mp240,mp241,mp242,mp243,mp244,mp245,mp246,mp247,mp248,mp249,mp250,mp251,mp252,mp253,mp254,mp255,unused0,unused1,unused2,unused3,unused4,unused5,unused6,unused7,unused8,unused9,unused10,unused11,unused12,unused13,unused14,unused15,unused16,unused17,unused18,unused19,unused20,unused21,unused22,unused23,unused24,unused25,unused26,unused27,unused28,unused29,unused30,unused31,unused32,unused33,unused34,unused35,unused36,unused37,unused38,unused39,unused40,unused41,unused42,unused43,unused44,unused45,unused46,unused47,unused48,unused49,unused50,unused51,unused52,unused53,unused54,unused55,unused56,unused57,unused58,unused59,unused60,unused61,unused62,unused63,unused64,unused65,unused66,unused67,unused68,unused69,unused70,unused71,unused72,unused73,unused74,unused75,unused76,unused77,unused78,unused79,unused80,unused81,unused82,unused83,unused84,unused85,unused86,unused87,unused88,unused89,unused90,unused91,unused92,unused93,unused94,unused95,unused96,unused97,unused98,unused99,unused100,unused101,unused102,unused103,unused104,unused105,unused106,unused107,unused108,unused109,unused110,unused111,unused112,unused113,unused114,unused115,unused116,unused117,unused118,unused119,unused120,unused121,unused122,unused123,unused124,unused125,unused126,unused127,unused128,unused129,unused130,unused131,unused132,unused133,unused134,unused135,unused136,unused137,unused138,unused139,unused140,unused141,unused142,unused143,unused144,unused145,unused146,unused147,unused148,unused149,unused150,unused151,unused152,unused153,unused154,unused155,unused156,unused157,unused158,unused159,unused160,unused161,unused162,unused163,unused164,unused165,unused166,unused167,unused168,unused169,unused170,unused171,unused172,unused173,unused174,unused175,unused176,unused177,unused178,unused179,unused180,unused181,unused182,unused183,unused184,unused185,unused186,unused187,unused188,unused189,unused190,unused191,unused192,unused193,unused194,unused195,unused196,unused197,unused198,unused199,unused200,unused201,unused202,unused203,unused204,unused205,unused206,unused207,unused208,unused209,unused210,unused211,unused212,unused213,unused214,unused215,unused216,unused217,unused218,unused219,unused220,unused221,unused222,unused223,unused224,unused225,unused226,unused227,unused228,unused229,unused230,unused231,unused232,unused233,unused234,unused235,unused236,unused237,unused238,unused239,unused240,unused241,unused242,unused243,unused244,unused245,unused246,unused247,unused248,unused249,unused250,unused251,unused252,unused253,unused254,unused255
    * @returns {Promise<Result>}
@@ -14480,9 +14661,7 @@ class PVEVmidLxcNodeNodesPending {
    * @returns {Promise<Result>}
    */
   async vmPending() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/pending`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/pending`);
   }
 }
 
@@ -14506,9 +14685,7 @@ class PVEVmidLxcNodeNodesInterfaces {
    * @returns {Promise<Result>}
    */
   async ip() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/interfaces`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/lxc/${this.#vmid}/interfaces`);
   }
 }
 
@@ -14538,10 +14715,7 @@ class PVEVmidLxcNodeNodesMtunnel {
       bridges: bridges,
       storages: storages,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/lxc/${this.#vmid}/mtunnel`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/lxc/${this.#vmid}/mtunnel`, parameters);
   }
 }
 
@@ -14748,10 +14922,7 @@ class PVENodeNodesCeph {
    */
   get cmdSafety() {
     return this.#cmdSafety == null
-      ? (this.#cmdSafety = new PVECephNodeNodesCmdSafety(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#cmdSafety = new PVECephNodeNodesCmdSafety(this.#client, this.#node))
       : this.#cmdSafety;
   }
 
@@ -14879,10 +15050,7 @@ class PVECfgCephNodeNodesValue {
    */
   async value(config_keys) {
     const parameters = { "config-keys": config_keys };
-    return await this.#client.get(
-      `/nodes/${this.#node}/ceph/cfg/value`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cfg/value`, parameters);
   }
 }
 
@@ -14920,11 +15088,11 @@ class PVECephNodeNodesOsd {
    * @param {string} dev Block device name.
    * @param {string} crush_device_class Set the device class of the OSD in crush.
    * @param {string} db_dev Block device name for block.db.
-   * @param {float} db_dev_size Size in GiB for block.db.
+   * @param {number} db_dev_size Size in GiB for block.db.
    * @param {boolean} encrypted Enables encryption of the OSD.
-   * @param {int} osds_per_device OSD services per physical device. Only useful for fast NVMe devices" 		    ." to utilize their performance better.
+   * @param {number} osds_per_device OSD services per physical device. Only useful for fast NVMe devices" 		    ." to utilize their performance better.
    * @param {string} wal_dev Block device name for block.wal.
-   * @param {float} wal_dev_size Size in GiB for block.wal.
+   * @param {number} wal_dev_size Size in GiB for block.wal.
    * @returns {Promise<Result>}
    */
   async createosd(
@@ -14947,10 +15115,7 @@ class PVECephNodeNodesOsd {
       wal_dev: wal_dev,
       wal_dev_size: wal_dev_size,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/osd`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/osd`, parameters);
   }
 }
 /**
@@ -14989,11 +15154,7 @@ class PVEItemOsdCephNodeNodesOsdid {
    */
   get lvInfo() {
     return this.#lvInfo == null
-      ? (this.#lvInfo = new PVEOsdidOsdCephNodeNodesLvInfo(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+      ? (this.#lvInfo = new PVEOsdidOsdCephNodeNodesLvInfo(this.#client, this.#node, this.#osdid))
       : this.#lvInfo;
   }
   #in;
@@ -15003,11 +15164,7 @@ class PVEItemOsdCephNodeNodesOsdid {
    */
   get in() {
     return this.#in == null
-      ? (this.#in = new PVEOsdidOsdCephNodeNodesIn(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+      ? (this.#in = new PVEOsdidOsdCephNodeNodesIn(this.#client, this.#node, this.#osdid))
       : this.#in;
   }
   #out;
@@ -15017,11 +15174,7 @@ class PVEItemOsdCephNodeNodesOsdid {
    */
   get out() {
     return this.#out == null
-      ? (this.#out = new PVEOsdidOsdCephNodeNodesOut(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+      ? (this.#out = new PVEOsdidOsdCephNodeNodesOut(this.#client, this.#node, this.#osdid))
       : this.#out;
   }
   #scrub;
@@ -15031,11 +15184,7 @@ class PVEItemOsdCephNodeNodesOsdid {
    */
   get scrub() {
     return this.#scrub == null
-      ? (this.#scrub = new PVEOsdidOsdCephNodeNodesScrub(
-          this.#client,
-          this.#node,
-          this.#osdid
-        ))
+      ? (this.#scrub = new PVEOsdidOsdCephNodeNodesScrub(this.#client, this.#node, this.#osdid))
       : this.#scrub;
   }
 
@@ -15046,19 +15195,14 @@ class PVEItemOsdCephNodeNodesOsdid {
    */
   async destroyosd(cleanup) {
     const parameters = { cleanup: cleanup };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/ceph/osd/${this.#osdid}`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/ceph/osd/${this.#osdid}`, parameters);
   }
   /**
    * OSD index.
    * @returns {Promise<Result>}
    */
   async osdindex() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/ceph/osd/${this.#osdid}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/ceph/osd/${this.#osdid}`);
   }
 }
 /**
@@ -15081,9 +15225,7 @@ class PVEOsdidOsdCephNodeNodesMetadata {
    * @returns {Promise<Result>}
    */
   async osddetails() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/ceph/osd/${this.#osdid}/metadata`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/ceph/osd/${this.#osdid}/metadata`);
   }
 }
 
@@ -15137,9 +15279,7 @@ class PVEOsdidOsdCephNodeNodesIn {
    * @returns {Promise<Result>}
    */
   async in() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/osd/${this.#osdid}/in`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/osd/${this.#osdid}/in`);
   }
 }
 
@@ -15163,9 +15303,7 @@ class PVEOsdidOsdCephNodeNodesOut {
    * @returns {Promise<Result>}
    */
   async out() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/osd/${this.#osdid}/out`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/osd/${this.#osdid}/out`);
   }
 }
 
@@ -15248,9 +15386,7 @@ class PVEItemMdsCephNodeNodesName {
    * @returns {Promise<Result>}
    */
   async destroymds() {
-    return await this.#client.delete(
-      `/nodes/${this.#node}/ceph/mds/${this.#name}`
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/ceph/mds/${this.#name}`);
   }
   /**
    * Create Ceph Metadata Server (MDS)
@@ -15259,10 +15395,7 @@ class PVEItemMdsCephNodeNodesName {
    */
   async createmds(hotstandby) {
     const parameters = { hotstandby: hotstandby };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/mds/${this.#name}`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/mds/${this.#name}`, parameters);
   }
 }
 
@@ -15316,18 +15449,14 @@ class PVEItemMgrCephNodeNodesId {
    * @returns {Promise<Result>}
    */
   async destroymgr() {
-    return await this.#client.delete(
-      `/nodes/${this.#node}/ceph/mgr/${this.#id}`
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/ceph/mgr/${this.#id}`);
   }
   /**
    * Create Ceph Manager
    * @returns {Promise<Result>}
    */
   async createmgr() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/mgr/${this.#id}`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/mgr/${this.#id}`);
   }
 }
 
@@ -15381,9 +15510,7 @@ class PVEItemMonCephNodeNodesMonid {
    * @returns {Promise<Result>}
    */
   async destroymon() {
-    return await this.#client.delete(
-      `/nodes/${this.#node}/ceph/mon/${this.#monid}`
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/ceph/mon/${this.#monid}`);
   }
   /**
    * Create Ceph Monitor and Manager
@@ -15392,10 +15519,7 @@ class PVEItemMonCephNodeNodesMonid {
    */
   async createmon(mon_address) {
     const parameters = { "mon-address": mon_address };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/mon/${this.#monid}`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/mon/${this.#monid}`, parameters);
   }
 }
 
@@ -15447,7 +15571,7 @@ class PVEItemFsCephNodeNodesName {
   /**
    * Create a Ceph filesystem
    * @param {boolean} add_storage Configure the created CephFS as storage for this cluster.
-   * @param {int} pg_num Number of placement groups for the backing data pool. The metadata pool will use a quarter of this.
+   * @param {number} pg_num Number of placement groups for the backing data pool. The metadata pool will use a quarter of this.
    * @returns {Promise<Result>}
    */
   async createfs(add_storage, pg_num) {
@@ -15455,10 +15579,7 @@ class PVEItemFsCephNodeNodesName {
       "add-storage": add_storage,
       pg_num: pg_num,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/fs/${this.#name}`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/fs/${this.#name}`, parameters);
   }
 }
 
@@ -15499,14 +15620,14 @@ class PVECephNodeNodesPool {
    *   Enum: rbd,cephfs,rgw
    * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
    * @param {string} erasure_coding Create an erasure coded pool for RBD with an accompaning replicated pool for metadata storage. With EC, the common ceph options 'size', 'min_size' and 'crush_rule' parameters will be applied to the metadata pool.
-   * @param {int} min_size Minimum number of replicas per object
+   * @param {number} min_size Minimum number of replicas per object
    * @param {string} pg_autoscale_mode The automatic PG scaling mode of the pool.
    *   Enum: on,off,warn
-   * @param {int} pg_num Number of placement groups.
-   * @param {int} pg_num_min Minimal number of placement groups.
-   * @param {int} size Number of replicas per object
+   * @param {number} pg_num Number of placement groups.
+   * @param {number} pg_num_min Minimal number of placement groups.
+   * @param {number} size Number of replicas per object
    * @param {string} target_size The estimated target size of the pool for the PG autoscaler.
-   * @param {float} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
+   * @param {number} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
    * @returns {Promise<Result>}
    */
   async createpool(
@@ -15537,10 +15658,7 @@ class PVECephNodeNodesPool {
       target_size: target_size,
       target_size_ratio: target_size_ratio,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/pool`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/pool`, parameters);
   }
 }
 /**
@@ -15565,11 +15683,7 @@ class PVEItemPoolCephNodeNodesName {
    */
   get status() {
     return this.#status == null
-      ? (this.#status = new PVENamePoolCephNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#name
-        ))
+      ? (this.#status = new PVENamePoolCephNodeNodesStatus(this.#client, this.#node, this.#name))
       : this.#status;
   }
 
@@ -15586,33 +15700,28 @@ class PVEItemPoolCephNodeNodesName {
       remove_ecprofile: remove_ecprofile,
       remove_storages: remove_storages,
     };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/ceph/pool/${this.#name}`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/ceph/pool/${this.#name}`, parameters);
   }
   /**
    * Pool index.
    * @returns {Promise<Result>}
    */
   async poolindex() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/ceph/pool/${this.#name}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/ceph/pool/${this.#name}`);
   }
   /**
    * Change POOL settings
    * @param {string} application The application of the pool.
    *   Enum: rbd,cephfs,rgw
    * @param {string} crush_rule The rule to use for mapping object placement in the cluster.
-   * @param {int} min_size Minimum number of replicas per object
+   * @param {number} min_size Minimum number of replicas per object
    * @param {string} pg_autoscale_mode The automatic PG scaling mode of the pool.
    *   Enum: on,off,warn
-   * @param {int} pg_num Number of placement groups.
-   * @param {int} pg_num_min Minimal number of placement groups.
-   * @param {int} size Number of replicas per object
+   * @param {number} pg_num Number of placement groups.
+   * @param {number} pg_num_min Minimal number of placement groups.
+   * @param {number} size Number of replicas per object
    * @param {string} target_size The estimated target size of the pool for the PG autoscaler.
-   * @param {float} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
+   * @param {number} target_size_ratio The estimated target ratio of the pool for the PG autoscaler.
    * @returns {Promise<Result>}
    */
   async setpool(
@@ -15637,10 +15746,7 @@ class PVEItemPoolCephNodeNodesName {
       target_size: target_size,
       target_size_ratio: target_size_ratio,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/ceph/pool/${this.#name}`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/ceph/pool/${this.#name}`, parameters);
   }
 }
 /**
@@ -15689,10 +15795,10 @@ class PVECephNodeNodesInit {
    * Create initial ceph default configuration and setup symlinks.
    * @param {string} cluster_network Declare a separate cluster network, OSDs will routeheartbeat, object replication and recovery traffic over it
    * @param {boolean} disable_cephx Disable cephx authentication.  WARNING: cephx is a security feature protecting against man-in-the-middle attacks. Only consider disabling cephx if your network is private!
-   * @param {int} min_size Minimum number of available replicas per object to allow I/O
+   * @param {number} min_size Minimum number of available replicas per object to allow I/O
    * @param {string} network Use specific network for all ceph related traffic
-   * @param {int} pg_bits Placement group bits, used to specify the default number of placement groups.  Depreacted. This setting was deprecated in recent Ceph versions.
-   * @param {int} size Targeted number of replicas per object
+   * @param {number} pg_bits Placement group bits, used to specify the default number of placement groups.  Depreacted. This setting was deprecated in recent Ceph versions.
+   * @param {number} size Targeted number of replicas per object
    * @returns {Promise<Result>}
    */
   async init(cluster_network, disable_cephx, min_size, network, pg_bits, size) {
@@ -15704,10 +15810,7 @@ class PVECephNodeNodesInit {
       pg_bits: pg_bits,
       size: size,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/init`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/init`, parameters);
   }
 }
 
@@ -15731,10 +15834,7 @@ class PVECephNodeNodesStop {
    */
   async stop(service) {
     const parameters = { service: service };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/stop`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/stop`, parameters);
   }
 }
 
@@ -15758,10 +15858,7 @@ class PVECephNodeNodesStart {
    */
   async start(service) {
     const parameters = { service: service };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/start`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/start`, parameters);
   }
 }
 
@@ -15785,10 +15882,7 @@ class PVECephNodeNodesRestart {
    */
   async restart(service) {
     const parameters = { service: service };
-    return await this.#client.create(
-      `/nodes/${this.#node}/ceph/restart`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/ceph/restart`, parameters);
   }
 }
 
@@ -15851,8 +15945,8 @@ class PVECephNodeNodesLog {
 
   /**
    * Read ceph log
-   * @param {int} limit
-   * @param {int} start
+   * @param {number} limit
+   * @param {number} start
    * @returns {Promise<Result>}
    */
   async log(limit, start) {
@@ -15914,10 +16008,7 @@ class PVECephNodeNodesCmdSafety {
       id: id,
       service: service,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/ceph/cmd-safety`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/ceph/cmd-safety`, parameters);
   }
 }
 
@@ -15941,10 +16032,7 @@ class PVENodeNodesVzdump {
    */
   get defaults() {
     return this.#defaults == null
-      ? (this.#defaults = new PVEVzdumpNodeNodesDefaults(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#defaults = new PVEVzdumpNodeNodesDefaults(this.#client, this.#node))
       : this.#defaults;
   }
   #extractconfig;
@@ -15954,42 +16042,36 @@ class PVENodeNodesVzdump {
    */
   get extractconfig() {
     return this.#extractconfig == null
-      ? (this.#extractconfig = new PVEVzdumpNodeNodesExtractconfig(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#extractconfig = new PVEVzdumpNodeNodesExtractconfig(this.#client, this.#node))
       : this.#extractconfig;
   }
 
   /**
    * Create backup.
    * @param {boolean} all Backup all known guest systems on this host.
-   * @param {int} bwlimit Limit I/O bandwidth (in KiB/s).
+   * @param {number} bwlimit Limit I/O bandwidth (in KiB/s).
    * @param {string} compress Compress dump file.
    *   Enum: 0,1,gzip,lzo,zstd
    * @param {string} dumpdir Store resulting files to specified directory.
    * @param {string} exclude Exclude specified guest systems (assumes --all)
-   * @param {array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
+   * @param {Array} exclude_path Exclude certain files/directories (shell globs). Paths starting with '/' are anchored to the container's root, other paths match relative to each subdirectory.
    * @param {string} fleecing Options for backup fleecing (VM only).
-   * @param {int} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
+   * @param {number} ionice Set IO priority when using the BFQ scheduler. For snapshot and suspend mode backups of VMs, this only affects the compressor. A value of 8 means the idle priority is used, otherwise the best-effort priority is used with the specified value.
    * @param {string} job_id The ID of the backup job. If set, the 'backup-job' metadata field of the backup notification will be set to this value. Only root@pam can set this parameter.
-   * @param {int} lockwait Maximal time to wait for the global lock (minutes).
+   * @param {number} lockwait Maximal time to wait for the global lock (minutes).
    * @param {string} mailnotification Deprecated: use notification targets/matchers instead. Specify when to send a notification mail
    *   Enum: always,failure
    * @param {string} mailto Deprecated: Use notification targets/matchers instead. Comma-separated list of email addresses or users that should receive email notifications.
-   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
+   * @param {number} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per guest system.
    * @param {string} mode Backup mode.
    *   Enum: snapshot,suspend,stop
    * @param {string} notes_template Template string for generating notes for the backup(s). It can contain variables which will be replaced by their values. Currently supported are {{cluster}}, {{guestname}}, {{node}}, and {{vmid}}, but more might be added in the future. Needs to be a single line, newline and backslash need to be escaped as '\n' and '\\' respectively.
    * @param {string} notification_mode Determine which notification system to use. If set to 'legacy-sendmail', vzdump will consider the mailto/mailnotification parameters and send emails to the specified address(es) via the 'sendmail' command. If set to 'notification-system', a notification will be sent via PVE's notification system, and the mailto and mailnotification will be ignored. If set to 'auto' (default setting), an email will be sent if mailto is set, and the notification system will be used if not.
    *   Enum: auto,legacy-sendmail,notification-system
-   * @param {string} notification_policy Deprecated: Do not use
-   *   Enum: always,failure,never
-   * @param {string} notification_target Deprecated: Do not use
    * @param {string} pbs_change_detection_mode PBS mode used to detect file changes and switch encoding format for container backups.
    *   Enum: legacy,data,metadata
    * @param {string} performance Other performance-related settings.
-   * @param {int} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
+   * @param {number} pigz Use pigz instead of gzip when N&amp;gt;0. N=1 uses half of cores, N&amp;gt;1 uses N as thread count.
    * @param {string} pool Backup all known guest systems included in the specified pool.
    * @param {boolean} protected_ If true, mark backup(s) as protected.
    * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
@@ -15999,11 +16081,11 @@ class PVENodeNodesVzdump {
    * @param {boolean} stdexcludes Exclude temporary files and logs.
    * @param {boolean} stdout Write tar to stdout, not to a file.
    * @param {boolean} stop Stop running backup jobs on this host.
-   * @param {int} stopwait Maximal time to wait until a guest system is stopped (minutes).
+   * @param {number} stopwait Maximal time to wait until a guest system is stopped (minutes).
    * @param {string} storage Store resulting file to this storage.
    * @param {string} tmpdir Store temporary files to specified directory.
    * @param {string} vmid The ID of the guest system you want to backup.
-   * @param {int} zstd Zstd threads. N=0 uses half of the available cores, if N is set to a value bigger than 0, N is used as thread count.
+   * @param {number} zstd Zstd threads. N=0 uses half of the available cores, if N is set to a value bigger than 0, N is used as thread count.
    * @returns {Promise<Result>}
    */
   async vzdump(
@@ -16023,8 +16105,6 @@ class PVENodeNodesVzdump {
     mode,
     notes_template,
     notification_mode,
-    notification_policy,
-    notification_target,
     pbs_change_detection_mode,
     performance,
     pigz,
@@ -16060,8 +16140,6 @@ class PVENodeNodesVzdump {
       mode: mode,
       "notes-template": notes_template,
       "notification-mode": notification_mode,
-      "notification-policy": notification_policy,
-      "notification-target": notification_target,
       "pbs-change-detection-mode": pbs_change_detection_mode,
       performance: performance,
       pigz: pigz,
@@ -16103,10 +16181,7 @@ class PVEVzdumpNodeNodesDefaults {
    */
   async defaults(storage) {
     const parameters = { storage: storage };
-    return await this.#client.get(
-      `/nodes/${this.#node}/vzdump/defaults`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/vzdump/defaults`, parameters);
   }
 }
 
@@ -16130,10 +16205,7 @@ class PVEVzdumpNodeNodesExtractconfig {
    */
   async extractconfig(volume) {
     const parameters = { volume: volume };
-    return await this.#client.get(
-      `/nodes/${this.#node}/vzdump/extractconfig`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/vzdump/extractconfig`, parameters);
   }
 }
 
@@ -16156,11 +16228,7 @@ class PVENodeNodesServices {
    * @returns {PVEItemServicesNodeNodesService}
    */
   get(service) {
-    return new PVEItemServicesNodeNodesService(
-      this.#client,
-      this.#node,
-      service
-    );
+    return new PVEItemServicesNodeNodesService(this.#client, this.#node, service);
   }
 
   /**
@@ -16221,11 +16289,7 @@ class PVEItemServicesNodeNodesService {
    */
   get stop() {
     return this.#stop == null
-      ? (this.#stop = new PVEServiceServicesNodeNodesStop(
-          this.#client,
-          this.#node,
-          this.#service
-        ))
+      ? (this.#stop = new PVEServiceServicesNodeNodesStop(this.#client, this.#node, this.#service))
       : this.#stop;
   }
   #restart;
@@ -16262,9 +16326,7 @@ class PVEItemServicesNodeNodesService {
    * @returns {Promise<Result>}
    */
   async srvcmdidx() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/services/${this.#service}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/services/${this.#service}`);
   }
 }
 /**
@@ -16287,9 +16349,7 @@ class PVEServiceServicesNodeNodesState {
    * @returns {Promise<Result>}
    */
   async serviceState() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/services/${this.#service}/state`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/services/${this.#service}/state`);
   }
 }
 
@@ -16313,9 +16373,7 @@ class PVEServiceServicesNodeNodesStart {
    * @returns {Promise<Result>}
    */
   async serviceStart() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/services/${this.#service}/start`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/services/${this.#service}/start`);
   }
 }
 
@@ -16339,9 +16397,7 @@ class PVEServiceServicesNodeNodesStop {
    * @returns {Promise<Result>}
    */
   async serviceStop() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/services/${this.#service}/stop`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/services/${this.#service}/stop`);
   }
 }
 
@@ -16365,9 +16421,7 @@ class PVEServiceServicesNodeNodesRestart {
    * @returns {Promise<Result>}
    */
   async serviceRestart() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/services/${this.#service}/restart`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/services/${this.#service}/restart`);
   }
 }
 
@@ -16391,9 +16445,7 @@ class PVEServiceServicesNodeNodesReload {
    * @returns {Promise<Result>}
    */
   async serviceReload() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/services/${this.#service}/reload`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/services/${this.#service}/reload`);
   }
 }
 
@@ -16431,10 +16483,7 @@ class PVENodeNodesSubscription {
    */
   async update(force) {
     const parameters = { force: force };
-    return await this.#client.create(
-      `/nodes/${this.#node}/subscription`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/subscription`, parameters);
   }
   /**
    * Set subscription key.
@@ -16443,10 +16492,7 @@ class PVENodeNodesSubscription {
    */
   async set(key) {
     const parameters = { key: key };
-    return await this.#client.set(
-      `/nodes/${this.#node}/subscription`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/subscription`, parameters);
   }
 }
 
@@ -16482,7 +16528,7 @@ class PVENodeNodesNetwork {
   /**
    * List available networks
    * @param {string} type Only list specific interface types.
-   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,any_bridge,any_local_bridge
+   *   Enum: bridge,bond,eth,alias,vlan,fabric,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,any_bridge,any_local_bridge,include_sdn
    * @returns {Promise<Result>}
    */
   async index(type) {
@@ -16493,7 +16539,7 @@ class PVENodeNodesNetwork {
    * Create network device configuration
    * @param {string} iface Network interface name.
    * @param {string} type Network interface type
-   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,unknown
+   *   Enum: bridge,bond,eth,alias,vlan,fabric,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,unknown
    * @param {string} address IP address.
    * @param {string} address6 IP address.
    * @param {boolean} autostart Automatically start interface on boot.
@@ -16511,16 +16557,16 @@ class PVENodeNodesNetwork {
    * @param {string} comments6 Comments
    * @param {string} gateway Default gateway address.
    * @param {string} gateway6 Default ipv6 gateway address.
-   * @param {int} mtu MTU.
+   * @param {number} mtu MTU.
    * @param {string} netmask Network mask.
-   * @param {int} netmask6 Network mask.
+   * @param {number} netmask6 Network mask.
    * @param {string} ovs_bonds Specify the interfaces used by the bonding device.
    * @param {string} ovs_bridge The OVS bridge associated with a OVS port. This is required when you create an OVS port.
    * @param {string} ovs_options OVS interface options.
    * @param {string} ovs_ports Specify the interfaces you want to add to your bridge.
-   * @param {int} ovs_tag Specify a VLan tag (used by OVSPort, OVSIntPort, OVSBond)
+   * @param {number} ovs_tag Specify a VLan tag (used by OVSPort, OVSIntPort, OVSBond)
    * @param {string} slaves Specify the interfaces used by the bonding device.
-   * @param {int} vlan_id vlan-id for a custom named vlan interface (ifupdown2 only).
+   * @param {number} vlan_id vlan-id for a custom named vlan interface (ifupdown2 only).
    * @param {string} vlan_raw_device Specify the raw interface for the vlan interface.
    * @returns {Promise<Result>}
    */
@@ -16584,17 +16630,16 @@ class PVENodeNodesNetwork {
       "vlan-id": vlan_id,
       "vlan-raw-device": vlan_raw_device,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/network`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/network`, parameters);
   }
   /**
    * Reload network configuration
+   * @param {boolean} regenerate_frr Whether FRR config generation should get skipped or not.
    * @returns {Promise<Result>}
    */
-  async reloadNetworkConfig() {
-    return await this.#client.set(`/nodes/${this.#node}/network`);
+  async reloadNetworkConfig(regenerate_frr) {
+    const parameters = { "regenerate-frr": regenerate_frr };
+    return await this.#client.set(`/nodes/${this.#node}/network`, parameters);
   }
 }
 /**
@@ -16617,23 +16662,19 @@ class PVEItemNetworkNodeNodesIface {
    * @returns {Promise<Result>}
    */
   async deleteNetwork() {
-    return await this.#client.delete(
-      `/nodes/${this.#node}/network/${this.#iface}`
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/network/${this.#iface}`);
   }
   /**
    * Read network device configuration
    * @returns {Promise<Result>}
    */
   async networkConfig() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/network/${this.#iface}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/network/${this.#iface}`);
   }
   /**
    * Update network device configuration
    * @param {string} type Network interface type
-   *   Enum: bridge,bond,eth,alias,vlan,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,unknown
+   *   Enum: bridge,bond,eth,alias,vlan,fabric,OVSBridge,OVSBond,OVSPort,OVSIntPort,vnet,unknown
    * @param {string} address IP address.
    * @param {string} address6 IP address.
    * @param {boolean} autostart Automatically start interface on boot.
@@ -16652,16 +16693,16 @@ class PVEItemNetworkNodeNodesIface {
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} gateway Default gateway address.
    * @param {string} gateway6 Default ipv6 gateway address.
-   * @param {int} mtu MTU.
+   * @param {number} mtu MTU.
    * @param {string} netmask Network mask.
-   * @param {int} netmask6 Network mask.
+   * @param {number} netmask6 Network mask.
    * @param {string} ovs_bonds Specify the interfaces used by the bonding device.
    * @param {string} ovs_bridge The OVS bridge associated with a OVS port. This is required when you create an OVS port.
    * @param {string} ovs_options OVS interface options.
    * @param {string} ovs_ports Specify the interfaces you want to add to your bridge.
-   * @param {int} ovs_tag Specify a VLan tag (used by OVSPort, OVSIntPort, OVSBond)
+   * @param {number} ovs_tag Specify a VLan tag (used by OVSPort, OVSIntPort, OVSBond)
    * @param {string} slaves Specify the interfaces used by the bonding device.
-   * @param {int} vlan_id vlan-id for a custom named vlan interface (ifupdown2 only).
+   * @param {number} vlan_id vlan-id for a custom named vlan interface (ifupdown2 only).
    * @param {string} vlan_raw_device Specify the raw interface for the vlan interface.
    * @returns {Promise<Result>}
    */
@@ -16725,10 +16766,7 @@ class PVEItemNetworkNodeNodesIface {
       "vlan-id": vlan_id,
       "vlan-raw-device": vlan_raw_device,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/network/${this.#iface}`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/network/${this.#iface}`, parameters);
   }
 }
 
@@ -16757,16 +16795,16 @@ class PVENodeNodesTasks {
   /**
    * Read task list for one node (finished tasks).
    * @param {boolean} errors Only list tasks with a status of ERROR.
-   * @param {int} limit Only list this amount of tasks.
-   * @param {int} since Only list tasks since this UNIX epoch.
+   * @param {number} limit Only list this number of tasks.
+   * @param {number} since Only list tasks since this UNIX epoch.
    * @param {string} source List archived, active or all tasks.
    *   Enum: archive,active,all
-   * @param {int} start List tasks beginning from this offset.
+   * @param {number} start List tasks beginning from this offset.
    * @param {string} statusfilter List of Task States that should be returned.
    * @param {string} typefilter Only list tasks of this type (e.g., vzstart, vzdump).
-   * @param {int} until Only list tasks until this UNIX epoch.
+   * @param {number} until Only list tasks until this UNIX epoch.
    * @param {string} userfilter Only list tasks from this user.
-   * @param {int} vmid Only list tasks for this VM.
+   * @param {number} vmid Only list tasks for this VM.
    * @returns {Promise<Result>}
    */
   async nodeTasks(
@@ -16818,11 +16856,7 @@ class PVEItemTasksNodeNodesUpid {
    */
   get log() {
     return this.#log == null
-      ? (this.#log = new PVEUpidTasksNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#upid
-        ))
+      ? (this.#log = new PVEUpidTasksNodeNodesLog(this.#client, this.#node, this.#upid))
       : this.#log;
   }
   #status;
@@ -16832,11 +16866,7 @@ class PVEItemTasksNodeNodesUpid {
    */
   get status() {
     return this.#status == null
-      ? (this.#status = new PVEUpidTasksNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#upid
-        ))
+      ? (this.#status = new PVEUpidTasksNodeNodesStatus(this.#client, this.#node, this.#upid))
       : this.#status;
   }
 
@@ -16845,9 +16875,7 @@ class PVEItemTasksNodeNodesUpid {
    * @returns {Promise<Result>}
    */
   async stopTask() {
-    return await this.#client.delete(
-      `/nodes/${this.#node}/tasks/${this.#upid}`
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/tasks/${this.#upid}`);
   }
   /**
    *
@@ -16875,8 +16903,8 @@ class PVEUpidTasksNodeNodesLog {
   /**
    * Read task log.
    * @param {boolean} download Whether the tasklog file should be downloaded. This parameter can't be used in conjunction with other parameters
-   * @param {int} limit The amount of lines to read from the tasklog.
-   * @param {int} start Start at this line when reading the tasklog
+   * @param {number} limit The number of lines to read from the tasklog.
+   * @param {number} start Start at this line when reading the tasklog
    * @returns {Promise<Result>}
    */
   async readTaskLog(download, limit, start) {
@@ -16885,10 +16913,7 @@ class PVEUpidTasksNodeNodesLog {
       limit: limit,
       start: start,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/tasks/${this.#upid}/log`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/tasks/${this.#upid}/log`, parameters);
   }
 }
 
@@ -16912,9 +16937,7 @@ class PVEUpidTasksNodeNodesStatus {
    * @returns {Promise<Result>}
    */
   async readTaskStatus() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/tasks/${this.#upid}/status`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/tasks/${this.#upid}/status`);
   }
 }
 
@@ -16960,19 +16983,6 @@ class PVENodeNodesScan {
     return this.#pbs == null
       ? (this.#pbs = new PVEScanNodeNodesPbs(this.#client, this.#node))
       : this.#pbs;
-  }
-  #glusterfs;
-  /**
-   * Get ScanNodeNodesGlusterfs
-   * @returns {PVEScanNodeNodesGlusterfs}
-   */
-  get glusterfs() {
-    return this.#glusterfs == null
-      ? (this.#glusterfs = new PVEScanNodeNodesGlusterfs(
-          this.#client,
-          this.#node
-        ))
-      : this.#glusterfs;
   }
   #iscsi;
   /**
@@ -17098,7 +17108,7 @@ class PVEScanNodeNodesPbs {
    * @param {string} server The server address (name or IP).
    * @param {string} username User-name or API token-ID.
    * @param {string} fingerprint Certificate SHA 256 fingerprint.
-   * @param {int} port Optional port.
+   * @param {number} port Optional port.
    * @returns {Promise<Result>}
    */
   async pbsscan(password, server, username, fingerprint, port) {
@@ -17110,33 +17120,6 @@ class PVEScanNodeNodesPbs {
       port: port,
     };
     return await this.#client.get(`/nodes/${this.#node}/scan/pbs`, parameters);
-  }
-}
-
-/**
- * Class PVEScanNodeNodesGlusterfs
- */
-class PVEScanNodeNodesGlusterfs {
-  #node;
-  /** @type {PveClient} */
-  #client;
-
-  constructor(client, node) {
-    this.#client = client;
-    this.#node = node;
-  }
-
-  /**
-   * Scan remote GlusterFS server.
-   * @param {string} server The server address (name or IP).
-   * @returns {Promise<Result>}
-   */
-  async glusterfsscan(server) {
-    const parameters = { server: server };
-    return await this.#client.get(
-      `/nodes/${this.#node}/scan/glusterfs`,
-      parameters
-    );
   }
 }
 
@@ -17160,10 +17143,7 @@ class PVEScanNodeNodesIscsi {
    */
   async iscsiscan(portal) {
     const parameters = { portal: portal };
-    return await this.#client.get(
-      `/nodes/${this.#node}/scan/iscsi`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/scan/iscsi`, parameters);
   }
 }
 
@@ -17209,10 +17189,7 @@ class PVEScanNodeNodesLvmthin {
    */
   async lvmthinscan(vg) {
     const parameters = { vg: vg };
-    return await this.#client.get(
-      `/nodes/${this.#node}/scan/lvmthin`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/scan/lvmthin`, parameters);
   }
 }
 
@@ -17317,10 +17294,7 @@ class PVEHardwareNodeNodesPci {
       "pci-class-blacklist": pci_class_blacklist,
       verbose: verbose,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/hardware/pci`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/hardware/pci`, parameters);
   }
 }
 /**
@@ -17437,10 +17411,7 @@ class PVENodeNodesCapabilities {
    */
   get qemu() {
     return this.#qemu == null
-      ? (this.#qemu = new PVECapabilitiesNodeNodesQemu(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#qemu = new PVECapabilitiesNodeNodesQemu(this.#client, this.#node))
       : this.#qemu;
   }
 
@@ -17472,11 +17443,18 @@ class PVECapabilitiesNodeNodesQemu {
    */
   get cpu() {
     return this.#cpu == null
-      ? (this.#cpu = new PVEQemuCapabilitiesNodeNodesCpu(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#cpu = new PVEQemuCapabilitiesNodeNodesCpu(this.#client, this.#node))
       : this.#cpu;
+  }
+  #cpuFlags;
+  /**
+   * Get QemuCapabilitiesNodeNodesCpuFlags
+   * @returns {PVEQemuCapabilitiesNodeNodesCpuFlags}
+   */
+  get cpuFlags() {
+    return this.#cpuFlags == null
+      ? (this.#cpuFlags = new PVEQemuCapabilitiesNodeNodesCpuFlags(this.#client, this.#node))
+      : this.#cpuFlags;
   }
   #machines;
   /**
@@ -17485,11 +17463,18 @@ class PVECapabilitiesNodeNodesQemu {
    */
   get machines() {
     return this.#machines == null
-      ? (this.#machines = new PVEQemuCapabilitiesNodeNodesMachines(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#machines = new PVEQemuCapabilitiesNodeNodesMachines(this.#client, this.#node))
       : this.#machines;
+  }
+  #migration;
+  /**
+   * Get QemuCapabilitiesNodeNodesMigration
+   * @returns {PVEQemuCapabilitiesNodeNodesMigration}
+   */
+  get migration() {
+    return this.#migration == null
+      ? (this.#migration = new PVEQemuCapabilitiesNodeNodesMigration(this.#client, this.#node))
+      : this.#migration;
   }
 
   /**
@@ -17523,6 +17508,28 @@ class PVEQemuCapabilitiesNodeNodesCpu {
 }
 
 /**
+ * Class PVEQemuCapabilitiesNodeNodesCpuFlags
+ */
+class PVEQemuCapabilitiesNodeNodesCpuFlags {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+  /**
+   * List of available VM-specific CPU flags.
+   * @returns {Promise<Result>}
+   */
+  async index() {
+    return await this.#client.get(`/nodes/${this.#node}/capabilities/qemu/cpu-flags`);
+  }
+}
+
+/**
  * Class PVEQemuCapabilitiesNodeNodesMachines
  */
 class PVEQemuCapabilitiesNodeNodesMachines {
@@ -17540,9 +17547,29 @@ class PVEQemuCapabilitiesNodeNodesMachines {
    * @returns {Promise<Result>}
    */
   async types() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/capabilities/qemu/machines`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/capabilities/qemu/machines`);
+  }
+}
+
+/**
+ * Class PVEQemuCapabilitiesNodeNodesMigration
+ */
+class PVEQemuCapabilitiesNodeNodesMigration {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+  /**
+   * Get node-specific QEMU migration capabilities of the node. Requires the 'Sys.Audit' permission on '/nodes/&amp;lt;node&amp;gt;'.
+   * @returns {Promise<Result>}
+   */
+  async capabilities() {
+    return await this.#client.get(`/nodes/${this.#node}/capabilities/qemu/migration`);
   }
 }
 
@@ -17565,11 +17592,7 @@ class PVENodeNodesStorage {
    * @returns {PVEItemStorageNodeNodesStorage}
    */
   get(storage) {
-    return new PVEItemStorageNodeNodesStorage(
-      this.#client,
-      this.#node,
-      storage
-    );
+    return new PVEItemStorageNodeNodesStorage(this.#client, this.#node, storage);
   }
 
   /**
@@ -17670,11 +17693,7 @@ class PVEItemStorageNodeNodesStorage {
    */
   get rrd() {
     return this.#rrd == null
-      ? (this.#rrd = new PVEStorageStorageNodeNodesRrd(
-          this.#client,
-          this.#node,
-          this.#storage
-        ))
+      ? (this.#rrd = new PVEStorageStorageNodeNodesRrd(this.#client, this.#node, this.#storage))
       : this.#rrd;
   }
   #rrddata;
@@ -17719,6 +17738,20 @@ class PVEItemStorageNodeNodesStorage {
         ))
       : this.#downloadUrl;
   }
+  #ociRegistryPull;
+  /**
+   * Get StorageStorageNodeNodesOciRegistryPull
+   * @returns {PVEStorageStorageNodeNodesOciRegistryPull}
+   */
+  get ociRegistryPull() {
+    return this.#ociRegistryPull == null
+      ? (this.#ociRegistryPull = new PVEStorageStorageNodeNodesOciRegistryPull(
+          this.#client,
+          this.#node,
+          this.#storage
+        ))
+      : this.#ociRegistryPull;
+  }
   #importMetadata;
   /**
    * Get StorageStorageNodeNodesImportMetadata
@@ -17739,9 +17772,7 @@ class PVEItemStorageNodeNodesStorage {
    * @returns {Promise<Result>}
    */
   async diridx() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/storage/${this.#storage}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/storage/${this.#storage}`);
   }
 }
 /**
@@ -17764,7 +17795,7 @@ class PVEStorageStorageNodeNodesPrunebackups {
    * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
    * @param {string} type Either 'qemu' or 'lxc'. Only consider backups for guests of this type.
    *   Enum: qemu,lxc
-   * @param {int} vmid Only prune backups for this VM.
+   * @param {number} vmid Only prune backups for this VM.
    * @returns {Promise<Result>}
    */
   async delete_(prune_backups, type, vmid) {
@@ -17783,7 +17814,7 @@ class PVEStorageStorageNodeNodesPrunebackups {
    * @param {string} prune_backups Use these retention options instead of those from the storage configuration.
    * @param {string} type Either 'qemu' or 'lxc'. Only consider backups for guests of this type.
    *   Enum: qemu,lxc
-   * @param {int} vmid Only consider backups for this guest.
+   * @param {number} vmid Only consider backups for this guest.
    * @returns {Promise<Result>}
    */
   async dryrun(prune_backups, type, vmid) {
@@ -17831,7 +17862,7 @@ class PVEStorageStorageNodeNodesContent {
   /**
    * List storage content.
    * @param {string} content Only list content of this type.
-   * @param {int} vmid Only list images for this VM
+   * @param {number} vmid Only list images for this VM
    * @returns {Promise<Result>}
    */
   async index(content, vmid) {
@@ -17848,7 +17879,7 @@ class PVEStorageStorageNodeNodesContent {
    * Allocate disk images.
    * @param {string} filename The name of the file to create.
    * @param {string} size Size in kilobyte (1024 bytes). Optional suffixes 'M' (megabyte, 1024K) and 'G' (gigabyte, 1024M)
-   * @param {int} vmid Specify owner VM
+   * @param {number} vmid Specify owner VM
    * @param {string} format Format of the image.
    *   Enum: raw,qcow2,subvol,vmdk
    * @returns {Promise<Result>}
@@ -17885,7 +17916,7 @@ class PVEItemContentStorageStorageNodeNodesVolume {
 
   /**
    * Delete volume
-   * @param {int} delay Time to wait for the task to finish. We return 'null' if the task finish within that time.
+   * @param {number} delay Time to wait for the task to finish. We return 'null' if the task finish within that time.
    * @returns {Promise<Result>}
    */
   async delete_(delay) {
@@ -18070,9 +18101,7 @@ class PVEStorageStorageNodeNodesStatus {
    * @returns {Promise<Result>}
    */
   async readStatus() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/storage/${this.#storage}/status`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/storage/${this.#storage}/status`);
   }
 }
 
@@ -18106,10 +18135,7 @@ class PVEStorageStorageNodeNodesRrd {
       timeframe: timeframe,
       cf: cf,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/storage/${this.#storage}/rrd`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/storage/${this.#storage}/rrd`, parameters);
   }
 }
 
@@ -18243,6 +18269,39 @@ class PVEStorageStorageNodeNodesDownloadUrl {
 }
 
 /**
+ * Class PVEStorageStorageNodeNodesOciRegistryPull
+ */
+class PVEStorageStorageNodeNodesOciRegistryPull {
+  #node;
+  #storage;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, storage) {
+    this.#client = client;
+    this.#node = node;
+    this.#storage = storage;
+  }
+
+  /**
+   * Pull an OCI image from a registry.
+   * @param {string} reference The reference to the OCI image to download.
+   * @param {string} filename Custom destination file name of the OCI image. Caution: This will be normalized!
+   * @returns {Promise<Result>}
+   */
+  async ociRegistryPull(reference, filename) {
+    const parameters = {
+      reference: reference,
+      filename: filename,
+    };
+    return await this.#client.create(
+      `/nodes/${this.#node}/storage/${this.#storage}/oci-registry-pull`,
+      parameters
+    );
+  }
+}
+
+/**
  * Class PVEStorageStorageNodeNodesImportMetadata
  */
 class PVEStorageStorageNodeNodesImportMetadata {
@@ -18311,10 +18370,7 @@ class PVENodeNodesDisks {
    */
   get directory() {
     return this.#directory == null
-      ? (this.#directory = new PVEDisksNodeNodesDirectory(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#directory = new PVEDisksNodeNodesDirectory(this.#client, this.#node))
       : this.#directory;
   }
   #zfs;
@@ -18364,10 +18420,7 @@ class PVENodeNodesDisks {
    */
   get wipedisk() {
     return this.#wipedisk == null
-      ? (this.#wipedisk = new PVEDisksNodeNodesWipedisk(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#wipedisk = new PVEDisksNodeNodesWipedisk(this.#client, this.#node))
       : this.#wipedisk;
   }
 
@@ -18421,10 +18474,7 @@ class PVEDisksNodeNodesLvm {
       name: name,
       add_storage: add_storage,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/disks/lvm`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/disks/lvm`, parameters);
   }
 }
 /**
@@ -18453,10 +18503,7 @@ class PVEItemLvmDisksNodeNodesName {
       "cleanup-config": cleanup_config,
       "cleanup-disks": cleanup_disks,
     };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/disks/lvm/${this.#name}`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/disks/lvm/${this.#name}`, parameters);
   }
 }
 
@@ -18502,10 +18549,7 @@ class PVEDisksNodeNodesLvmthin {
       name: name,
       add_storage: add_storage,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/disks/lvmthin`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/disks/lvmthin`, parameters);
   }
 }
 /**
@@ -18562,11 +18606,7 @@ class PVEDisksNodeNodesDirectory {
    * @returns {PVEItemDirectoryDisksNodeNodesName}
    */
   get(name) {
-    return new PVEItemDirectoryDisksNodeNodesName(
-      this.#client,
-      this.#node,
-      name
-    );
+    return new PVEItemDirectoryDisksNodeNodesName(this.#client, this.#node, name);
   }
 
   /**
@@ -18592,10 +18632,7 @@ class PVEDisksNodeNodesDirectory {
       add_storage: add_storage,
       filesystem: filesystem,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/disks/directory`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/disks/directory`, parameters);
   }
 }
 /**
@@ -18667,21 +18704,13 @@ class PVEDisksNodeNodesZfs {
    * @param {string} raidlevel The RAID level to use.
    *   Enum: single,mirror,raid10,raidz,raidz2,raidz3,draid,draid2,draid3
    * @param {boolean} add_storage Configure storage using the zpool.
-   * @param {int} ashift Pool sector size exponent.
+   * @param {number} ashift Pool sector size exponent.
    * @param {string} compression The compression algorithm to use.
    *   Enum: on,off,gzip,lz4,lzjb,zle,zstd
    * @param {string} draid_config
    * @returns {Promise<Result>}
    */
-  async create(
-    devices,
-    name,
-    raidlevel,
-    add_storage,
-    ashift,
-    compression,
-    draid_config
-  ) {
+  async create(devices, name, raidlevel, add_storage, ashift, compression, draid_config) {
     const parameters = {
       devices: devices,
       name: name,
@@ -18691,10 +18720,7 @@ class PVEDisksNodeNodesZfs {
       compression: compression,
       "draid-config": draid_config,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/disks/zfs`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/disks/zfs`, parameters);
   }
 }
 /**
@@ -18723,19 +18749,14 @@ class PVEItemZfsDisksNodeNodesName {
       "cleanup-config": cleanup_config,
       "cleanup-disks": cleanup_disks,
     };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/disks/zfs/${this.#name}`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/disks/zfs/${this.#name}`, parameters);
   }
   /**
    * Get details about a zpool.
    * @returns {Promise<Result>}
    */
   async detail() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/disks/zfs/${this.#name}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/disks/zfs/${this.#name}`);
   }
 }
 
@@ -18766,10 +18787,7 @@ class PVEDisksNodeNodesList {
       skipsmart: skipsmart,
       type: type,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/disks/list`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/disks/list`, parameters);
   }
 }
 
@@ -18797,10 +18815,7 @@ class PVEDisksNodeNodesSmart {
       disk: disk,
       healthonly: healthonly,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/disks/smart`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/disks/smart`, parameters);
   }
 }
 
@@ -18828,10 +18843,7 @@ class PVEDisksNodeNodesInitgpt {
       disk: disk,
       uuid: uuid,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/disks/initgpt`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/disks/initgpt`, parameters);
   }
 }
 
@@ -18855,10 +18867,7 @@ class PVEDisksNodeNodesWipedisk {
    */
   async wipeDisk(disk) {
     const parameters = { disk: disk };
-    return await this.#client.set(
-      `/nodes/${this.#node}/disks/wipedisk`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/disks/wipedisk`, parameters);
   }
 }
 
@@ -18892,10 +18901,7 @@ class PVENodeNodesApt {
    */
   get changelog() {
     return this.#changelog == null
-      ? (this.#changelog = new PVEAptNodeNodesChangelog(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#changelog = new PVEAptNodeNodesChangelog(this.#client, this.#node))
       : this.#changelog;
   }
   #repositories;
@@ -18905,10 +18911,7 @@ class PVENodeNodesApt {
    */
   get repositories() {
     return this.#repositories == null
-      ? (this.#repositories = new PVEAptNodeNodesRepositories(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#repositories = new PVEAptNodeNodesRepositories(this.#client, this.#node))
       : this.#repositories;
   }
   #versions;
@@ -18961,10 +18964,7 @@ class PVEAptNodeNodesUpdate {
       notify: notify,
       quiet: quiet,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/apt/update`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/apt/update`, parameters);
   }
 }
 
@@ -18992,10 +18992,7 @@ class PVEAptNodeNodesChangelog {
       name: name,
       version: version,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/apt/changelog`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/apt/changelog`, parameters);
   }
 }
 
@@ -19021,7 +19018,7 @@ class PVEAptNodeNodesRepositories {
   }
   /**
    * Change the properties of a repository. Currently only allows enabling/disabling.
-   * @param {int} index Index within the file (starting from 0).
+   * @param {number} index Index within the file (starting from 0).
    * @param {string} path Path to the containing file.
    * @param {string} digest Digest to detect modifications.
    * @param {boolean} enabled Whether the repository should be enabled or not.
@@ -19034,10 +19031,7 @@ class PVEAptNodeNodesRepositories {
       digest: digest,
       enabled: enabled,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/apt/repositories`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/apt/repositories`, parameters);
   }
   /**
    * Add a standard repository to the configuration
@@ -19050,10 +19044,7 @@ class PVEAptNodeNodesRepositories {
       handle: handle,
       digest: digest,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/apt/repositories`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/apt/repositories`, parameters);
   }
 }
 
@@ -19109,10 +19100,7 @@ class PVENodeNodesFirewall {
    */
   get options() {
     return this.#options == null
-      ? (this.#options = new PVEFirewallNodeNodesOptions(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#options = new PVEFirewallNodeNodesOptions(this.#client, this.#node))
       : this.#options;
   }
   #log;
@@ -19172,13 +19160,13 @@ class PVEFirewallNodeNodesRules {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} pos Update rule at position &amp;lt;pos&amp;gt;.
+   * @param {number} pos Update rule at position &amp;lt;pos&amp;gt;.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -19218,10 +19206,7 @@ class PVEFirewallNodeNodesRules {
       source: source,
       sport: sport,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/firewall/rules`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/firewall/rules`, parameters);
   }
 }
 /**
@@ -19256,9 +19241,7 @@ class PVEItemRulesFirewallNodeNodesPos {
    * @returns {Promise<Result>}
    */
   async getRule() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/firewall/rules/${this.#pos}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/firewall/rules/${this.#pos}`);
   }
   /**
    * Modify rule data.
@@ -19268,13 +19251,13 @@ class PVEItemRulesFirewallNodeNodesPos {
    * @param {string} dest Restrict packet destination address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} digest Prevent changes if current configuration file has a different digest. This can be used to prevent concurrent modifications.
    * @param {string} dport Restrict TCP/UDP destination port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
-   * @param {int} enable Flag to enable/disable a rule.
+   * @param {number} enable Flag to enable/disable a rule.
    * @param {string} icmp_type Specify icmp-type. Only valid if proto equals 'icmp' or 'icmpv6'/'ipv6-icmp'.
    * @param {string} iface Network interface name. You have to use network configuration key names for VMs and containers ('net\d+'). Host related rules can use arbitrary strings.
    * @param {string} log Log level for firewall rule.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} macro Use predefined standard macro.
-   * @param {int} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
+   * @param {number} moveto Move rule to new position &amp;lt;moveto&amp;gt;. Other arguments are ignored.
    * @param {string} proto IP protocol. You can use protocol names ('tcp'/'udp') or simple numbers, as defined in '/etc/protocols'.
    * @param {string} source Restrict packet source address. This can refer to a single IP address, an IP set ('+ipsetname') or an IP alias definition. You can also specify an address range like '20.34.101.207-201.3.9.99', or a list of IP addresses and networks (entries are separated by comma). Please do not mix IPv4 and IPv6 addresses inside such lists.
    * @param {string} sport Restrict TCP/UDP source port. You can use service names or simple numbers (0-65535), as defined in '/etc/services'. Port ranges can be specified with '\d+:\d+', for example '80:85', and you can use comma separated list to match several ports or ranges.
@@ -19318,10 +19301,7 @@ class PVEItemRulesFirewallNodeNodesPos {
       sport: sport,
       type: type,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/firewall/rules/${this.#pos}`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/firewall/rules/${this.#pos}`, parameters);
   }
 }
 
@@ -19360,14 +19340,14 @@ class PVEFirewallNodeNodesOptions {
    * @param {boolean} ndp Enable NDP (Neighbor Discovery Protocol).
    * @param {boolean} nf_conntrack_allow_invalid Allow invalid packets on connection tracking.
    * @param {string} nf_conntrack_helpers Enable conntrack helpers for specific protocols. Supported protocols: amanda, ftp, irc, netbios-ns, pptp, sane, sip, snmp, tftp
-   * @param {int} nf_conntrack_max Maximum number of tracked connections.
-   * @param {int} nf_conntrack_tcp_timeout_established Conntrack established timeout.
-   * @param {int} nf_conntrack_tcp_timeout_syn_recv Conntrack syn recv timeout.
+   * @param {number} nf_conntrack_max Maximum number of tracked connections.
+   * @param {number} nf_conntrack_tcp_timeout_established Conntrack established timeout.
+   * @param {number} nf_conntrack_tcp_timeout_syn_recv Conntrack syn recv timeout.
    * @param {boolean} nftables Enable nftables based firewall (tech preview)
    * @param {boolean} nosmurfs Enable SMURFS filter.
    * @param {boolean} protection_synflood Enable synflood protection
-   * @param {int} protection_synflood_burst Synflood protection rate burst by ip src.
-   * @param {int} protection_synflood_rate Synflood protection rate syn/sec by ip src.
+   * @param {number} protection_synflood_burst Synflood protection rate burst by ip src.
+   * @param {number} protection_synflood_rate Synflood protection rate syn/sec by ip src.
    * @param {string} smurf_log_level Log level for SMURFS filter.
    *   Enum: emerg,alert,crit,err,warning,notice,info,debug,nolog
    * @param {string} tcp_flags_log_level Log level for illegal tcp flags filter.
@@ -19410,8 +19390,7 @@ class PVEFirewallNodeNodesOptions {
       nf_conntrack_allow_invalid: nf_conntrack_allow_invalid,
       nf_conntrack_helpers: nf_conntrack_helpers,
       nf_conntrack_max: nf_conntrack_max,
-      nf_conntrack_tcp_timeout_established:
-        nf_conntrack_tcp_timeout_established,
+      nf_conntrack_tcp_timeout_established: nf_conntrack_tcp_timeout_established,
       nf_conntrack_tcp_timeout_syn_recv: nf_conntrack_tcp_timeout_syn_recv,
       nftables: nftables,
       nosmurfs: nosmurfs,
@@ -19422,10 +19401,7 @@ class PVEFirewallNodeNodesOptions {
       tcp_flags_log_level: tcp_flags_log_level,
       tcpflags: tcpflags,
     };
-    return await this.#client.set(
-      `/nodes/${this.#node}/firewall/options`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/firewall/options`, parameters);
   }
 }
 
@@ -19444,10 +19420,10 @@ class PVEFirewallNodeNodesLog {
 
   /**
    * Read firewall log
-   * @param {int} limit
-   * @param {int} since Display log since this UNIX epoch.
-   * @param {int} start
-   * @param {int} until Display log until this UNIX epoch.
+   * @param {number} limit
+   * @param {number} since Display log since this UNIX epoch.
+   * @param {number} start
+   * @param {number} until Display log until this UNIX epoch.
    * @returns {Promise<Result>}
    */
   async log(limit, since, start, until) {
@@ -19457,10 +19433,7 @@ class PVEFirewallNodeNodesLog {
       start: start,
       until: until,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/firewall/log`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/firewall/log`, parameters);
   }
 }
 
@@ -19488,15 +19461,12 @@ class PVENodeNodesReplication {
 
   /**
    * List status of all replication jobs on this node.
-   * @param {int} guest Only list replication jobs for this guest.
+   * @param {number} guest Only list replication jobs for this guest.
    * @returns {Promise<Result>}
    */
   async status(guest) {
     const parameters = { guest: guest };
-    return await this.#client.get(
-      `/nodes/${this.#node}/replication`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/replication`, parameters);
   }
 }
 /**
@@ -19521,11 +19491,7 @@ class PVEItemReplicationNodeNodesId {
    */
   get status() {
     return this.#status == null
-      ? (this.#status = new PVEIdReplicationNodeNodesStatus(
-          this.#client,
-          this.#node,
-          this.#id
-        ))
+      ? (this.#status = new PVEIdReplicationNodeNodesStatus(this.#client, this.#node, this.#id))
       : this.#status;
   }
   #log;
@@ -19535,11 +19501,7 @@ class PVEItemReplicationNodeNodesId {
    */
   get log() {
     return this.#log == null
-      ? (this.#log = new PVEIdReplicationNodeNodesLog(
-          this.#client,
-          this.#node,
-          this.#id
-        ))
+      ? (this.#log = new PVEIdReplicationNodeNodesLog(this.#client, this.#node, this.#id))
       : this.#log;
   }
   #scheduleNow;
@@ -19562,9 +19524,7 @@ class PVEItemReplicationNodeNodesId {
    * @returns {Promise<Result>}
    */
   async index() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/replication/${this.#id}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/replication/${this.#id}`);
   }
 }
 /**
@@ -19587,9 +19547,7 @@ class PVEIdReplicationNodeNodesStatus {
    * @returns {Promise<Result>}
    */
   async jobStatus() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/replication/${this.#id}/status`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/replication/${this.#id}/status`);
   }
 }
 
@@ -19610,8 +19568,8 @@ class PVEIdReplicationNodeNodesLog {
 
   /**
    * Read replication job log.
-   * @param {int} limit
-   * @param {int} start
+   * @param {number} limit
+   * @param {number} start
    * @returns {Promise<Result>}
    */
   async readJobLog(limit, start) {
@@ -19619,10 +19577,7 @@ class PVEIdReplicationNodeNodesLog {
       limit: limit,
       start: start,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/replication/${this.#id}/log`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/replication/${this.#id}/log`, parameters);
   }
 }
 
@@ -19646,9 +19601,7 @@ class PVEIdReplicationNodeNodesScheduleNow {
    * @returns {Promise<Result>}
    */
   async scheduleNow() {
-    return await this.#client.create(
-      `/nodes/${this.#node}/replication/${this.#id}/schedule_now`
-    );
+    return await this.#client.create(`/nodes/${this.#node}/replication/${this.#id}/schedule_now`);
   }
 }
 
@@ -19672,10 +19625,7 @@ class PVENodeNodesCertificates {
    */
   get acme() {
     return this.#acme == null
-      ? (this.#acme = new PVECertificatesNodeNodesAcme(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#acme = new PVECertificatesNodeNodesAcme(this.#client, this.#node))
       : this.#acme;
   }
   #info;
@@ -19685,10 +19635,7 @@ class PVENodeNodesCertificates {
    */
   get info() {
     return this.#info == null
-      ? (this.#info = new PVECertificatesNodeNodesInfo(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#info = new PVECertificatesNodeNodesInfo(this.#client, this.#node))
       : this.#info;
   }
   #custom;
@@ -19698,10 +19645,7 @@ class PVENodeNodesCertificates {
    */
   get custom() {
     return this.#custom == null
-      ? (this.#custom = new PVECertificatesNodeNodesCustom(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#custom = new PVECertificatesNodeNodesCustom(this.#client, this.#node))
       : this.#custom;
   }
 
@@ -19733,10 +19677,7 @@ class PVECertificatesNodeNodesAcme {
    */
   get certificate() {
     return this.#certificate == null
-      ? (this.#certificate = new PVEAcmeCertificatesNodeNodesCertificate(
-          this.#client,
-          this.#node
-        ))
+      ? (this.#certificate = new PVEAcmeCertificatesNodeNodesCertificate(this.#client, this.#node))
       : this.#certificate;
   }
 
@@ -19766,9 +19707,7 @@ class PVEAcmeCertificatesNodeNodesCertificate {
    * @returns {Promise<Result>}
    */
   async revokeCertificate() {
-    return await this.#client.delete(
-      `/nodes/${this.#node}/certificates/acme/certificate`
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/certificates/acme/certificate`);
   }
   /**
    * Order a new certificate from ACME-compatible CA.
@@ -19789,10 +19728,7 @@ class PVEAcmeCertificatesNodeNodesCertificate {
    */
   async renewCertificate(force) {
     const parameters = { force: force };
-    return await this.#client.set(
-      `/nodes/${this.#node}/certificates/acme/certificate`,
-      parameters
-    );
+    return await this.#client.set(`/nodes/${this.#node}/certificates/acme/certificate`, parameters);
   }
 }
 
@@ -19838,10 +19774,7 @@ class PVECertificatesNodeNodesCustom {
    */
   async removeCustomCert(restart) {
     const parameters = { restart: restart };
-    return await this.#client.delete(
-      `/nodes/${this.#node}/certificates/custom`,
-      parameters
-    );
+    return await this.#client.delete(`/nodes/${this.#node}/certificates/custom`, parameters);
   }
   /**
    * Upload or update custom certificate chain and key.
@@ -19858,10 +19791,7 @@ class PVECertificatesNodeNodesCustom {
       key: key,
       restart: restart,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/certificates/custom`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/certificates/custom`, parameters);
   }
 }
 
@@ -19891,12 +19821,12 @@ class PVENodeNodesConfig {
   /**
    * Set node configuration options.
    * @param {string} acme Node specific ACME settings.
-   * @param {array} acmedomainN ACME domain and validation plugin
-   * @param {int} ballooning_target RAM usage target for ballooning (in percent of total memory)
+   * @param {Array} acmedomainN ACME domain and validation plugin
+   * @param {number} ballooning_target RAM usage target for ballooning (in percent of total memory)
    * @param {string} delete_ A list of settings you want to delete.
    * @param {string} description Description for the Node. Shown in the web-interface node notes panel. This is saved as comment inside the configuration file.
    * @param {string} digest Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.
-   * @param {int} startall_onboot_delay Initial delay in seconds, before starting all the Virtual Guests with on-boot enabled.
+   * @param {number} startall_onboot_delay Initial delay in seconds, before starting all the Virtual Guests with on-boot enabled.
    * @param {string} wakeonlan Node specific wake on LAN settings.
    * @returns {Promise<Result>}
    */
@@ -19937,6 +19867,16 @@ class PVENodeNodesSdn {
     this.#node = node;
   }
 
+  #fabrics;
+  /**
+   * Get SdnNodeNodesFabrics
+   * @returns {PVESdnNodeNodesFabrics}
+   */
+  get fabrics() {
+    return this.#fabrics == null
+      ? (this.#fabrics = new PVESdnNodeNodesFabrics(this.#client, this.#node))
+      : this.#fabrics;
+  }
   #zones;
   /**
    * Get SdnNodeNodesZones
@@ -19947,6 +19887,16 @@ class PVENodeNodesSdn {
       ? (this.#zones = new PVESdnNodeNodesZones(this.#client, this.#node))
       : this.#zones;
   }
+  #vnets;
+  /**
+   * Get SdnNodeNodesVnets
+   * @returns {PVESdnNodeNodesVnets}
+   */
+  get vnets() {
+    return this.#vnets == null
+      ? (this.#vnets = new PVESdnNodeNodesVnets(this.#client, this.#node))
+      : this.#vnets;
+  }
 
   /**
    * SDN index.
@@ -19956,6 +19906,166 @@ class PVENodeNodesSdn {
     return await this.#client.get(`/nodes/${this.#node}/sdn`);
   }
 }
+/**
+ * Class PVESdnNodeNodesFabrics
+ */
+class PVESdnNodeNodesFabrics {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+  /**
+   * Get ItemFabricsSdnNodeNodesFabric
+   * @param fabric
+   * @returns {PVEItemFabricsSdnNodeNodesFabric}
+   */
+  get(fabric) {
+    return new PVEItemFabricsSdnNodeNodesFabric(this.#client, this.#node, fabric);
+  }
+}
+/**
+ * Class PVEItemFabricsSdnNodeNodesFabric
+ */
+class PVEItemFabricsSdnNodeNodesFabric {
+  #node;
+  #fabric;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, fabric) {
+    this.#client = client;
+    this.#node = node;
+    this.#fabric = fabric;
+  }
+
+  #routes;
+  /**
+   * Get FabricFabricsSdnNodeNodesRoutes
+   * @returns {PVEFabricFabricsSdnNodeNodesRoutes}
+   */
+  get routes() {
+    return this.#routes == null
+      ? (this.#routes = new PVEFabricFabricsSdnNodeNodesRoutes(
+          this.#client,
+          this.#node,
+          this.#fabric
+        ))
+      : this.#routes;
+  }
+  #neighbors;
+  /**
+   * Get FabricFabricsSdnNodeNodesNeighbors
+   * @returns {PVEFabricFabricsSdnNodeNodesNeighbors}
+   */
+  get neighbors() {
+    return this.#neighbors == null
+      ? (this.#neighbors = new PVEFabricFabricsSdnNodeNodesNeighbors(
+          this.#client,
+          this.#node,
+          this.#fabric
+        ))
+      : this.#neighbors;
+  }
+  #interfaces;
+  /**
+   * Get FabricFabricsSdnNodeNodesInterfaces
+   * @returns {PVEFabricFabricsSdnNodeNodesInterfaces}
+   */
+  get interfaces() {
+    return this.#interfaces == null
+      ? (this.#interfaces = new PVEFabricFabricsSdnNodeNodesInterfaces(
+          this.#client,
+          this.#node,
+          this.#fabric
+        ))
+      : this.#interfaces;
+  }
+
+  /**
+   * Directory index for SDN fabric status.
+   * @returns {Promise<Result>}
+   */
+  async diridx() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/fabrics/${this.#fabric}`);
+  }
+}
+/**
+ * Class PVEFabricFabricsSdnNodeNodesRoutes
+ */
+class PVEFabricFabricsSdnNodeNodesRoutes {
+  #node;
+  #fabric;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, fabric) {
+    this.#client = client;
+    this.#node = node;
+    this.#fabric = fabric;
+  }
+
+  /**
+   * Get all routes for a fabric.
+   * @returns {Promise<Result>}
+   */
+  async routes() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/fabrics/${this.#fabric}/routes`);
+  }
+}
+
+/**
+ * Class PVEFabricFabricsSdnNodeNodesNeighbors
+ */
+class PVEFabricFabricsSdnNodeNodesNeighbors {
+  #node;
+  #fabric;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, fabric) {
+    this.#client = client;
+    this.#node = node;
+    this.#fabric = fabric;
+  }
+
+  /**
+   * Get all neighbors for a fabric.
+   * @returns {Promise<Result>}
+   */
+  async neighbors() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/fabrics/${this.#fabric}/neighbors`);
+  }
+}
+
+/**
+ * Class PVEFabricFabricsSdnNodeNodesInterfaces
+ */
+class PVEFabricFabricsSdnNodeNodesInterfaces {
+  #node;
+  #fabric;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, fabric) {
+    this.#client = client;
+    this.#node = node;
+    this.#fabric = fabric;
+  }
+
+  /**
+   * Get all interfaces for a fabric.
+   * @returns {Promise<Result>}
+   */
+  async interfaces() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/fabrics/${this.#fabric}/interfaces`);
+  }
+}
+
 /**
  * Class PVESdnNodeNodesZones
  */
@@ -20008,22 +20118,36 @@ class PVEItemZonesSdnNodeNodesZone {
    */
   get content() {
     return this.#content == null
-      ? (this.#content = new PVEZoneZonesSdnNodeNodesContent(
-          this.#client,
-          this.#node,
-          this.#zone
-        ))
+      ? (this.#content = new PVEZoneZonesSdnNodeNodesContent(this.#client, this.#node, this.#zone))
       : this.#content;
+  }
+  #bridges;
+  /**
+   * Get ZoneZonesSdnNodeNodesBridges
+   * @returns {PVEZoneZonesSdnNodeNodesBridges}
+   */
+  get bridges() {
+    return this.#bridges == null
+      ? (this.#bridges = new PVEZoneZonesSdnNodeNodesBridges(this.#client, this.#node, this.#zone))
+      : this.#bridges;
+  }
+  #ipVrf;
+  /**
+   * Get ZoneZonesSdnNodeNodesIpVrf
+   * @returns {PVEZoneZonesSdnNodeNodesIpVrf}
+   */
+  get ipVrf() {
+    return this.#ipVrf == null
+      ? (this.#ipVrf = new PVEZoneZonesSdnNodeNodesIpVrf(this.#client, this.#node, this.#zone))
+      : this.#ipVrf;
   }
 
   /**
-   *
+   * Directory index for SDN zone status.
    * @returns {Promise<Result>}
    */
   async diridx() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/sdn/zones/${this.#zone}`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/sdn/zones/${this.#zone}`);
   }
 }
 /**
@@ -20046,9 +20170,135 @@ class PVEZoneZonesSdnNodeNodesContent {
    * @returns {Promise<Result>}
    */
   async index() {
-    return await this.#client.get(
-      `/nodes/${this.#node}/sdn/zones/${this.#zone}/content`
-    );
+    return await this.#client.get(`/nodes/${this.#node}/sdn/zones/${this.#zone}/content`);
+  }
+}
+
+/**
+ * Class PVEZoneZonesSdnNodeNodesBridges
+ */
+class PVEZoneZonesSdnNodeNodesBridges {
+  #node;
+  #zone;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, zone) {
+    this.#client = client;
+    this.#node = node;
+    this.#zone = zone;
+  }
+
+  /**
+   * Get a list of all bridges (vnets) that are part of a zone, as well as the ports that are members of that bridge.
+   * @returns {Promise<Result>}
+   */
+  async bridges() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/zones/${this.#zone}/bridges`);
+  }
+}
+
+/**
+ * Class PVEZoneZonesSdnNodeNodesIpVrf
+ */
+class PVEZoneZonesSdnNodeNodesIpVrf {
+  #node;
+  #zone;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, zone) {
+    this.#client = client;
+    this.#node = node;
+    this.#zone = zone;
+  }
+
+  /**
+   * Get the IP VRF of an EVPN zone.
+   * @returns {Promise<Result>}
+   */
+  async ipVrf() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/zones/${this.#zone}/ip-vrf`);
+  }
+}
+
+/**
+ * Class PVESdnNodeNodesVnets
+ */
+class PVESdnNodeNodesVnets {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+  /**
+   * Get ItemVnetsSdnNodeNodesVnet
+   * @param vnet
+   * @returns {PVEItemVnetsSdnNodeNodesVnet}
+   */
+  get(vnet) {
+    return new PVEItemVnetsSdnNodeNodesVnet(this.#client, this.#node, vnet);
+  }
+}
+/**
+ * Class PVEItemVnetsSdnNodeNodesVnet
+ */
+class PVEItemVnetsSdnNodeNodesVnet {
+  #node;
+  #vnet;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vnet) {
+    this.#client = client;
+    this.#node = node;
+    this.#vnet = vnet;
+  }
+
+  #macVrf;
+  /**
+   * Get VnetVnetsSdnNodeNodesMacVrf
+   * @returns {PVEVnetVnetsSdnNodeNodesMacVrf}
+   */
+  get macVrf() {
+    return this.#macVrf == null
+      ? (this.#macVrf = new PVEVnetVnetsSdnNodeNodesMacVrf(this.#client, this.#node, this.#vnet))
+      : this.#macVrf;
+  }
+
+  /**
+   *
+   * @returns {Promise<Result>}
+   */
+  async diridx() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/vnets/${this.#vnet}`);
+  }
+}
+/**
+ * Class PVEVnetVnetsSdnNodeNodesMacVrf
+ */
+class PVEVnetVnetsSdnNodeNodesMacVrf {
+  #node;
+  #vnet;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node, vnet) {
+    this.#client = client;
+    this.#node = node;
+    this.#vnet = vnet;
+  }
+
+  /**
+   * Get the MAC VRF for a VNet in an EVPN zone.
+   * @returns {Promise<Result>}
+   */
+  async macVrf() {
+    return await this.#client.get(`/nodes/${this.#node}/sdn/vnets/${this.#vnet}/mac-vrf`);
   }
 }
 
@@ -20148,10 +20398,7 @@ class PVENodeNodesExecute {
    */
   async execute(commands) {
     const parameters = { commands: commands };
-    return await this.#client.create(
-      `/nodes/${this.#node}/execute`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/execute`, parameters);
   }
 }
 
@@ -20194,7 +20441,7 @@ class PVENodeNodesRrd {
    * Read node RRD statistics (returns PNG)
    * @param {string} ds The list of datasources you want to display.
    * @param {string} timeframe Specify the time frame you are interested in.
-   *   Enum: hour,day,week,month,year
+   *   Enum: hour,day,week,month,year,decade
    * @param {string} cf The RRD consolidation function
    *   Enum: AVERAGE,MAX
    * @returns {Promise<Result>}
@@ -20225,7 +20472,7 @@ class PVENodeNodesRrddata {
   /**
    * Read node RRD statistics
    * @param {string} timeframe Specify the time frame you are interested in.
-   *   Enum: hour,day,week,month,year
+   *   Enum: hour,day,week,month,year,decade
    * @param {string} cf The RRD consolidation function
    *   Enum: AVERAGE,MAX
    * @returns {Promise<Result>}
@@ -20254,10 +20501,10 @@ class PVENodeNodesSyslog {
 
   /**
    * Read system log
-   * @param {int} limit
+   * @param {number} limit
    * @param {string} service Service ID
    * @param {string} since Display all log since this date-time string.
-   * @param {int} start
+   * @param {number} start
    * @param {string} until Display all log until this date-time string.
    * @returns {Promise<Result>}
    */
@@ -20289,10 +20536,10 @@ class PVENodeNodesJournal {
   /**
    * Read Journal
    * @param {string} endcursor End before the given Cursor. Conflicts with 'until'
-   * @param {int} lastentries Limit to the last X lines. Conflicts with a range.
-   * @param {int} since Display all log since this UNIX epoch. Conflicts with 'startcursor'.
+   * @param {number} lastentries Limit to the last X lines. Conflicts with a range.
+   * @param {number} since Display all log since this UNIX epoch. Conflicts with 'startcursor'.
    * @param {string} startcursor Start after the given Cursor. Conflicts with 'since'
-   * @param {int} until Display all log until this UNIX epoch. Conflicts with 'endcursor'.
+   * @param {number} until Display all log until this UNIX epoch. Conflicts with 'endcursor'.
    * @returns {Promise<Result>}
    */
   async journal(endcursor, lastentries, since, startcursor, until) {
@@ -20323,11 +20570,11 @@ class PVENodeNodesVncshell {
   /**
    * Creates a VNC Shell proxy.
    * @param {string} cmd Run specific command or default to login (requires 'root@pam')
-   *   Enum: ceph_install,upgrade,login
+   *   Enum: ceph_install,login,upgrade
    * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
-   * @param {int} height sets the height of the console in pixels.
+   * @param {number} height sets the height of the console in pixels.
    * @param {boolean} websocket use websocket instead of standard vnc.
-   * @param {int} width sets the width of the console in pixels.
+   * @param {number} width sets the width of the console in pixels.
    * @returns {Promise<Result>}
    */
   async vncshell(cmd, cmd_opts, height, websocket, width) {
@@ -20338,10 +20585,7 @@ class PVENodeNodesVncshell {
       websocket: websocket,
       width: width,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/vncshell`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/vncshell`, parameters);
   }
 }
 
@@ -20361,7 +20605,7 @@ class PVENodeNodesTermproxy {
   /**
    * Creates a VNC Shell proxy.
    * @param {string} cmd Run specific command or default to login (requires 'root@pam')
-   *   Enum: ceph_install,upgrade,login
+   *   Enum: ceph_install,login,upgrade
    * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
    * @returns {Promise<Result>}
    */
@@ -20370,10 +20614,7 @@ class PVENodeNodesTermproxy {
       cmd: cmd,
       "cmd-opts": cmd_opts,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/termproxy`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/termproxy`, parameters);
   }
 }
 
@@ -20392,7 +20633,7 @@ class PVENodeNodesVncwebsocket {
 
   /**
    * Opens a websocket for VNC traffic.
-   * @param {int} port Port number returned by previous vncproxy call.
+   * @param {number} port Port number returned by previous vncproxy call.
    * @param {string} vncticket Ticket from previous call to vncproxy.
    * @returns {Promise<Result>}
    */
@@ -20401,10 +20642,7 @@ class PVENodeNodesVncwebsocket {
       port: port,
       vncticket: vncticket,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/vncwebsocket`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/vncwebsocket`, parameters);
   }
 }
 
@@ -20424,7 +20662,7 @@ class PVENodeNodesSpiceshell {
   /**
    * Creates a SPICE shell.
    * @param {string} cmd Run specific command or default to login (requires 'root@pam')
-   *   Enum: ceph_install,upgrade,login
+   *   Enum: ceph_install,login,upgrade
    * @param {string} cmd_opts Add parameters to a command. Encoded as null terminated strings.
    * @param {string} proxy SPICE proxy server. This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As reasonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).
    * @returns {Promise<Result>}
@@ -20435,10 +20673,7 @@ class PVENodeNodesSpiceshell {
       "cmd-opts": cmd_opts,
       proxy: proxy,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/spiceshell`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/spiceshell`, parameters);
   }
 }
 
@@ -20543,10 +20778,31 @@ class PVENodeNodesAplinfo {
       storage: storage,
       template: template,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/aplinfo`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/aplinfo`, parameters);
+  }
+}
+
+/**
+ * Class PVENodeNodesQueryOciRepoTags
+ */
+class PVENodeNodesQueryOciRepoTags {
+  #node;
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client, node) {
+    this.#client = client;
+    this.#node = node;
+  }
+
+  /**
+   * List all tags for an OCI repository reference.
+   * @param {string} reference The reference to the repository to query tags from.
+   * @returns {Promise<Result>}
+   */
+  async queryOciRepoTags(reference) {
+    const parameters = { reference: reference };
+    return await this.#client.get(`/nodes/${this.#node}/query-oci-repo-tags`, parameters);
   }
 }
 
@@ -20574,10 +20830,7 @@ class PVENodeNodesQueryUrlMetadata {
       url: url,
       "verify-certificates": verify_certificates,
     };
-    return await this.#client.get(
-      `/nodes/${this.#node}/query-url-metadata`,
-      parameters
-    );
+    return await this.#client.get(`/nodes/${this.#node}/query-url-metadata`, parameters);
   }
 }
 
@@ -20627,10 +20880,7 @@ class PVENodeNodesStartall {
       force: force,
       vms: vms,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/startall`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/startall`, parameters);
   }
 }
 
@@ -20650,7 +20900,7 @@ class PVENodeNodesStopall {
   /**
    * Stop all VMs and Containers.
    * @param {boolean} force_stop Force a hard-stop after the timeout.
-   * @param {int} timeout Timeout for each guest shutdown task. Depending on `force-stop`, the shutdown gets then simply aborted or a hard-stop is forced.
+   * @param {number} timeout Timeout for each guest shutdown task. Depending on `force-stop`, the shutdown gets then simply aborted or a hard-stop is forced.
    * @param {string} vms Only consider Guests with these IDs.
    * @returns {Promise<Result>}
    */
@@ -20660,10 +20910,7 @@ class PVENodeNodesStopall {
       timeout: timeout,
       vms: vms,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/stopall`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/stopall`, parameters);
   }
 }
 
@@ -20687,10 +20934,7 @@ class PVENodeNodesSuspendall {
    */
   async suspendall(vms) {
     const parameters = { vms: vms };
-    return await this.#client.create(
-      `/nodes/${this.#node}/suspendall`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/suspendall`, parameters);
   }
 }
 
@@ -20710,7 +20954,7 @@ class PVENodeNodesMigrateall {
   /**
    * Migrate all VMs and Containers.
    * @param {string} target Target node.
-   * @param {int} maxworkers Maximal number of parallel migration job. If not set, uses'max_workers' from datacenter.cfg. One of both must be set!
+   * @param {number} maxworkers Maximal number of parallel migration job. If not set, uses'max_workers' from datacenter.cfg. One of both must be set!
    * @param {string} vms Only consider Guests with these IDs.
    * @param {boolean} with_local_disks Enable live storage migration for local disk
    * @returns {Promise<Result>}
@@ -20722,10 +20966,7 @@ class PVENodeNodesMigrateall {
       vms: vms,
       "with-local-disks": with_local_disks,
     };
-    return await this.#client.create(
-      `/nodes/${this.#node}/migrateall`,
-      parameters
-    );
+    return await this.#client.create(`/nodes/${this.#node}/migrateall`, parameters);
   }
 }
 
@@ -20787,7 +21028,7 @@ class PVEStorage {
   /**
    * Storage index.
    * @param {string} type Only list storage of specific type
-   *   Enum: btrfs,cephfs,cifs,dir,esxi,glusterfs,iscsi,iscsidirect,lvm,lvmthin,nfs,pbs,rbd,zfs,zfspool
+   *   Enum: btrfs,cephfs,cifs,dir,esxi,iscsi,iscsidirect,lvm,lvmthin,nfs,pbs,rbd,zfs,zfspool
    * @returns {Promise<Result>}
    */
   async index(type) {
@@ -20798,7 +21039,7 @@ class PVEStorage {
    * Create a new storage.
    * @param {string} storage The storage identifier.
    * @param {string} type Storage type.
-   *   Enum: btrfs,cephfs,cifs,dir,esxi,glusterfs,iscsi,iscsidirect,lvm,lvmthin,nfs,pbs,rbd,zfs,zfspool
+   *   Enum: btrfs,cephfs,cifs,dir,esxi,iscsi,iscsidirect,lvm,lvmthin,nfs,pbs,rbd,zfs,zfspool
    * @param {string} authsupported Authsupported.
    * @param {string} base Base volume. This volume is automatically activated.
    * @param {string} blocksize block size
@@ -20826,8 +21067,7 @@ class PVEStorage {
    * @param {boolean} krbd Always access rbd through krbd kernel module.
    * @param {string} lio_tpg target portal group for Linux LIO targets
    * @param {string} master_pubkey Base64-encoded, PEM-formatted public RSA key. Used to encrypt a copy of the encryption-key which will be added to each encrypted backup.
-   * @param {int} max_protected_backups Maximal number of protected backups per guest. Use '-1' for unlimited.
-   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per VM. Use '0' for unlimited.
+   * @param {number} max_protected_backups Maximal number of protected backups per guest. Use '-1' for unlimited.
    * @param {boolean} mkdir Create the directory if it doesn't exist and populate it with default sub-dirs. NOTE: Deprecated, use the 'create-base-path' and 'create-subdirs' options instead.
    * @param {string} monhost IP addresses of monitors (for external clusters).
    * @param {string} mountpoint mount point
@@ -20839,30 +21079,30 @@ class PVEStorage {
    * @param {string} password Password for accessing the share/datastore.
    * @param {string} path File system path.
    * @param {string} pool Pool.
-   * @param {int} port Use this port to connect to the storage instead of the default one (for example, with PBS or ESXi). For NFS and CIFS, use the 'options' option to configure the port via the mount options.
+   * @param {number} port Use this port to connect to the storage instead of the default one (for example, with PBS or ESXi). For NFS and CIFS, use the 'options' option to configure the port via the mount options.
    * @param {string} portal iSCSI portal (IP or DNS name with optional port).
    * @param {string} preallocation Preallocation mode for raw and qcow2 images. Using 'metadata' on raw images results in preallocation=off.
    *   Enum: off,metadata,falloc,full
    * @param {string} prune_backups The retention options with shorter intervals are processed first with --keep-last being the very first one. Each option covers a specific period of time. We say that backups within this period are covered by this option. The next option does not take care of already covered backups and only considers older backups.
    * @param {boolean} saferemove Zero-out data when removing LVs.
+   * @param {number} saferemove_stepsize Wipe step size in MiB. It will be capped to the maximum supported by the storage.
+   *   Enum: 1,2,4,8,16,32
    * @param {string} saferemove_throughput Wipe throughput (cstream -t parameter value).
    * @param {string} server Server IP or DNS name.
-   * @param {string} server2 Backup volfile server IP or DNS name.
    * @param {string} share CIFS share.
    * @param {boolean} shared Indicate that this is a single storage with the same contents on all nodes (or all listed in the 'nodes' option). It will not make the contents of a local storage automatically accessible to other nodes, it just marks an already shared storage as such!
    * @param {boolean} skip_cert_verification Disable TLS certificate verification, only enable on fully trusted networks!
    * @param {string} smbversion SMB protocol version. 'default' if not set, negotiates the highest SMB2+ version supported by both the client and server.
    *   Enum: default,2.0,2.1,3,3.0,3.11
+   * @param {boolean} snapshot_as_volume_chain Enable support for creating storage-vendor agnostic snapshot through volume backing-chains.
    * @param {boolean} sparse use sparse volumes
    * @param {string} subdir Subdir to mount.
    * @param {boolean} tagged_only Only use logical volumes tagged with 'pve-vm-ID'.
    * @param {string} target iSCSI target.
    * @param {string} thinpool LVM thin pool LV name.
-   * @param {string} transport Gluster transport: tcp or rdma
-   *   Enum: tcp,rdma,unix
    * @param {string} username RBD Id.
    * @param {string} vgname Volume group name.
-   * @param {string} volume Glusterfs Volume.
+   * @param {string} zfs_base_path Base path where to look for the created ZFS block devices. Set automatically during creation if not specified. Usually '/dev/zvol'.
    * @returns {Promise<Result>}
    */
   async create(
@@ -20895,7 +21135,6 @@ class PVEStorage {
     lio_tpg,
     master_pubkey,
     max_protected_backups,
-    maxfiles,
     mkdir,
     monhost,
     mountpoint,
@@ -20912,22 +21151,22 @@ class PVEStorage {
     preallocation,
     prune_backups,
     saferemove,
+    saferemove_stepsize,
     saferemove_throughput,
     server,
-    server2,
     share,
     shared,
     skip_cert_verification,
     smbversion,
+    snapshot_as_volume_chain,
     sparse,
     subdir,
     tagged_only,
     target,
     thinpool,
-    transport,
     username,
     vgname,
-    volume
+    zfs_base_path
   ) {
     const parameters = {
       storage: storage,
@@ -20959,7 +21198,6 @@ class PVEStorage {
       lio_tpg: lio_tpg,
       "master-pubkey": master_pubkey,
       "max-protected-backups": max_protected_backups,
-      maxfiles: maxfiles,
       mkdir: mkdir,
       monhost: monhost,
       mountpoint: mountpoint,
@@ -20976,22 +21214,22 @@ class PVEStorage {
       preallocation: preallocation,
       "prune-backups": prune_backups,
       saferemove: saferemove,
+      "saferemove-stepsize": saferemove_stepsize,
       saferemove_throughput: saferemove_throughput,
       server: server,
-      server2: server2,
       share: share,
       shared: shared,
       "skip-cert-verification": skip_cert_verification,
       smbversion: smbversion,
+      "snapshot-as-volume-chain": snapshot_as_volume_chain,
       sparse: sparse,
       subdir: subdir,
       tagged_only: tagged_only,
       target: target,
       thinpool: thinpool,
-      transport: transport,
       username: username,
       vgname: vgname,
-      volume: volume,
+      "zfs-base-path": zfs_base_path,
     };
     return await this.#client.create(`/storage`, parameters);
   }
@@ -21049,8 +21287,7 @@ class PVEItemStorageStorage {
    * @param {boolean} krbd Always access rbd through krbd kernel module.
    * @param {string} lio_tpg target portal group for Linux LIO targets
    * @param {string} master_pubkey Base64-encoded, PEM-formatted public RSA key. Used to encrypt a copy of the encryption-key which will be added to each encrypted backup.
-   * @param {int} max_protected_backups Maximal number of protected backups per guest. Use '-1' for unlimited.
-   * @param {int} maxfiles Deprecated: use 'prune-backups' instead. Maximal number of backup files per VM. Use '0' for unlimited.
+   * @param {number} max_protected_backups Maximal number of protected backups per guest. Use '-1' for unlimited.
    * @param {boolean} mkdir Create the directory if it doesn't exist and populate it with default sub-dirs. NOTE: Deprecated, use the 'create-base-path' and 'create-subdirs' options instead.
    * @param {string} monhost IP addresses of monitors (for external clusters).
    * @param {string} mountpoint mount point
@@ -21061,24 +21298,25 @@ class PVEItemStorageStorage {
    * @param {string} options NFS/CIFS mount options (see 'man nfs' or 'man mount.cifs')
    * @param {string} password Password for accessing the share/datastore.
    * @param {string} pool Pool.
-   * @param {int} port Use this port to connect to the storage instead of the default one (for example, with PBS or ESXi). For NFS and CIFS, use the 'options' option to configure the port via the mount options.
+   * @param {number} port Use this port to connect to the storage instead of the default one (for example, with PBS or ESXi). For NFS and CIFS, use the 'options' option to configure the port via the mount options.
    * @param {string} preallocation Preallocation mode for raw and qcow2 images. Using 'metadata' on raw images results in preallocation=off.
    *   Enum: off,metadata,falloc,full
    * @param {string} prune_backups The retention options with shorter intervals are processed first with --keep-last being the very first one. Each option covers a specific period of time. We say that backups within this period are covered by this option. The next option does not take care of already covered backups and only considers older backups.
    * @param {boolean} saferemove Zero-out data when removing LVs.
+   * @param {number} saferemove_stepsize Wipe step size in MiB. It will be capped to the maximum supported by the storage.
+   *   Enum: 1,2,4,8,16,32
    * @param {string} saferemove_throughput Wipe throughput (cstream -t parameter value).
    * @param {string} server Server IP or DNS name.
-   * @param {string} server2 Backup volfile server IP or DNS name.
    * @param {boolean} shared Indicate that this is a single storage with the same contents on all nodes (or all listed in the 'nodes' option). It will not make the contents of a local storage automatically accessible to other nodes, it just marks an already shared storage as such!
    * @param {boolean} skip_cert_verification Disable TLS certificate verification, only enable on fully trusted networks!
    * @param {string} smbversion SMB protocol version. 'default' if not set, negotiates the highest SMB2+ version supported by both the client and server.
    *   Enum: default,2.0,2.1,3,3.0,3.11
+   * @param {boolean} snapshot_as_volume_chain Enable support for creating storage-vendor agnostic snapshot through volume backing-chains.
    * @param {boolean} sparse use sparse volumes
    * @param {string} subdir Subdir to mount.
    * @param {boolean} tagged_only Only use logical volumes tagged with 'pve-vm-ID'.
-   * @param {string} transport Gluster transport: tcp or rdma
-   *   Enum: tcp,rdma,unix
    * @param {string} username RBD Id.
+   * @param {string} zfs_base_path Base path where to look for the created ZFS block devices. Set automatically during creation if not specified. Usually '/dev/zvol'.
    * @returns {Promise<Result>}
    */
   async update(
@@ -21106,7 +21344,6 @@ class PVEItemStorageStorage {
     lio_tpg,
     master_pubkey,
     max_protected_backups,
-    maxfiles,
     mkdir,
     monhost,
     mountpoint,
@@ -21121,17 +21358,18 @@ class PVEItemStorageStorage {
     preallocation,
     prune_backups,
     saferemove,
+    saferemove_stepsize,
     saferemove_throughput,
     server,
-    server2,
     shared,
     skip_cert_verification,
     smbversion,
+    snapshot_as_volume_chain,
     sparse,
     subdir,
     tagged_only,
-    transport,
-    username
+    username,
+    zfs_base_path
   ) {
     const parameters = {
       blocksize: blocksize,
@@ -21158,7 +21396,6 @@ class PVEItemStorageStorage {
       lio_tpg: lio_tpg,
       "master-pubkey": master_pubkey,
       "max-protected-backups": max_protected_backups,
-      maxfiles: maxfiles,
       mkdir: mkdir,
       monhost: monhost,
       mountpoint: mountpoint,
@@ -21173,17 +21410,18 @@ class PVEItemStorageStorage {
       preallocation: preallocation,
       "prune-backups": prune_backups,
       saferemove: saferemove,
+      "saferemove-stepsize": saferemove_stepsize,
       saferemove_throughput: saferemove_throughput,
       server: server,
-      server2: server2,
       shared: shared,
       "skip-cert-verification": skip_cert_verification,
       smbversion: smbversion,
+      "snapshot-as-volume-chain": snapshot_as_volume_chain,
       sparse: sparse,
       subdir: subdir,
       tagged_only: tagged_only,
-      transport: transport,
       username: username,
+      "zfs-base-path": zfs_base_path,
     };
     return await this.#client.set(`/storage/${this.#storage}`, parameters);
   }
@@ -21206,9 +21444,7 @@ class PVEAccess {
    * @returns {PVEAccessUsers}
    */
   get users() {
-    return this.#users == null
-      ? (this.#users = new PVEAccessUsers(this.#client))
-      : this.#users;
+    return this.#users == null ? (this.#users = new PVEAccessUsers(this.#client)) : this.#users;
   }
   #groups;
   /**
@@ -21216,9 +21452,7 @@ class PVEAccess {
    * @returns {PVEAccessGroups}
    */
   get groups() {
-    return this.#groups == null
-      ? (this.#groups = new PVEAccessGroups(this.#client))
-      : this.#groups;
+    return this.#groups == null ? (this.#groups = new PVEAccessGroups(this.#client)) : this.#groups;
   }
   #roles;
   /**
@@ -21226,9 +21460,7 @@ class PVEAccess {
    * @returns {PVEAccessRoles}
    */
   get roles() {
-    return this.#roles == null
-      ? (this.#roles = new PVEAccessRoles(this.#client))
-      : this.#roles;
+    return this.#roles == null ? (this.#roles = new PVEAccessRoles(this.#client)) : this.#roles;
   }
   #acl;
   /**
@@ -21236,9 +21468,7 @@ class PVEAccess {
    * @returns {PVEAccessAcl}
    */
   get acl() {
-    return this.#acl == null
-      ? (this.#acl = new PVEAccessAcl(this.#client))
-      : this.#acl;
+    return this.#acl == null ? (this.#acl = new PVEAccessAcl(this.#client)) : this.#acl;
   }
   #domains;
   /**
@@ -21256,9 +21486,7 @@ class PVEAccess {
    * @returns {PVEAccessOpenid}
    */
   get openid() {
-    return this.#openid == null
-      ? (this.#openid = new PVEAccessOpenid(this.#client))
-      : this.#openid;
+    return this.#openid == null ? (this.#openid = new PVEAccessOpenid(this.#client)) : this.#openid;
   }
   #tfa;
   /**
@@ -21266,9 +21494,7 @@ class PVEAccess {
    * @returns {PVEAccessTfa}
    */
   get tfa() {
-    return this.#tfa == null
-      ? (this.#tfa = new PVEAccessTfa(this.#client))
-      : this.#tfa;
+    return this.#tfa == null ? (this.#tfa = new PVEAccessTfa(this.#client)) : this.#tfa;
   }
   #ticket;
   /**
@@ -21276,9 +21502,17 @@ class PVEAccess {
    * @returns {PVEAccessTicket}
    */
   get ticket() {
-    return this.#ticket == null
-      ? (this.#ticket = new PVEAccessTicket(this.#client))
-      : this.#ticket;
+    return this.#ticket == null ? (this.#ticket = new PVEAccessTicket(this.#client)) : this.#ticket;
+  }
+  #vncticket;
+  /**
+   * Get AccessVncticket
+   * @returns {PVEAccessVncticket}
+   */
+  get vncticket() {
+    return this.#vncticket == null
+      ? (this.#vncticket = new PVEAccessVncticket(this.#client))
+      : this.#vncticket;
   }
   #password;
   /**
@@ -21348,7 +21582,7 @@ class PVEAccessUsers {
    * @param {string} comment
    * @param {string} email
    * @param {boolean} enable Enable the account (default). You can set this to '0' to disable the account
-   * @param {int} expire Account expiration date (seconds since epoch). '0' means no expiration date.
+   * @param {number} expire Account expiration date (seconds since epoch). '0' means no expiration date.
    * @param {string} firstname
    * @param {string} groups
    * @param {string} keys Keys for two factor auth (yubico).
@@ -21413,10 +21647,7 @@ class PVEItemUsersAccessUserid {
    */
   get unlockTfa() {
     return this.#unlockTfa == null
-      ? (this.#unlockTfa = new PVEUseridUsersAccessUnlockTfa(
-          this.#client,
-          this.#userid
-        ))
+      ? (this.#unlockTfa = new PVEUseridUsersAccessUnlockTfa(this.#client, this.#userid))
       : this.#unlockTfa;
   }
   #token;
@@ -21426,10 +21657,7 @@ class PVEItemUsersAccessUserid {
    */
   get token() {
     return this.#token == null
-      ? (this.#token = new PVEUseridUsersAccessToken(
-          this.#client,
-          this.#userid
-        ))
+      ? (this.#token = new PVEUseridUsersAccessToken(this.#client, this.#userid))
       : this.#token;
   }
 
@@ -21453,24 +21681,14 @@ class PVEItemUsersAccessUserid {
    * @param {string} comment
    * @param {string} email
    * @param {boolean} enable Enable the account (default). You can set this to '0' to disable the account
-   * @param {int} expire Account expiration date (seconds since epoch). '0' means no expiration date.
+   * @param {number} expire Account expiration date (seconds since epoch). '0' means no expiration date.
    * @param {string} firstname
    * @param {string} groups
    * @param {string} keys Keys for two factor auth (yubico).
    * @param {string} lastname
    * @returns {Promise<Result>}
    */
-  async updateUser(
-    append,
-    comment,
-    email,
-    enable,
-    expire,
-    firstname,
-    groups,
-    keys,
-    lastname
-  ) {
+  async updateUser(append, comment, email, enable, expire, firstname, groups, keys, lastname) {
     const parameters = {
       append: append,
       comment: comment,
@@ -21505,10 +21723,7 @@ class PVEUseridUsersAccessTfa {
    */
   async readUserTfaType(multiple) {
     const parameters = { multiple: multiple };
-    return await this.#client.get(
-      `/access/users/${this.#userid}/tfa`,
-      parameters
-    );
+    return await this.#client.get(`/access/users/${this.#userid}/tfa`, parameters);
   }
 }
 
@@ -21553,11 +21768,7 @@ class PVEUseridUsersAccessToken {
    * @returns {PVEItemTokenUseridUsersAccessTokenid}
    */
   get(tokenid) {
-    return new PVEItemTokenUseridUsersAccessTokenid(
-      this.#client,
-      this.#userid,
-      tokenid
-    );
+    return new PVEItemTokenUseridUsersAccessTokenid(this.#client, this.#userid, tokenid);
   }
 
   /**
@@ -21588,23 +21799,19 @@ class PVEItemTokenUseridUsersAccessTokenid {
    * @returns {Promise<Result>}
    */
   async removeToken() {
-    return await this.#client.delete(
-      `/access/users/${this.#userid}/token/${this.#tokenid}`
-    );
+    return await this.#client.delete(`/access/users/${this.#userid}/token/${this.#tokenid}`);
   }
   /**
    * Get specific API token information.
    * @returns {Promise<Result>}
    */
   async readToken() {
-    return await this.#client.get(
-      `/access/users/${this.#userid}/token/${this.#tokenid}`
-    );
+    return await this.#client.get(`/access/users/${this.#userid}/token/${this.#tokenid}`);
   }
   /**
    * Generate a new API token for a specific user. NOTE: returns API token value, which needs to be stored as it cannot be retrieved afterwards!
    * @param {string} comment
-   * @param {int} expire API token expiration date (seconds since epoch). '0' means no expiration date.
+   * @param {number} expire API token expiration date (seconds since epoch). '0' means no expiration date.
    * @param {boolean} privsep Restrict API token privileges with separate ACLs (default), or give full privileges of corresponding user.
    * @returns {Promise<Result>}
    */
@@ -21622,13 +21829,15 @@ class PVEItemTokenUseridUsersAccessTokenid {
   /**
    * Update API token for a specific user.
    * @param {string} comment
-   * @param {int} expire API token expiration date (seconds since epoch). '0' means no expiration date.
+   * @param {string} delete_ A list of settings you want to delete.
+   * @param {number} expire API token expiration date (seconds since epoch). '0' means no expiration date.
    * @param {boolean} privsep Restrict API token privileges with separate ACLs (default), or give full privileges of corresponding user.
    * @returns {Promise<Result>}
    */
-  async updateTokenInfo(comment, expire, privsep) {
+  async updateTokenInfo(comment, delete_, expire, privsep) {
     const parameters = {
       comment: comment,
+      delete: delete_,
       expire: expire,
       privsep: privsep,
     };
@@ -21714,10 +21923,7 @@ class PVEItemGroupsAccessGroupid {
    */
   async updateGroup(comment) {
     const parameters = { comment: comment };
-    return await this.#client.set(
-      `/access/groups/${this.#groupid}`,
-      parameters
-    );
+    return await this.#client.set(`/access/groups/${this.#groupid}`, parameters);
   }
 }
 
@@ -21905,7 +22111,7 @@ class PVEAccessDomains {
    * @param {string} mode LDAP protocol mode.
    *   Enum: ldap,ldaps,ldap+starttls
    * @param {string} password LDAP bind password. Will be stored in '/etc/pve/priv/realm/&amp;lt;REALM&amp;gt;.pw'.
-   * @param {int} port Server port.
+   * @param {number} port Server port.
    * @param {string} prompt Specifies whether the Authorization Server prompts the End-User for reauthentication and consent.
    * @param {boolean} query_userinfo Enables querying the userinfo endpoint for claims values.
    * @param {string} scopes Specifies the scopes (user details) that should be authorized and returned, for example 'email' or 'profile'.
@@ -22082,7 +22288,7 @@ class PVEItemDomainsAccessRealm {
    * @param {string} mode LDAP protocol mode.
    *   Enum: ldap,ldaps,ldap+starttls
    * @param {string} password LDAP bind password. Will be stored in '/etc/pve/priv/realm/&amp;lt;REALM&amp;gt;.pw'.
-   * @param {int} port Server port.
+   * @param {number} port Server port.
    * @param {string} prompt Specifies whether the Authorization Server prompts the End-User for reauthentication and consent.
    * @param {boolean} query_userinfo Enables querying the userinfo endpoint for claims values.
    * @param {string} scopes Specifies the scopes (user details) that should be authorized and returned, for example 'email' or 'profile'.
@@ -22221,10 +22427,7 @@ class PVERealmDomainsAccessSync {
       "remove-vanished": remove_vanished,
       scope: scope,
     };
-    return await this.#client.create(
-      `/access/domains/${this.#realm}/sync`,
-      parameters
-    );
+    return await this.#client.create(`/access/domains/${this.#realm}/sync`, parameters);
   }
 }
 
@@ -22424,10 +22627,7 @@ class PVEItemUseridTfaAccessId {
    */
   async deleteTfa(password) {
     const parameters = { password: password };
-    return await this.#client.delete(
-      `/access/tfa/${this.#userid}/${this.#id}`,
-      parameters
-    );
+    return await this.#client.delete(`/access/tfa/${this.#userid}/${this.#id}`, parameters);
   }
   /**
    * Fetch a requested TFA entry if present.
@@ -22449,10 +22649,7 @@ class PVEItemUseridTfaAccessId {
       enable: enable,
       password: password,
     };
-    return await this.#client.set(
-      `/access/tfa/${this.#userid}/${this.#id}`,
-      parameters
-    );
+    return await this.#client.set(`/access/tfa/${this.#userid}/${this.#id}`, parameters);
   }
 }
 
@@ -22486,16 +22683,7 @@ class PVEAccessTicket {
    * @param {string} tfa_challenge The signed TFA challenge string the user wants to respond to.
    * @returns {Promise<Result>}
    */
-  async createTicket(
-    password,
-    username,
-    new_format,
-    otp,
-    path,
-    privs,
-    realm,
-    tfa_challenge
-  ) {
+  async createTicket(password, username, new_format, otp, path, privs, realm, tfa_challenge) {
     const parameters = {
       password: password,
       username: username,
@@ -22507,6 +22695,36 @@ class PVEAccessTicket {
       "tfa-challenge": tfa_challenge,
     };
     return await this.#client.create(`/access/ticket`, parameters);
+  }
+}
+
+/**
+ * Class PVEAccessVncticket
+ */
+class PVEAccessVncticket {
+  /** @type {PveClient} */
+  #client;
+
+  constructor(client) {
+    this.#client = client;
+  }
+
+  /**
+   * verify VNC authentication ticket.
+   * @param {string} authid UserId or token
+   * @param {string} path Verify ticket, and check if user have access 'privs' on 'path'
+   * @param {string} privs Verify ticket, and check if user have access 'privs' on 'path'
+   * @param {string} vncticket The VNC ticket.
+   * @returns {Promise<Result>}
+   */
+  async verifyVncTicket(authid, path, privs, vncticket) {
+    const parameters = {
+      authid: authid,
+      path: path,
+      privs: privs,
+      vncticket: vncticket,
+    };
+    return await this.#client.create(`/access/vncticket`, parameters);
   }
 }
 

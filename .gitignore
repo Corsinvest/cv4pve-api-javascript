@@ -4,3 +4,4 @@
 .classpath
 node_modules/
 dist/
+.claude
