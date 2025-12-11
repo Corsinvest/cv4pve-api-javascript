@@ -64,5 +64,6 @@ jobs:
         generate_release_notes: true
 
     - name: Publish to npm
+      env:
+        NODE_AUTH_TOKEN: ''
       run: npm publish --access public
-      
