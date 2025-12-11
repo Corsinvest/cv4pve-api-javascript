@@ -14,7 +14,7 @@ jobs:
 
     permissions:
       contents: write
-      id-token: write
+      id-token: write  # Required for Trusted Publisher / OIDC
 
     steps:
     - name: Checkout
@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Extract and validate version
+    - name: Validate version
       id: version
       run: |
         # Extract version from package.json
@@ -56,7 +56,7 @@ jobs:
     - name: Build package
       run: npm run prepare
 
-    - name: Create Release and Upload Assets
+    - name: Create release
       uses: softprops/action-gh-release@v2
       with:
         name: Release v${{ steps.version.outputs.version }}
@@ -65,4 +65,4 @@ jobs:
         generate_release_notes: true
 
     - name: Publish to npm
-      run: npm publish --provenance --access public
+      run: npm publish --access public --provenance
