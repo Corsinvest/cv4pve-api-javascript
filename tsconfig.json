@@ -18,8 +18,6 @@
     // "Go to Definition" in VSCode
     "declarationMap": true,
     "composite": true,
-    "target": "ES2020",
-    "typeRoots": ["./src/customTypings.d.ts"]
-    //, "node_modules/@types"
+    "target": "ES2020"
   }
 }

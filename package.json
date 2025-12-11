@@ -1,6 +1,6 @@
 {
   "name": "@corsinvest/cv4pve-api-javascript",
-  "version": "8.4.0",
+  "version": "9.1.0",
   "description": "Proxmox VE Client API JavaScript",
   "main": "./src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -13,7 +13,9 @@
   ],
   "scripts": {
     "prepare": "npx tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\""
   },
   "repository": {
     "type": "git",
@@ -32,6 +34,7 @@
   ],
   "homepage": "https://github.com/Corsinvest/cv4pve-api-javascript#readme",
   "devDependencies": {
+    "prettier": "^3.0.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
