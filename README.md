@@ -1,5 +1,3 @@
-<div align="center">
-
 # cv4pve-api-javascript
 
 ```
@@ -16,7 +14,6 @@ Proxmox VE API Client for JavaScript/Node.js (Made in Italy)
 [![npm](https://img.shields.io/npm/v/@corsinvest/cv4pve-api-javascript?style=flat-square&logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
 [![npm](https://img.shields.io/npm/dt/@corsinvest/cv4pve-api-javascript?style=flat-square&logo=npm)](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript)
 
-</div>
 
 ---
 
@@ -421,8 +418,6 @@ Professional support and consulting available through [Corsinvest](https://www.c
 
 ---
 
-<div align="center">
-  <sub>Part of <a href="https://www.corsinvest.it/cv4pve">cv4pve</a> suite | Made with ❤️ in Italy by <a href="https://www.corsinvest.it">Corsinvest</a></sub>
-  <br>
-  <sub>Copyright © Corsinvest Srl</sub>
-</div>
+Part of [cv4pve](https://www.corsinvest.it/cv4pve) suite | Made with ❤️ in Italy by [Corsinvest](https://www.corsinvest.it)
+
+Copyright © Corsinvest Srl
