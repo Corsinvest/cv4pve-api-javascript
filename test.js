@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: Copyright Corsinvest Srl
+ * SPDX-License-Identifier: MIT
+ */
+
 const pve = require('./src');
 
 console.log(pve);
