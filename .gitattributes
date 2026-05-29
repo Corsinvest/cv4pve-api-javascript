@@ -1,0 +1,32 @@
+# Normalize line endings: store everything as LF in the repository.
+# This matches .editorconfig (end_of_line = lf) and keeps diffs clean
+# across Windows/macOS/Linux contributors.
+* text=auto eol=lf
+
+# Explicitly enforce LF for source and text files
+*.js    text eol=lf
+*.json  text eol=lf
+*.ts    text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.txt   text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+
+# Windows-specific scripts keep CRLF
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Binary files: never modify
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.woff  binary
+*.woff2 binary
