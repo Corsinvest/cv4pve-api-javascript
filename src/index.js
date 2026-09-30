@@ -118,7 +118,7 @@ class Result {
     if (parameters === null || typeof parameters !== "object") {
       return parameters;
     }
-    const sensitiveParams = ["password", "token", "ticket", "otp", "apitoken"];
+    const sensitiveParams = ["password", "token", "ticket", "otp", "apitoken", "tfa-challenge"];
     /** @type {Object<string, any>} */
     const masked = {};
     for (const [key, value] of Object.entries(parameters)) {
@@ -151,6 +151,22 @@ class Result {
 /**
  * Response type
  */
+/**
+ * Call to the Proxmox VE API that did not return the expected result,
+ * e.g. the status of a task that cannot be read.
+ */
+class PveResultException extends Error {
+  /**
+   * @param {Result|null} result Result of the call
+   * @param {string} message
+   */
+  constructor(result, message) {
+    super(message);
+    this.name = "PveResultException";
+    this.result = result;
+  }
+}
+
 class ResponseType {
   static JSON = "json";
   static PNG = "png";
@@ -426,31 +442,51 @@ class PveClientBase {
    * @param {string} username
    * @param {string} password
    * @param {string} realm pam/pve or custom
-   * @param {string} otp One-time password for Two-factor authentication.
+   * @param {string} otp Second factor of a user with two-factor authentication:
+   * a TOTP code (e.g. 123456) or 'type:value' (e.g. recovery:abcd-1234).
    * @returns {Promise<boolean>}
+   * @throws {PveResultException} The user needs a second factor and otp is missing.
    */
-  login(username, password, realm = "pam", otp = null) {
-    const ref = this;
+  async login(username, password, realm = "pam", otp = null) {
+    let result = await this.create("/access/ticket", {
+      password: password,
+      username: username,
+      realm: realm,
+    });
 
-    return new Promise((resolve, reject) => {
-      this.create("/access/ticket", {
-        password: password,
+    if (result.isSuccessStatusCode && result.response.data.NeedTFA) {
+      if (otp === null || otp === undefined || String(otp).trim() === "") {
+        throw new PveResultException(
+          result,
+          "Couldn't authenticate user: missing Two Factor Authentication (TFA)"
+        );
+      }
+
+      // second step: the response to the challenge of the first one
+      result = await this.create("/access/ticket", {
+        password: PveClientBase.#getTfaResponse(String(otp)),
         username: username,
         realm: realm,
-        otp: otp,
-      })
-        .then((result) => {
-          if (result.isSuccessStatusCode) {
-            ref.#ticketCSRFPreventionToken = result.response.data.CSRFPreventionToken;
-            ref.#ticketPVEAuthCookie = result.response.data.ticket;
-          }
+        "tfa-challenge": result.response.data.ticket,
+      });
+    }
 
-          resolve(result.isSuccessStatusCode);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    if (result.isSuccessStatusCode) {
+      this.#ticketCSRFPreventionToken = result.response.data.CSRFPreventionToken;
+      this.#ticketPVEAuthCookie = result.response.data.ticket;
+    }
+
+    return result.isSuccessStatusCode;
+  }
+
+  /**
+   * Second factor as Proxmox VE expects it in the response to a TFA challenge:
+   * 'type:value'. A code without a type is a TOTP code.
+   * @param {string} otp
+   * @returns {string}
+   */
+  static #getTfaResponse(otp) {
+    return otp.includes(":") ? otp : "totp:" + otp;
   }
 
   /**
@@ -512,7 +548,8 @@ class PveClientBase {
    * @param {string} task Task identifier
    * @param {number} wait Millisecond wait next check
    * @param {number} timeOut Millisecond timeout
-   * @return {Promise<boolean>}
+   * @return {Promise<boolean>} True when the task is finished, false when it is still running at the timeout.
+   * @throws {PveResultException} The status of the task cannot be read.
    */
   async waitForTaskToFinish(task, wait = 500, timeOut = 10000) {
     if (wait <= 0) {
@@ -521,26 +558,17 @@ class PveClientBase {
     if (timeOut < wait) {
       timeOut = wait + 5000;
     }
-    let numberInterval = 0;
-    const ref = this;
 
-    return new Promise((resolve, reject) => {
-      const interval = setInterval(function () {
-        numberInterval++;
+    // one check at a time: the next one starts after the previous one has answered
+    const timeStart = Date.now();
+    let isRunning = true;
+    while (isRunning && Date.now() - timeStart < timeOut) {
+      await new Promise((resolve) => setTimeout(resolve, wait));
+      isRunning = await this.taskIsRunning(task);
+    }
 
-        if (numberInterval * wait >= timeOut) {
-          clearInterval(interval);
-          resolve(false);
-        } else {
-          ref.taskIsRunning(task).then((running) => {
-            if (!running) {
-              clearInterval(interval);
-              resolve(true);
-            }
-          });
-        }
-      }, wait);
-    });
+    // finished, also when the last check came after the timeout
+    return !isRunning;
   }
 
   /**
@@ -548,9 +576,12 @@ class PveClientBase {
    *
    * @param {string} task Task identifier
    * @returns {Promise<boolean>}
+   * @throws {PveResultException} The status of the task cannot be read.
    */
   async taskIsRunning(task) {
-    return (await this.readTaskStatus(task)).response.data.status === "running";
+    return (
+      PveClientBase.#ensureTaskStatus(await this.readTaskStatus(task), task).status === "running"
+    );
   }
 
   /**
@@ -558,9 +589,10 @@ class PveClientBase {
    *
    * @param {string} task Task identifier
    * @returns {Promise<string>}
+   * @throws {PveResultException} The status of the task cannot be read.
    */
   async getExitStatusTask(task) {
-    return (await this.readTaskStatus(task)).response.data.exitstatus;
+    return PveClientBase.#ensureTaskStatus(await this.readTaskStatus(task), task).exitstatus;
   }
 
   /**
@@ -572,11 +604,45 @@ class PveClientBase {
   async readTaskStatus(task) {
     return this.get("/nodes/" + this.#getNodeFromTask(task) + "/tasks/" + task + "/status");
   }
+
+  /**
+   * Data of a task status result, checked before it is read, so that an API
+   * failure (node down, missing privilege) is reported with the HTTP status and
+   * the Proxmox VE error instead of a TypeError.
+   *
+   * @param {Result} result Result of the status read
+   * @param {string} task Task identifier
+   * @returns {object} Data of the task status
+   * @throws {PveResultException} The status of the task cannot be read.
+   */
+  static #ensureTaskStatus(result, task) {
+    if (!result) {
+      throw new PveResultException(null, `Read status of task '${task}' returned no result`);
+    }
+
+    const response = result.response;
+    const inError = response !== null && typeof response === "object" && result.responseInError;
+    const data = response !== null && typeof response === "object" ? response.data : undefined;
+    if (inError || !result.isSuccessStatusCode || data === null || typeof data !== "object") {
+      const detail = inError
+        ? JSON.stringify(response.errors)
+        : !result.isSuccessStatusCode
+          ? result.reasonPhrase
+          : "response does not contain 'data'";
+
+      throw new PveResultException(
+        result,
+        `Read status of task '${task}' failed (${result.statusCode} ${result.reasonPhrase}): ${detail}`
+      );
+    }
+
+    return data;
+  }
 }
 
 // Export base classes first so that api-autogenerated.js (which requires this
 // module to extend PveClientBase) sees them populated despite the circular require.
-module.exports = { PveClientBase, Result, ResponseType };
+module.exports = { PveClientBase, Result, ResponseType, PveResultException };
 
 const { PveClient } = require("./api-autogenerated.js");
 module.exports.PveClient = PveClient;
