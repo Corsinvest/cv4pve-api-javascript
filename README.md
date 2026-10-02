@@ -133,6 +133,9 @@ const success = await client.login("root", "password");
 // Login with specific realm
 const success = await client.login("admin", "password", "pve");
 
+// The same, with the realm in the user name
+const success = await client.login("admin@pve", "password");
+
 // Two-factor authentication
 const success = await client.login("root", "password", "pam", "123456");
 ```
@@ -163,9 +166,17 @@ client.timeout = 300000; // 5 minutes in milliseconds
 // Response type: "json" or "png" (for charts)
 client.responseType = "json";
 
+// Validate the certificate of the node (default: false, a new Proxmox VE
+// installation has a self-signed certificate)
+client.validateCertificate = true;
+
 // Enable debug logging
 client.logEnabled = true;
 ```
+
+An HTTP answer, also an error one, resolves with its `Result`: check `isSuccessStatusCode`.
+A request that gets no answer (connection refused, name not resolved, certificate refused,
+timeout) rejects with the error of Node; a timeout has `code` `ETIMEDOUT`.
 
 ---
 
