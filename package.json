@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "prepare": "npx tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test test/base.test.js",
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\""
   },

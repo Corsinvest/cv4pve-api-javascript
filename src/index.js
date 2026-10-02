@@ -11,7 +11,7 @@
 class Result {
   /**
    *
-   * @param {string} response
+   * @param {any} response Parsed answer (object), data URI (png) or null
    * @param {number} statusCode
    * @param {string} reasonPhrase
    * @param {string} requestResource
@@ -104,7 +104,11 @@ class Result {
    * Get if response Proxmox VE contain errors
    */
   get responseInError() {
-    return typeof this.#response.errors !== "undefined";
+    return (
+      this.#response !== null &&
+      typeof this.#response === "object" &&
+      typeof this.#response.errors !== "undefined"
+    );
   }
 
   /**
@@ -264,6 +268,21 @@ class PveClientBase {
     this.#timeout = value;
   }
 
+  #validateCertificate = false;
+  /**
+   * Get if the certificate of the node is validated (default false: a new
+   * Proxmox VE installation has a self-signed certificate)
+   */
+  get validateCertificate() {
+    return this.#validateCertificate;
+  }
+  /**
+   * Set if the certificate of the node is validated
+   */
+  set validateCertificate(value) {
+    this.#validateCertificate = value === true;
+  }
+
   /**
    * Log enabled
    */
@@ -296,14 +315,59 @@ class PveClientBase {
   }
 
   /**
+   * Copy of an answer for the log, without the secrets it carries: the ticket and
+   * the CSRF token of a login, the value of a new API token.
+   *
+   * @param {any} response
+   * @param {string} resource
+   * @returns {any}
+   */
+  static #maskSensitiveResponse(response, resource) {
+    if (response === null || typeof response !== "object") {
+      return response;
+    }
+    const data = response.data;
+    if (data === null || typeof data !== "object" || Array.isArray(data)) {
+      return response;
+    }
+    const masked = Result.maskSensitiveParameters(data);
+    if (resource.includes("/token") && "value" in masked) {
+      masked.value = "****";
+    }
+    return { ...response, data: masked };
+  }
+
+  /**
+   * Status and reason for a body that is not JSON (a proxy page, another service
+   * on that port): the HTTP status is kept (a success becomes 502, since the answer
+   * cannot be used) and the reason shows the start of the body.
+   *
+   * @param {number} statusCode
+   * @param {string} body
+   * @returns {{statusCode: number, reasonPhrase: string}}
+   */
+  static #notJsonAnswer(statusCode, body) {
+    const start = (body.length > 100 ? body.substring(0, 100) + "…" : body)
+      .replace(/\r\n|\r|\n/g, " ")
+      .trim();
+    return {
+      statusCode: statusCode >= 200 && statusCode <= 299 ? 502 : statusCode,
+      reasonPhrase: `The answer is not JSON (HTTP ${statusCode}): ${start}`,
+    };
+  }
+
+  /**
    * Execute request and return response
    *
    * @param {string} method
    * @param {string} resource
    * @param {any} parameters
-   * @returns {Promise<Result>}
+   * @param {string} responseType Format asked to Proxmox VE: the one of the client unless given
+   * @returns {Promise<Result>} An HTTP answer, also an error one, resolves with its Result.
+   * A request that gets no answer (connection refused, name not resolved, certificate refused,
+   * timeout) rejects with the error of Node; a timeout has code ETIMEDOUT.
    */
-  async #execute(method, resource, parameters) {
+  async #execute(method, resource, parameters, responseType = this.#responseType) {
     const ref = this;
 
     if (parameters === null || parameters === undefined) {
@@ -324,7 +388,8 @@ class PveClientBase {
 
     let body = "";
     let headers = {};
-    let url = "/api2/json" + resource;
+    const path = "/api2/" + responseType + resource;
+    let url = path;
 
     if (method === "GET" || method === "DELETE") {
       const urlParams = new URLSearchParams(parameters).toString();
@@ -348,7 +413,7 @@ class PveClientBase {
     }
 
     const options = {
-      rejectUnauthorized: false, // Proxmox VE uses self-signed certificates by default
+      rejectUnauthorized: this.#validateCertificate,
       host: this.hostname,
       port: this.port,
       path: url,
@@ -357,56 +422,68 @@ class PveClientBase {
       timeout: this.#timeout,
     };
 
-    //debug: log a sanitized copy, masking sensitive parameters and headers
-    this.#log({
-      ...options,
-      headers: PveClientBase.#maskSensitiveHeaders(headers),
-      parameters: Result.maskSensitiveParameters(parameters),
-    });
+    //debug: log a sanitized copy, masking sensitive parameters and headers;
+    //the path without the query string, which repeats the parameters unmasked
+    if (this.#log.enabled) {
+      this.#log({
+        ...options,
+        path: path,
+        headers: PveClientBase.#maskSensitiveHeaders(headers),
+        parameters: Result.maskSensitiveParameters(parameters),
+      });
+    }
 
     return new Promise((resolve, reject) => {
       // @ts-ignore
       let req = this.#http.request(options, (response) => {
-        response.setEncoding("utf8");
-        let chunks = "";
+        /** @type {any[]} */
+        const chunks = [];
 
         response.on("data", (chunk) => {
-          chunks += chunk;
+          // @ts-ignore
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
         });
 
         response.on("end", () => {
+          // @ts-ignore
+          const body = Buffer.concat(chunks);
+          let statusCode = response.statusCode;
+          let reasonPhrase = response.statusMessage;
           let data = null;
 
-          try {
-            if (ref.responseType === ResponseType.JSON) {
-              data = JSON.parse(chunks);
-            } else if (ref.responseType === ResponseType.PNG) {
-              if (!/^[A-Za-z0-9+/]*={0,2}$/.test(chunks.trim())) {
-                throw new Error("Invalid base64 format for PNG response");
+          if (responseType === ResponseType.PNG && statusCode === 200) {
+            data = "data:image/png;base64," + body.toString("base64");
+          } else {
+            // json, or the error answer of a png request
+            const text = body.toString("utf8");
+            if (text.trim() !== "") {
+              try {
+                data = JSON.parse(text);
+              } catch (error) {
+                // not an answer of the API: keep the HTTP status, show the start of the body
+                this.#error(error);
+                ({ statusCode, reasonPhrase } = PveClientBase.#notJsonAnswer(statusCode, text));
               }
-              data = "data:image/png;base64," + chunks;
             }
-          } catch (error) {
-            this.#error(error);
-            reject(new Error("Invalid response format: " + error.message));
-            return;
           }
 
           const result = new Result(
             data,
-            response.statusCode,
-            response.statusMessage,
+            statusCode,
+            reasonPhrase,
             resource,
             parameters,
-            response.method,
-            ref.responseType
+            method,
+            responseType
           );
 
           ref.#lastResult = result;
 
           //debug
-          this.#log(result.toString());
-          this.#log(result.response);
+          if (this.#log.enabled) {
+            this.#log(result.toString());
+            this.#log(PveClientBase.#maskSensitiveResponse(result.response, resource));
+          }
 
           resolve(result);
         });
@@ -425,6 +502,8 @@ class PveClientBase {
       req.on("timeout", () => {
         req.destroy();
         const error = new Error(`Request timeout after ${this.#timeout}ms`);
+        // @ts-ignore
+        error.code = "ETIMEDOUT";
         this.#error(error);
         reject(error);
       });
@@ -439,22 +518,35 @@ class PveClientBase {
   /**
    * Login
    *
-   * @param {string} username
+   * @param {string} username User name, or user@realm
    * @param {string} password
-   * @param {string} realm pam/pve or custom
+   * @param {string} realm pam/pve or custom; ignored when username is user@realm
    * @param {string} otp Second factor of a user with two-factor authentication:
    * a TOTP code (e.g. 123456) or 'type:value' (e.g. recovery:abcd-1234).
-   * @returns {Promise<boolean>}
+   * @returns {Promise<boolean>} True when Proxmox VE gave a ticket; when false the
+   * reason is in lastResult.
    * @throws {PveResultException} The user needs a second factor and otp is missing.
    */
   async login(username, password, realm = "pam", otp = null) {
-    let result = await this.create("/access/ticket", {
-      password: password,
-      username: username,
-      realm: realm,
-    });
+    // user@realm: the realm is what follows the last @
+    const at = String(username).lastIndexOf("@");
+    if (at > 0) {
+      realm = String(username).substring(at + 1);
+      username = String(username).substring(0, at);
+    }
 
-    if (result.isSuccessStatusCode && result.response.data.NeedTFA) {
+    // a new login does not send, and on failure does not keep, the ticket of the previous one
+    this.#ticketCSRFPreventionToken = "";
+    this.#ticketPVEAuthCookie = "";
+
+    let result = await this.#execute(
+      "POST",
+      "/access/ticket",
+      { password: password, username: username, realm: realm },
+      ResponseType.JSON
+    );
+
+    if (result.isSuccessStatusCode && result.response?.data?.NeedTFA) {
       if (otp === null || otp === undefined || String(otp).trim() === "") {
         throw new PveResultException(
           result,
@@ -463,20 +555,27 @@ class PveClientBase {
       }
 
       // second step: the response to the challenge of the first one
-      result = await this.create("/access/ticket", {
-        password: PveClientBase.#getTfaResponse(String(otp)),
-        username: username,
-        realm: realm,
-        "tfa-challenge": result.response.data.ticket,
-      });
+      result = await this.#execute(
+        "POST",
+        "/access/ticket",
+        {
+          password: PveClientBase.#getTfaResponse(String(otp)),
+          username: username,
+          realm: realm,
+          "tfa-challenge": result.response.data.ticket,
+        },
+        ResponseType.JSON
+      );
     }
 
-    if (result.isSuccessStatusCode) {
-      this.#ticketCSRFPreventionToken = result.response.data.CSRFPreventionToken;
-      this.#ticketPVEAuthCookie = result.response.data.ticket;
+    const data = result.isSuccessStatusCode ? result.response?.data : null;
+    if (!data || !data.ticket || !data.CSRFPreventionToken) {
+      return false;
     }
 
-    return result.isSuccessStatusCode;
+    this.#ticketCSRFPreventionToken = data.CSRFPreventionToken;
+    this.#ticketPVEAuthCookie = data.ticket;
+    return true;
   }
 
   /**
@@ -539,6 +638,9 @@ class PveClientBase {
    * @return {string} Node name
    */
   #getNodeFromTask(task) {
+    if (typeof task !== "string" || !/^UPID:[^:]+:/.test(task)) {
+      throw new PveResultException(null, `'${task}' is not a valid task identifier (UPID)`);
+    }
     return task.split(":")[1];
   }
 
@@ -585,14 +687,15 @@ class PveClientBase {
   }
 
   /**
-   * Get exists status task.
+   * Get exit status of a task.
    *
    * @param {string} task Task identifier
-   * @returns {Promise<string>}
+   * @returns {Promise<string|null>} 'OK', 'WARNINGS: n' or the error; null while the task is running.
    * @throws {PveResultException} The status of the task cannot be read.
    */
   async getExitStatusTask(task) {
-    return PveClientBase.#ensureTaskStatus(await this.readTaskStatus(task), task).exitstatus;
+    const data = PveClientBase.#ensureTaskStatus(await this.readTaskStatus(task), task);
+    return data.exitstatus ?? null;
   }
 
   /**
@@ -600,9 +703,15 @@ class PveClientBase {
    *
    * @param {string} task
    * @returns {Promise<Result>}
+   * @throws {PveResultException} The task identifier is not valid.
    */
   async readTaskStatus(task) {
-    return this.get("/nodes/" + this.#getNodeFromTask(task) + "/tasks/" + task + "/status");
+    return this.#execute(
+      "GET",
+      "/nodes/" + this.#getNodeFromTask(task) + "/tasks/" + task + "/status",
+      {},
+      ResponseType.JSON
+    );
   }
 
   /**
@@ -612,7 +721,7 @@ class PveClientBase {
    *
    * @param {Result} result Result of the status read
    * @param {string} task Task identifier
-   * @returns {object} Data of the task status
+   * @returns {any} Data of the task status
    * @throws {PveResultException} The status of the task cannot be read.
    */
   static #ensureTaskStatus(result, task) {
