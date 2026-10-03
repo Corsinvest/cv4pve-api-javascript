@@ -262,9 +262,13 @@ class PveClientBase {
     return this.#timeout;
   }
   /**
-   * Set timeout in milliseconds
+   * Set timeout in milliseconds, 0 for no limit
+   * @throws {RangeError} The timeout is not a number or is negative.
    */
   set timeout(value) {
+    if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+      throw new RangeError("timeout must be a number of milliseconds, not negative");
+    }
     this.#timeout = value;
   }
 
@@ -357,6 +361,22 @@ class PveClientBase {
   }
 
   /**
+   * Parameters as the JSON body of a request.
+   *
+   * @param {object} parameters
+   * @returns {string}
+   * @throws {TypeError} A value cannot be encoded (e.g. a circular reference, a BigInt).
+   */
+  static #encodeParameters(parameters) {
+    try {
+      return JSON.stringify(parameters);
+    } catch (error) {
+      // @ts-ignore
+      throw new TypeError("Parameters cannot be encoded as JSON: " + error.message);
+    }
+  }
+
+  /**
    * Execute request and return response
    *
    * @param {string} method
@@ -366,6 +386,7 @@ class PveClientBase {
    * @returns {Promise<Result>} An HTTP answer, also an error one, resolves with its Result.
    * A request that gets no answer (connection refused, name not resolved, certificate refused,
    * timeout) rejects with the error of Node; a timeout has code ETIMEDOUT.
+   * Parameters that cannot be encoded reject with a TypeError and no request is sent.
    */
   async #execute(method, resource, parameters, responseType = this.#responseType) {
     const ref = this;
@@ -379,6 +400,15 @@ class PveClientBase {
       if (value !== null && value !== undefined) {
         if (typeof value === "boolean") {
           tmpParameters[key] = value ? 1 : 0;
+        } else if (
+          typeof value === "function" ||
+          typeof value === "symbol" ||
+          (typeof value === "number" && !Number.isFinite(value))
+        ) {
+          // JSON would drop it or send null in its place
+          throw new TypeError(
+            `Parameter '${key}' cannot be encoded: ${typeof value === "number" ? value : typeof value}`
+          );
         } else {
           tmpParameters[key] = value;
         }
@@ -397,7 +427,7 @@ class PveClientBase {
         url += "?" + urlParams;
       }
     } else {
-      body = JSON.stringify(parameters);
+      body = PveClientBase.#encodeParameters(parameters);
       headers["Content-Type"] = "application/json";
       // @ts-ignore
       headers["Content-Length"] = Buffer.byteLength(body);
