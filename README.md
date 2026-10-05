@@ -23,6 +23,8 @@ Proxmox VE API Client for JavaScript/Node.js (Made in Italy)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Corsinvest/cv4pve-api-javascript/main/docs/src/assets/javascript.svg" alt="JavaScript logo" width="70">
+  &nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/Corsinvest/cv4pve-api-javascript/main/docs/src/assets/typescript.svg" alt="TypeScript logo" width="70">
 </p>
 
 ## Why

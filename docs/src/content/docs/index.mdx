@@ -33,6 +33,7 @@ import FeatureGrid from '@corsinvest/cv4pve-docs-theme/components/FeatureGrid.as
 import CtaBand from '@corsinvest/cv4pve-docs-theme/components/CtaBand.astro';
 import proxmoxLogo from '../../assets/proxmox-logo.svg';
 import javascriptLogo from '../../assets/javascript.svg';
+import typescriptLogo from '../../assets/typescript.svg';
 
 export const features = [
   { title: 'The whole API', text: 'A method for every endpoint and HTTP method, generated from the Proxmox VE API schema, placed where the API has it: the path of an endpoint is the path in the code.', href: 'concepts/api-structure/' },
@@ -43,8 +44,9 @@ export const features = [
   { title: 'Promises and typings', text: 'Every call returns a promise, for async and await. The TypeScript typings are in the package. One small dependency.', href: 'getting-started/' },
 ];
 
-<div style="text-align: center">
-  <Image src={javascriptLogo} alt="JavaScript logo" width={90} style="display: inline-block" />
+<div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem">
+  <Image src={javascriptLogo} alt="JavaScript logo" width={90} style="margin: 0" />
+  <Image src={typescriptLogo} alt="TypeScript logo" width={90} style="margin: 0" />
 </div>
 
 ## Why
