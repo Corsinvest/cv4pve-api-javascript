@@ -1,0 +1,120 @@
+---
+title: Getting started
+description: Add cv4pve-api-javascript to a Node.js project, connect to a Proxmox VE cluster and make the first calls.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+cv4pve-api-javascript is one package on npm: a client with a method for every endpoint of the Proxmox
+VE API. It runs in your application (a service, a scheduled job, a command line tool) and talks only
+to the Proxmox VE REST API on port 8006. Nothing is installed on the nodes.
+
+## Requirements
+
+- Node.js 18 or later.
+- Network access to port 8006 of at least one node.
+- A Proxmox VE API token, or a user and password, with the privileges your application needs: see
+  [Permissions](/cv4pve-api-javascript/permissions/).
+
+The client uses the `https` module of Node.js: it is made for Node.js, not for the browser.
+
+## Install
+
+<Steps>
+
+1. Add the package from
+   [npm](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript):
+
+   <Tabs>
+   <TabItem label="npm">
+   ```bash
+   npm install @corsinvest/cv4pve-api-javascript
+   ```
+   </TabItem>
+   <TabItem label="Yarn">
+   ```bash
+   yarn add @corsinvest/cv4pve-api-javascript
+   ```
+   </TabItem>
+   <TabItem label="pnpm">
+   ```bash
+   pnpm add @corsinvest/cv4pve-api-javascript
+   ```
+   </TabItem>
+   </Tabs>
+
+   The only dependency it brings is [debug](https://github.com/debug-js/debug), used for the log.
+   The TypeScript typings are in the package.
+
+2. Create the client with an API token. With a token there is no login call:
+
+   <Tabs>
+   <TabItem label="CommonJS">
+   ```js
+   const { PveClient } = require("@corsinvest/cv4pve-api-javascript");
+
+   const client = new PveClient("pve01");
+   client.apiToken = "automation@pve!app=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+   ```
+   </TabItem>
+   <TabItem label="ES modules, TypeScript">
+   ```js
+   import { PveClient } from "@corsinvest/cv4pve-api-javascript";
+
+   const client = new PveClient("pve01");
+   client.apiToken = "automation@pve!app=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+   ```
+   </TabItem>
+   </Tabs>
+
+   The port is 8006 unless you give another one as the second argument. The certificate of the node
+   is not validated unless you ask for it, so a new installation with its self-signed certificate
+   works as it is. All the ways to connect are in [Connection](/cv4pve-api-javascript/connection/).
+
+3. Make the first call and check its outcome. Every call returns a promise:
+
+   ```js
+   const result = await client.version.version();
+
+   if (result.isSuccessStatusCode) {
+     console.log(`Proxmox VE ${result.response.data.version}`);
+   } else {
+     console.log(`${result.statusCode} ${result.reasonPhrase}`);
+   }
+   ```
+
+4. Read some data. The path of the API is the path in the code:
+
+   ```js
+   // GET /nodes/{node}/qemu/{vmid}/status/current
+   const current = await client.nodes.get("pve01").qemu.get(100).status.current.vmStatus();
+   console.log(current.response.data.status);
+
+   // GET /cluster/resources?type=vm
+   const resources = await client.cluster.resources.resources("vm");
+   for (const item of resources.response.data) {
+     console.log(item.vmid, item.node, item.status);
+   }
+   ```
+
+</Steps>
+
+Every call resolves with a `Result`: the HTTP outcome and, in `response.data`, what Proxmox VE
+answered. An answer with an error status does not throw, so check `isSuccessStatusCode`:
+[Results](/cv4pve-api-javascript/concepts/results/) and
+[Errors](/cv4pve-api-javascript/concepts/errors/) explain why.
+
+## Find the method you need
+
+The client follows the tree of the Proxmox VE API: each part of a path is a property, each `{value}`
+in the path is a `get(value)`, and each HTTP method of the endpoint is a JavaScript method. The
+[Proxmox VE API viewer](https://pve.proxmox.com/pve-docs/api-viewer/) is therefore the reference for
+parameters and returned data, and the JSDoc shows the same descriptions in your editor. The rule is
+in [API structure](/cv4pve-api-javascript/concepts/api-structure/).
+
+## Next
+
+- [Connection](/cv4pve-api-javascript/connection/): API token or password, two-factor authentication, certificates, timeout.
+- [Permissions](/cv4pve-api-javascript/permissions/): the user, the token and the privileges an application needs.
+- [Concepts](/cv4pve-api-javascript/concepts/api-structure/): API structure, results, tasks, errors.
+- [Common tasks](/cv4pve-api-javascript/examples/common-tasks/): short recipes to copy.

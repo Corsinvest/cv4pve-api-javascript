@@ -1,0 +1,111 @@
+---
+title: cv4pve-api-javascript
+description: "Proxmox VE API client for JavaScript and Node.js: the whole API as calls that follow the tree of the API, with results as JSON, tasks and API token or password login."
+head:
+  # Search results and browser tab: the name and what it is, without Starlight's "| site title" suffix
+  - tag: title
+    content: "cv4pve-api-javascript: Proxmox VE API client for JavaScript"
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "cv4pve-api-javascript: Proxmox VE API client for JavaScript"
+template: splash
+hero:
+  title: The <span class="accent-mark">Proxmox VE</span> API from JavaScript
+  tagline: A Node.js client with a method for every endpoint of the Proxmox VE API (VMs, containers, storage, backups, cluster, access). It runs in your application and talks only to the API.
+  actions:
+    - text: Get started
+      link: /cv4pve-api-javascript/getting-started/
+      icon: right-arrow
+    - text: API structure
+      link: /cv4pve-api-javascript/concepts/api-structure/
+      icon: right-arrow
+      variant: secondary
+    - text: Examples
+      link: /cv4pve-api-javascript/examples/common-tasks/
+      icon: right-arrow
+      variant: secondary
+---
+
+import { Image } from 'astro:assets';
+import { LinkCard } from '@astrojs/starlight/components';
+import FeatureGrid from '@corsinvest/cv4pve-docs-theme/components/FeatureGrid.astro';
+import CtaBand from '@corsinvest/cv4pve-docs-theme/components/CtaBand.astro';
+import proxmoxLogo from '../../assets/proxmox-logo.svg';
+import javascriptLogo from '../../assets/javascript.svg';
+import typescriptLogo from '../../assets/typescript.svg';
+
+export const features = [
+  { title: 'The whole API', text: 'A method for every endpoint and HTTP method, generated from the Proxmox VE API schema, placed where the API has it: the path of an endpoint is the path in the code.', href: 'concepts/api-structure/' },
+  { title: 'One Result for every call', text: 'The HTTP outcome and the Proxmox VE answer together, as plain JavaScript objects. An answer with an error status does not throw.', href: 'concepts/results/' },
+  { title: 'API token or password', text: 'Connect with an API token or a user and password, with two-factor authentication, certificate validation and timeout.', href: 'connection/' },
+  { title: 'Tasks', text: 'Start a backup, a clone or a migration, wait for its task to finish and read whether it succeeded.', href: 'concepts/tasks/' },
+  { title: 'Raw calls', text: 'GET, POST, PUT and DELETE on any path with an object of parameters: for the calls with many options and for endpoints newer than the library.', href: 'concepts/api-structure/#raw-calls' },
+  { title: 'Promises and typings', text: 'Every call returns a promise, for async and await. The TypeScript typings are in the package. One small dependency.', href: 'getting-started/' },
+];
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem">
+  <Image src={javascriptLogo} alt="JavaScript logo" width={90} style="margin: 0" />
+  <Image src={typescriptLogo} alt="TypeScript logo" width={90} style="margin: 0" />
+</div>
+
+## Why
+
+An application that manages Proxmox VE (a customer portal, a scheduled job, a monitoring or billing
+tool) has to speak its REST API: tickets and tokens, paths, parameters, JSON, tasks that end later.
+Written by hand it is a layer of HTTP code to build and to keep up with every Proxmox VE release.
+
+cv4pve-api-javascript is that layer, generated from the API itself. The calls follow the tree of the
+API, so the [Proxmox VE API viewer](https://pve.proxmox.com/pve-docs/api-viewer/) is also the
+reference of the client, and the JSDoc of each method carries the same descriptions.
+
+```js
+const { PveClient } = require("@corsinvest/cv4pve-api-javascript");
+
+const client = new PveClient("pve01");
+client.apiToken = "automation@pve!app=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+
+// GET /nodes/{node}/qemu/{vmid}/status/current
+const result = await client.nodes.get("pve01").qemu.get(100).status.current.vmStatus();
+
+console.log(
+  result.isSuccessStatusCode
+    ? `VM ${result.response.data.vmid} is ${result.response.data.status}`
+    : `${result.statusCode} ${result.reasonPhrase}`
+);
+```
+
+<LinkCard
+  title="From endpoint to method"
+  description="Paths become properties and get(...), the methods of an endpoint become JavaScript methods, parameters become arguments."
+  href="/cv4pve-api-javascript/concepts/api-structure/"
+/>
+
+## In your application, API only
+
+The client runs where Node.js 18 or later runs (Windows, Linux, macOS, a container, a CI runner) and
+talks only to the Proxmox VE REST API on port 8006. Nothing is installed on the nodes and no SSH is
+needed. What an application can do is what its API token or user is allowed to do: give it a token
+with just the privileges it needs, see [Permissions](/cv4pve-api-javascript/permissions/).
+
+## Where it fits
+
+The cv4pve suite follows the Unix philosophy: each tool does one thing and does it well. This library
+is the JavaScript way into the same API the tools of the suite use. If a ready tool already does the
+job, use the tool: [cv4pve-cli](https://corsinvest.github.io/cv4pve-cli/) calls the API from any
+shell, [cv4pve-autosnap](https://corsinvest.github.io/cv4pve-autosnap/) takes snapshots with
+retention. The same client exists for .NET with
+[cv4pve-api-dotnet](https://corsinvest.github.io/cv4pve-api-dotnet/), for Java with
+[cv4pve-api-java](https://corsinvest.github.io/cv4pve-api-java/), for PHP with
+[cv4pve-api-php](https://corsinvest.github.io/cv4pve-api-php/) and for PowerShell with
+[cv4pve-api-powershell](https://corsinvest.github.io/cv4pve-api-powershell/).
+
+## What it does for you
+
+<FeatureGrid items={features} />
+
+<CtaBand
+  title="Write your first call"
+  text="Install the package from npm, connect to any node, read your VMs."
+  proxmoxLogo={proxmoxLogo}
+/>

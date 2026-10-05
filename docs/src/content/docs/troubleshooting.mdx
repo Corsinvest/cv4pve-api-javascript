@@ -1,0 +1,110 @@
+---
+title: Troubleshooting
+description: "See what the client sends to Proxmox VE, and fix the errors met most often: authentication, permissions, certificates, timeouts, failed tasks."
+---
+
+## Logging
+
+The client logs with the [debug](https://github.com/debug-js/debug) package, on standard error.
+Turn the log on to see what it sends and receives:
+
+```js
+client.logEnabled = true;
+```
+
+| Namespace | What is logged |
+|---|---|
+| `proxmox-ve:debug` | Every request: method, host, path without the query string, headers and parameters. Every answer: status code, reason and the JSON received |
+| `proxmox-ve:error` | The error of a request that got no answer (connection, certificate) or timed out, and of an answer that is not JSON |
+
+`logEnabled` turns both on or off. A new client has `proxmox-ve:debug` off and `proxmox-ve:error`
+on, so the error of a request without an answer is printed also when you catch it: set
+`client.logEnabled = false` to print nothing. The `DEBUG` environment variable of the debug package
+turns the first one on without changing the code: `DEBUG=proxmox-ve:debug node app.js`.
+
+Compare the path and the parameters with the endpoint in the
+[Proxmox VE API viewer](https://pve.proxmox.com/pve-docs/api-viewer/): most problems are a parameter
+with the wrong name or value.
+
+The parameters whose name contains `password`, `token`, `ticket` or `otp` are logged as `****`, and so
+are the `Authorization`, `Cookie` and `CSRFPreventionToken` headers, the ticket and the CSRF token in
+the answer of a login, and the value of a new API token. Other values are logged as they are: check
+the output before you share it.
+
+## Without the log
+
+Every call returns a `Result`, and the last one is also in `client.lastResult`. Its `toString()`
+gives the request and the outcome, with the same parameters masked:
+
+```js
+const result = client.lastResult;
+console.log(`${result.methodType} ${result.requestResource} ${result.statusCode} ${result.reasonPhrase}`);
+
+console.log(result.toString());
+```
+
+## Status codes
+
+An answer with an error status does not throw: the call returns a `Result` with
+`isSuccessStatusCode` `false`. What the status code means:
+
+| Status | Meaning | What to do |
+|---|---|---|
+| 400 | Proxmox VE refused the parameters. `responseInError` is `true` and `response.errors` has each parameter with its problem | Fix the parameter named in the errors |
+| 401 | The token or the ticket was refused: the token is wrong or revoked, or the ticket is older than two hours | Check the token, or log in again |
+| 403 | Authenticated, but without the privilege the endpoint requires on that path | Check the roles of the user and, with privilege separation, of the token: [Permissions](/cv4pve-api-javascript/permissions/) |
+| 500 | Proxmox VE could not do what was asked. The reason is in `reasonPhrase`, for example `Configuration file 'nodes/pve01/qemu-server/999.conf' does not exist` for a VM id that does not exist | Read the reason |
+| 501 | The endpoint does not exist on that node: the cluster is older than the library | Check the Proxmox VE version: [Versions](/cv4pve-api-javascript/concepts/api-structure/#versions) |
+| 502 | The answer is not JSON: something that is not the Proxmox VE API answered. `reasonPhrase` shows the start of what it sent | Check host and port, and proxies in between |
+
+More in [Errors](/cv4pve-api-javascript/concepts/errors/).
+
+## A call that rejects
+
+A request that gets no answer has no `Result`: the promise rejects with the error of Node.js. Its
+`code` says what happened:
+
+| `code` | Meaning | What to do |
+|---|---|---|
+| `ENOTFOUND` | The name of the host is not resolved | Check the host name and the DNS |
+| `ECONNREFUSED`, `EHOSTUNREACH` | Nothing answers on that address and port | Check host, port and network; the API is on port 8006 |
+| `ETIMEDOUT` | The request ran out of time: the timeout of the client | Check that the node answers; raise the [timeout](/cv4pve-api-javascript/connection/#timeout) if the endpoint is slow |
+| `DEPTH_ZERO_SELF_SIGNED_CERT`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `ERR_TLS_CERT_ALTNAME_INVALID` | The certificate was refused, with `validateCertificate` set to `true` | See [Connection](/cv4pve-api-javascript/connection/#certificate) |
+
+## `TypeError: Cannot read properties of null`
+
+`result.response` is `null` when the answer had no body or was not JSON, and `response.data` is
+`null` when Proxmox VE answered with an error. It happens most often when the call failed and the
+code reads its data anyway. Check `isSuccessStatusCode` first, and read optional members with `?.`
+and `??`: see [Results](/cv4pve-api-javascript/concepts/results/#reading-the-data).
+
+## `PveResultException`: missing Two Factor Authentication
+
+The user has two-factor authentication and `login` was called without the second factor: see
+[Connection](/cv4pve-api-javascript/connection/#two-factor-authentication). An API token needs none.
+
+## `TypeError`: a parameter cannot be encoded
+
+A parameter was `NaN`, `Infinity`, a function, a `Symbol`, a `BigInt` or an object with a circular
+reference. The client refuses it before any request, because JSON would drop it or send `null` in
+its place. It is usually a number computed from a value that was not there.
+
+## An empty list
+
+A list that comes back empty with status 200 may mean an account without privileges: Proxmox VE leaves
+out what the caller may not see instead of returning an error. See
+[Permissions](/cv4pve-api-javascript/permissions/#how-missing-privileges-are-reported).
+
+## The call succeeded but nothing changed
+
+Starting a VM, a clone, a backup or a snapshot only *starts a task*: the successful `Result` says the
+task was accepted, not that it ended well. Wait for the task and read its exit status: see
+[Tasks](/cv4pve-api-javascript/concepts/tasks/).
+
+## Reporting a problem
+
+Open an [issue](https://github.com/Corsinvest/cv4pve-api-javascript/issues) with:
+
+- the version of the library and of Node.js (`node --version`)
+- the Proxmox VE version: `(await client.version.version()).response.data.version`
+- the code of the call and the log of the request, without tokens or passwords

@@ -1,0 +1,161 @@
+---
+title: Errors
+description: "An answer with an error status does not throw: check the Result. What isSuccessStatusCode and responseInError mean, which calls reject, and which methods throw."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The methods of the client **do not throw** when Proxmox VE answers with an error. A refused request,
+a missing privilege, a VM that does not exist: each resolves with a `Result`, and the code decides
+what to do.
+
+```js
+const result = await client.nodes.get("pve01").qemu.get(100).status.start.vmStart();
+
+if (!result.isSuccessStatusCode) {
+  console.log(`Start failed: ${result.statusCode} ${result.reasonPhrase}`);
+  return;
+}
+```
+
+A call whose `Result` is not checked fails silently: the code goes on as if the VM had started.
+
+Only a request that gets **no answer** rejects: see
+[Failures without an answer](#failures-without-an-answer).
+
+## What to check
+
+| Check | True when |
+|---|---|
+| `isSuccessStatusCode` | The HTTP status is 200: Proxmox VE accepted the request |
+| `responseInError` | The answer has an `errors` member: one or more parameters were refused. The status is 400 |
+| `response.errors` | Those errors, as an object: the name of each refused parameter with its message |
+| `reasonPhrase` | The reason of any failure: Proxmox VE writes its error message here |
+
+`isSuccessStatusCode` is the one to test: it is `false` for every failure, including those that have
+`responseInError`. Use `response.errors` to show which parameter was wrong:
+
+```js
+const result = await client.set("/nodes/pve01/qemu/100/config", { memory: "abc" });
+
+if (!result.isSuccessStatusCode) {
+  console.log(result.reasonPhrase);   // Parameter verification failed.
+  if (result.responseInError) {
+    for (const [name, message] of Object.entries(result.response.errors)) {
+      console.log(`${name} : ${message}`);   // memory : invalid format - ...
+    }
+  }
+}
+```
+
+Status 500 is what Proxmox VE itself returns when it cannot do what was asked, for example for a VM
+id that does not exist: the reason is in `reasonPhrase`.
+
+An answer that is not JSON (a proxy page, another service on that port) is also a `Result`: the
+status is 502, or the status received if it was already an error, `reasonPhrase` is
+`The answer is not JSON (HTTP 200): ` followed by the start of the body, and `response` is `null`.
+
+## Failures without an answer
+
+A request that gets no answer has no HTTP status, so there is no `Result`: the promise **rejects**
+with the error of Node.js.
+
+| Failure | `code` of the error |
+|---|---|
+| Name not resolved | `ENOTFOUND` |
+| Connection refused, host not reachable | `ECONNREFUSED`, `EHOSTUNREACH` |
+| Certificate refused, with `validateCertificate` set to `true` | For example `DEPTH_ZERO_SELF_SIGNED_CERT`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE` |
+| Request timed out (the [timeout](/cv4pve-api-javascript/connection/#timeout) of the client) | `ETIMEDOUT`, with the message `Request timeout after <n>ms` |
+
+```js
+try {
+  const result = await client.version.version();
+  if (!result.isSuccessStatusCode) {
+    console.log(`${result.statusCode} ${result.reasonPhrase}`);   // Proxmox VE answered with an error
+  }
+} catch (error) {
+  console.log(`No answer from ${client.hostname}: ${error.code} ${error.message}`);
+}
+```
+
+The error is also written to the log: see
+[Troubleshooting](/cv4pve-api-javascript/troubleshooting/#logging).
+
+## What does throw
+
+| Call | Error | When |
+|---|---|---|
+| Any call | The error of Node.js, with a `code` | The request got no answer: see above |
+| `waitForTaskToFinish`, `taskIsRunning`, `getExitStatusTask` | `PveResultException` | The status of the task cannot be read, or the value is not a UPID |
+| `login` | `PveResultException` | The user needs a second factor and none was given |
+| Setting `timeout` | `RangeError` | The value is negative or not a number |
+| Any call | `TypeError` | A parameter cannot be encoded: `NaN`, `Infinity`, a function, a `Symbol`, a `BigInt`, a circular reference. No request is sent |
+| Reading `response.data.member` | `TypeError` | The call failed, so `response` or `response.data` is `null` |
+
+`PveResultException` is exported by the package and carries the failed call in its `result` property
+(`null` when no request was made).
+
+<Aside>
+`login` resolves with `false`, without throwing, when the credentials are wrong: the reason is in
+`client.lastResult.reasonPhrase`.
+</Aside>
+
+## Throw on every failure
+
+An application that prefers exceptions can turn every failed call into one with a small function of
+its own:
+
+```js
+const { PveResultException } = require("@corsinvest/cv4pve-api-javascript");
+
+function ensureSuccess(result) {
+  if (!result.isSuccessStatusCode) {
+    throw new PveResultException(
+      result,
+      result.responseInError
+        ? JSON.stringify(result.response.errors)
+        : `${result.statusCode} ${result.reasonPhrase}`
+    );
+  }
+  return result;
+}
+```
+
+```js
+const result = ensureSuccess(await client.nodes.get("pve01").qemu.get(100).status.start.vmStart());
+```
+
+## A successful call is not a finished operation
+
+For the operations that run as a task, a successful `Result` means the task was *started*. Whether it
+ended well is in the exit status of the task: see [Tasks](/cv4pve-api-javascript/concepts/tasks/).
+
+## Retrying
+
+A retry has to look at both kinds of failure: the rejection of a request without an answer, and the
+status of the `Result`. Retry only what is safe to repeat, and only for failures that can pass:
+
+```js
+const { setTimeout: sleep } = require("node:timers/promises");
+
+let result = null;
+
+for (let attempt = 1; attempt <= 3; attempt++) {
+  try {
+    result = await client.cluster.resources.resources();
+    if (result.isSuccessStatusCode || result.statusCode < 500) {
+      break;
+    }
+  } catch (error) {
+    // no answer: worth another try, unless it was the last one
+    if (attempt === 3) {
+      throw error;
+    }
+  }
+
+  await sleep(attempt * 2000);
+}
+```
+
+The other statuses (wrong parameters, no permission) give the same answer every time: retrying them
+is useless. A 401 from an expired ticket needs a new login, not a retry.

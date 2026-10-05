@@ -1,0 +1,147 @@
+---
+title: Connection
+description: Connect to Proxmox VE from JavaScript with an API token or a user and password, two-factor authentication, certificate validation and timeout.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A `PveClient` talks to one node, on port 8006 unless you give another one:
+
+```js
+const { PveClient } = require("@corsinvest/cv4pve-api-javascript");
+
+const client = new PveClient("pve01");
+const other = new PveClient("pve02.example.com", 443);
+```
+
+Any node of a cluster answers for the whole cluster. The client is then authenticated in one of the
+ways below.
+
+## API token
+
+An [API token](https://pve.proxmox.com/pve-docs/chapter-pveum.html#pveum_tokens) is the way for
+applications and scheduled jobs: it does not expire unless you say so, it can be revoked without
+touching the user, and it can have fewer privileges than the user. Set it and call the API, there is
+no login:
+
+```js
+const client = new PveClient("pve01");
+client.apiToken = "automation@pve!app=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+
+const version = await client.version.version();
+```
+
+The format is `USER@REALM!TOKENID=SECRET`. A wrong token is not reported when you set it: the first
+call returns a `Result` with status 401.
+
+## User and password
+
+`login` asks Proxmox VE for a ticket and resolves with `true` if it got one:
+
+```js
+const client = new PveClient("pve01");
+
+if (!(await client.login("automation@pve", password))) {
+  console.log(client.lastResult.reasonPhrase);
+  return;
+}
+```
+
+The realm is the part after the last `@`. Without it the realm is `pam`: `login("root", password)`
+logs in `root@pam`. The realm can also be a separate argument: `login("automation", password, "pve")`.
+
+<Aside>
+A ticket is valid for two hours and the client does not renew it. A process that runs longer calls
+`login` again, or uses an API token.
+</Aside>
+
+## Two-factor authentication
+
+For a user with two-factor authentication, pass the second factor as the fourth argument, after the
+realm:
+
+```js
+// the code of the authenticator app
+await client.login("admin", password, "pve", "123456");
+
+// a recovery key, or any other factor, as type:value
+await client.login("admin", password, "pve", "recovery:abcd-1234-efgh-5678");
+```
+
+A value without a type is a TOTP code. If the user needs a second factor and none is given, `login`
+throws `PveResultException`. API tokens are not subject to two-factor authentication.
+
+## Certificate
+
+By default the certificate of the node is **not** validated, so the self-signed certificate of a new
+installation works. With a trusted certificate on the nodes, turn the validation on:
+
+```js
+const client = new PveClient("pve01.example.com");
+client.validateCertificate = true;
+client.apiToken = apiToken;
+```
+
+With the validation on, the certificate is checked against the certificate authorities Node.js
+trusts and the name of the host against the certificate. A refused certificate gives no `Result`:
+the call rejects with the error of Node.js, for example with `code`
+`DEPTH_ZERO_SELF_SIGNED_CERT` or `UNABLE_TO_VERIFY_LEAF_SIGNATURE`. To trust a private certificate
+authority, give its file to Node.js with the `NODE_EXTRA_CA_CERTS` environment variable.
+
+## Timeout
+
+`timeout` is, in milliseconds, the longest time a request may stay without activity. The default is
+30000, 30 seconds; 0 means no limit. A value that is negative or not a number throws a `RangeError`.
+
+```js
+client.timeout = 60000;
+```
+
+A request that runs out of time gives no `Result`: the call rejects with an error whose `code` is
+`ETIMEDOUT`. This is the time of the HTTP request, not of the operation it starts: a backup or a
+clone answers at once with the id of a [task](/cv4pve-api-javascript/concepts/tasks/).
+
+## Several nodes
+
+A client is bound to one host. An application that must survive a node being down keeps a list of
+nodes and creates the client for the first that answers: a call to `version.version()` with a short
+timeout, inside a `try`, is enough to test one.
+
+```js
+async function connect(hosts, apiToken) {
+  for (const host of hosts) {
+    const client = new PveClient(host);
+    client.apiToken = apiToken;
+    client.timeout = 3000;
+    try {
+      if ((await client.version.version()).isSuccessStatusCode) {
+        client.timeout = 30000;
+        return client;
+      }
+    } catch {
+      // no answer from this node: try the next one
+    }
+  }
+  throw new Error("No node answers");
+}
+```
+
+## Calls in parallel
+
+A `PveClient` holds the ticket, the response type and the last result. Calls can run together on one
+client, for example with `Promise.all`, as long as none of them changes the response type meanwhile.
+`lastResult` is then the result of the request that ended last: when calls overlap, use the `Result`
+each call returns.
+
+## Secrets
+
+Keep tokens and passwords out of the source code: read them from the environment or from the secret
+store of your platform.
+
+```js
+const client = new PveClient(process.env.PVE_HOST);
+client.apiToken = process.env.PVE_API_TOKEN;
+```
+
+With the log enabled the client masks the parameters that carry passwords, tickets and tokens: see
+[Troubleshooting](/cv4pve-api-javascript/troubleshooting/#logging).

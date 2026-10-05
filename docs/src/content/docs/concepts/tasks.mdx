@@ -1,0 +1,135 @@
+---
+title: Tasks
+description: "Long operations in Proxmox VE run as tasks: how to get the UPID, wait for the task to finish and check whether it succeeded."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Starting a VM, cloning, migrating, taking a backup or a snapshot: Proxmox VE runs these as **tasks** in
+the background and the API answers at once, with the id of the task, the **UPID**. The same tasks
+appear in the *Tasks* panel of the web interface.
+
+```js
+// newid, bwlimit, description, format, full, name
+const result = await client.nodes.get("pve01").qemu.get(9000).clone
+  .cloneVm(121, undefined, undefined, undefined, true, "web02");
+
+const upid = result.response.data;
+// UPID:pve01:0012A3F4:05C1B2D3:6720F1A0:qmclone:9000:automation@pve!app:
+```
+
+The call returned when the task *started*. Before using the new VM the code has to wait for the task.
+
+## Wait for a task
+
+`waitForTaskToFinish` takes the UPID, the milliseconds between two checks and the longest time to
+wait, in milliseconds:
+
+```js
+if (!result.isSuccessStatusCode) {
+  console.log(`Clone not started: ${result.reasonPhrase}`);
+  return;
+}
+
+// check every 2 seconds, for up to 10 minutes
+const finished = await client.waitForTaskToFinish(upid, 2000, 600000);
+```
+
+It reads the status of the task at each interval until the task stops, and resolves with `true` if it
+stopped, `false` if it is still running when the time runs out. Set the time to the longest the task
+may take: seconds for a start or a snapshot, minutes for a clone, a migration or a backup. Without the
+last two arguments it checks every 500 milliseconds for up to 10 seconds. An interval of 0 or less
+becomes 500 milliseconds, and a time shorter than the interval becomes the interval plus 5 seconds.
+
+<Aside type="caution">
+Check `isSuccessStatusCode` of the call before reading the UPID, as above: a call that failed has no
+task, and no data to read the UPID from.
+</Aside>
+
+To check without waiting, `taskIsRunning(upid)` resolves with `true` while the task runs.
+
+The node of the task is read from the UPID, so none of these needs the node. It is the second part
+of the UPID: `upid.split(":")[1]`.
+
+## Did it succeed?
+
+A finished task is not necessarily a successful one. `waitForTaskToFinish` only says the task stopped;
+`getExitStatusTask` says how: `OK`, `WARNINGS: <n>` when it ended with warnings in its log, or the
+error of the task.
+
+```js
+if (!(await client.waitForTaskToFinish(upid, 2000, 600000))) {
+  throw new Error(`Task still running after 10 minutes: ${upid}`);
+}
+
+const exitStatus = await client.getExitStatusTask(upid);
+if (exitStatus !== "OK" && !exitStatus.startsWith("WARNINGS")) {
+  throw new Error(`Task failed: ${exitStatus}`);
+}
+```
+
+For example a snapshot with a name already in use ends with an exit status such as
+`snapshot name 'before-update' already used`. For a task that is still running the exit status is
+`null`.
+
+## The log of a task
+
+The log, the same text the web interface shows, comes from the `log` endpoint of the task. Each entry
+has the line number in `n` and the text in `t`:
+
+```js
+const node = upid.split(":")[1];
+
+// download, limit, start
+const log = await client.nodes.get(node).tasks.get(upid).log.readTaskLog(undefined, 1000);
+for (const line of log.response.data) {
+  console.log(line.t);
+}
+```
+
+Without `limit` Proxmox VE returns the first 50 lines. For a longer log raise `limit`, or read it in
+pages with `start`.
+
+The other details of a task (type, user, start time) are in `client.readTaskStatus(upid)`, and the
+tasks of a node in `client.nodes.get(node).tasks.nodeTasks()`.
+
+## Show progress
+
+Proxmox VE reports no percentage for a task: what can be shown is the time and the last lines of the
+log. Poll with `taskIsRunning`:
+
+```js
+const { setTimeout: sleep } = require("node:timers/promises");
+
+const started = Date.now();
+
+while (await client.taskIsRunning(upid)) {
+  process.stdout.write(`\rCloning... ${Math.round((Date.now() - started) / 1000)} s`);
+  await sleep(2000);
+}
+
+console.log();
+console.log(await client.getExitStatusTask(upid));
+```
+
+## When the status cannot be read
+
+`taskIsRunning`, `getExitStatusTask` and `waitForTaskToFinish` read the status of the task from its
+node. If Proxmox VE does not give it (the account has no right to see the task, the task does not
+exist), they **throw** `PveResultException` with the reason, for example
+`Read status of task 'UPID:…' failed (403 Permission check failed): …`, instead of reporting a
+finished task. The failed `Result` is in the `result` property of the exception. A value that is not
+a UPID throws the same exception before any request. If the node gives no answer at all, they reject
+with the error of Node.js, as any other call: see
+[Errors](/cv4pve-api-javascript/concepts/errors/#failures-without-an-answer).
+
+A token can always read the tasks it started itself; to read the tasks of other users it needs
+`Sys.Audit` on the node: see [Permissions](/cv4pve-api-javascript/permissions/#tasks).
+
+## Calls that return no task
+
+Not every call returns a UPID. Calls that finish immediately (reading, most configuration changes)
+return their result directly. The [API viewer](https://pve.proxmox.com/pve-docs/api-viewer/) shows
+what an endpoint returns: a UPID is a `string` described as the task id. Some endpoints exist in both
+forms: for the configuration of a VM, PUT applies the change and returns nothing, while POST returns
+a task, which is what you need when the change allocates a disk.

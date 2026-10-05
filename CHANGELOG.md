@@ -7,6 +7,19 @@ The major and minor version follow Proxmox VE (9.2.x targets Proxmox VE 9.2); th
 
 Versions before 9.2.1 are described in the [GitHub releases](https://github.com/Corsinvest/cv4pve-api-javascript/releases).
 
+## [Unreleased]
+
+### Added
+- Documentation site at [corsinvest.github.io/cv4pve-api-javascript](https://corsinvest.github.io/cv4pve-api-javascript/), built with Astro Starlight and published by the new `Docs` workflow; the pages are rewritten on the current client and replace the Markdown files of `docs/`
+- Icon of the project (`icon.svg`)
+
+### Changed
+- `README.md` rewritten, with links to the documentation site
+- The Publish workflow puts the section of the released version of `CHANGELOG.md` in the release notes ([#25](https://github.com/Corsinvest/cv4pve-api-javascript/pull/25))
+
+### Fixed
+- The examples of the old `docs/` and `README.md` called generated methods with an object of parameters, as in `updateVm({memory: 4096})`: the generated methods take their parameters by position, so the object was sent as the value of the first parameter. The new pages use raw calls for the configuration of a VM
+
 ## [9.2.1] - 2026-10-05
 
 ### Added
