@@ -107,7 +107,8 @@ class Result {
     return (
       this.#response !== null &&
       typeof this.#response === "object" &&
-      typeof this.#response.errors !== "undefined"
+      this.#response.errors !== undefined &&
+      this.#response.errors !== null
     );
   }
 
@@ -131,7 +132,8 @@ class Result {
 
   /**
    * Mask sensitive parameter values (password, token, ticket, otp, apitoken)
-   * for safe logging. Returns a shallow copy; does not mutate the original.
+   * for safe logging, also inside an array or an object. Returns a copy; does not
+   * mutate the original.
    *
    * @param {object|null} parameters
    * @returns {object|null}
@@ -141,13 +143,32 @@ class Result {
       return parameters;
     }
     const sensitiveParams = ["password", "token", "ticket", "otp", "apitoken", "tfa-challenge"];
-    /** @type {Object<string, any>} */
-    const masked = {};
+    /** @type {any} */
+    const masked = Array.isArray(parameters) ? [] : {};
     for (const [key, value] of Object.entries(parameters)) {
       const paramName = key.toLowerCase();
-      masked[key] = sensitiveParams.some((p) => paramName.includes(p)) ? "****" : value;
+      if (sensitiveParams.some((p) => paramName.includes(p))) {
+        masked[key] = "****";
+      } else if (Result.#isArrayOrPlainObject(value)) {
+        // a secret can also be a member of a value
+        masked[key] = Result.maskSensitiveParameters(value);
+      } else {
+        masked[key] = value;
+      }
     }
     return masked;
+  }
+
+  /**
+   * @param {any} value
+   * @returns {boolean} True for an array or an object written as {...}
+   */
+  static #isArrayOrPlainObject(value) {
+    if (value === null || typeof value !== "object") {
+      return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return Array.isArray(value) || prototype === Object.prototype || prototype === null;
   }
 
   /**
@@ -171,9 +192,6 @@ class Result {
 }
 
 /**
- * Response type
- */
-/**
  * Call to the Proxmox VE API that did not return the expected result,
  * e.g. the status of a task that cannot be read.
  */
@@ -189,6 +207,9 @@ class PveResultException extends Error {
   }
 }
 
+/**
+ * Response type: the format asked to Proxmox VE
+ */
 class ResponseType {
   static JSON = "json";
   static PNG = "png";
@@ -243,9 +264,13 @@ class PveClientBase {
     return this.#responseType;
   }
   /**
-   * Set response type
+   * Set response type: ResponseType.JSON or ResponseType.PNG
+   * @throws {RangeError} The value is not a response type.
    */
   set responseType(value) {
+    if (value !== ResponseType.JSON && value !== ResponseType.PNG) {
+      throw new RangeError(`responseType must be '${ResponseType.JSON}' or '${ResponseType.PNG}'`);
+    }
     this.#responseType = value;
   }
 
@@ -571,17 +596,23 @@ class PveClientBase {
         });
 
         response.on("error", (error) => {
+          if (timedOut) return;
           this.#error(error);
           reject(error);
         });
       });
 
+      // after a timeout the request is destroyed: the error that follows is not another failure
+      let timedOut = false;
+
       req.on("error", (error) => {
+        if (timedOut) return;
         this.#error(error);
         reject(error);
       });
 
       req.on("timeout", () => {
+        timedOut = true;
         req.destroy();
         const error = new Error(`Request timeout after ${this.#timeout}ms`);
         // @ts-ignore

@@ -432,6 +432,79 @@ test("the log is off unless asked, also for the error of a request", async (t) =
   assert.equal(client.logEnabled, false);
 });
 
+test("a timeout is logged once: the error of the destroyed request is not another failure", async (t) => {
+  const https = require("https");
+  const { EventEmitter } = require("events");
+  const original = https.request;
+  // as Node does: destroy() after a timeout makes the request emit an error
+  https.request = () => {
+    const req = new EventEmitter();
+    req.write = () => {};
+    req.destroy = () =>
+      setImmediate(() => req.emit("error", Object.assign(new Error("socket hang up"), { code: "ECONNRESET" })));
+    req.end = () => setImmediate(() => req.emit("timeout"));
+    return req;
+  };
+  t.after(() => (https.request = original));
+  const client = new PveClient("pve01");
+  client.timeout = 50;
+  const lines = captureLog(t, client);
+
+  await assert.rejects(() => client.get("/version"), (error) => error.code === "ETIMEDOUT");
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const log = lines.join("\n");
+  assert.equal(log.split("Request timeout after 50ms").length - 1, 1, log);
+  assert.ok(!log.includes("socket hang up"), "the error of the destroyed request is logged");
+});
+
+test("an answer with errors null is not in error", async (t) => {
+  fakeHttps(t, () => json(200, { data: { vmid: 100 }, errors: null }));
+  const client = new PveClient("pve01");
+
+  const result = await client.get("/nodes/pve01/qemu/100/status/current");
+
+  assert.equal(result.responseInError, false);
+  assert.equal(result.error, "");
+});
+
+test("a response type that is not json or png is refused", () => {
+  const client = new PveClient("pve01");
+
+  for (const value of ["xml", "", null, undefined, "JSON", 1]) {
+    assert.throws(() => (client.responseType = value), RangeError);
+  }
+  assert.equal(client.responseType, ResponseType.JSON);
+
+  client.responseType = ResponseType.PNG;
+  assert.equal(client.responseType, "png");
+  client.responseType = "json";
+  assert.equal(client.responseType, ResponseType.JSON);
+});
+
+test("a secret inside an array or an object of a parameter is not shown", async (t) => {
+  fakeHttps(t, () => json(200, { data: {} }));
+  const client = new PveClient("pve01");
+  const lines = captureLog(t, client);
+  const parameters = {
+    name: "visible",
+    options: { password: "SECRETNESTED", port: 5900 },
+    list: [{ token: "SECRETINLIST", id: "kept" }],
+  };
+
+  const result = await client.create("/cluster/notifications/endpoints/webhook", parameters);
+
+  for (const text of [lines.join("\n"), result.toString()]) {
+    assert.ok(!text.includes("SECRETNESTED"), "the secret of an object is shown");
+    assert.ok(!text.includes("SECRETINLIST"), "the secret of an array is shown");
+    for (const kept of ["visible", "5900", "kept"]) {
+      assert.ok(text.includes(kept), `${kept} is not shown`);
+    }
+  }
+  // what is sent is not changed
+  assert.deepEqual(result.requestParameters, parameters);
+});
+
 test("the node is read from the task identifier", () => {
   assert.equal(PveClient.getNodeFromTask(UPID), "pve01");
   assert.equal(PveClient.getNodeFromTask("UPID:cc01:0012A3F4:05C1B2D3:6720F1A0:qmstart:100:root@pam:"), "cc01");

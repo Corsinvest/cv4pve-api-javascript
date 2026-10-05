@@ -88,6 +88,7 @@ With the log enabled the error is also written to the log: see
 | `waitForTaskToFinish`, `taskIsRunning`, `getExitStatusTask`, `PveClient.getNodeFromTask` | `PveResultException` | The status of the task cannot be read, or the value is not a UPID |
 | `login` | `PveResultException` | The user needs a second factor and none was given |
 | Setting `timeout` | `RangeError` | The value is negative or not a number |
+| Setting `responseType` | `RangeError` | The value is not `json` or `png` |
 | Any call | `TypeError` | A parameter cannot be encoded: `NaN`, `Infinity`, a function, a `Symbol`, a `BigInt`, a circular reference. No request is sent |
 | Reading `response.data.member` | `TypeError` | The call failed, so `response` or `response.data` is `null` |
 

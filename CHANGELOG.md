@@ -19,11 +19,18 @@ Versions before 9.2.1 are described in the [GitHub releases](https://github.com/
 - The error of a request (no answer, timeout, an answer that is not JSON) is no longer printed on standard error by default: the `proxmox-ve:error` log is off in a new client, as the `proxmox-ve:debug` one. Turn it on with `client.logEnabled = true` or with the `DEBUG=proxmox-ve:error` environment variable. The call still rejects with the same error
 - `NaN`, `Infinity`, a function and a `Symbol` are refused with a `TypeError` also inside an array or an object of a parameter: they were sent as `null` or dropped. A circular reference is refused with a `TypeError` also in GET and DELETE requests
 
+- `responseType` refuses a value that is not `json` or `png` with a `RangeError`: any value was accepted and went in the path of the request
+- `responseInError` is `false` for an answer with `errors` set to `null`
+
 ### Changed
 - `README.md` rewritten, with links to the documentation site
 - The Publish workflow puts the section of the released version of `CHANGELOG.md` in the release notes ([#25](https://github.com/Corsinvest/cv4pve-api-javascript/pull/25))
 
 ### Fixed
+- The values of the path were not encoded: with `pools.get("a#b")` the request went to the pool `a`, with a `?` the rest became the query string, a space rejected with `ERR_UNESCAPED_CHARACTERS` and a non-ASCII character was corrupted. Every value given to a `get(...)` of the tree is now encoded
+- TypeScript typings: every parameter of the generated methods was required, so a call such as `snapshot("name")` or `vmStart()` did not compile. The optional parameters are now optional
+- A timeout was logged twice, the second time as `socket hang up`
+- Debug log and `Result.toString()`: a password or a token inside an array or an object of a parameter was shown
 - `logEnabled` of a new client was `undefined` instead of `false`
 - The examples of the old `docs/` and `README.md` called generated methods with an object of parameters, as in `updateVm({memory: 4096})`: the generated methods take their parameters by position, so the object was sent as the value of the first parameter. The new pages use raw calls for the configuration of a VM
 
