@@ -7,32 +7,32 @@ The major and minor version follow Proxmox VE (9.2.x targets Proxmox VE 9.2); th
 
 Versions before 9.2.1 are described in the [GitHub releases](https://github.com/Corsinvest/cv4pve-api-javascript/releases).
 
-## [Unreleased]
+## [9.2.2] - 2026-10-05
 
 ### Added
-- `Result.error`: the parameters refused by Proxmox VE as text, one per line as `name : message`; an empty string when the response has no errors
-- `PveClient.getNodeFromTask(upid)`, static: the node of a task, read from its identifier
-- Documentation site at [corsinvest.github.io/cv4pve-api-javascript](https://corsinvest.github.io/cv4pve-api-javascript/), built with Astro Starlight and published by the new `Docs` workflow; the pages are rewritten on the current client and replace the Markdown files of `docs/`
-- Icon of the project (`icon.svg`)
+- `Result.error`: the parameters refused by Proxmox VE as text, one per line as `name : message`; an empty string when the response has no errors ([#27](https://github.com/Corsinvest/cv4pve-api-javascript/pull/27))
+- `PveClient.getNodeFromTask(upid)`, static: the node of a task, read from its identifier ([#27](https://github.com/Corsinvest/cv4pve-api-javascript/pull/27))
+- Documentation site at [corsinvest.github.io/cv4pve-api-javascript](https://corsinvest.github.io/cv4pve-api-javascript/), built with Astro Starlight and published by the new `Docs` workflow; the pages are rewritten on the current client and replace the Markdown files of `docs/` ([#26](https://github.com/Corsinvest/cv4pve-api-javascript/pull/26))
+- Icon of the project (`icon.svg`) ([#26](https://github.com/Corsinvest/cv4pve-api-javascript/pull/26))
+- Tests: `test/typings.test.js` compiles the calls of a TypeScript user against the typings of the package ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
 
 ### Changed (breaking)
-- The error of a request (no answer, timeout, an answer that is not JSON) is no longer printed on standard error by default: the `proxmox-ve:error` log is off in a new client, as the `proxmox-ve:debug` one. Turn it on with `client.logEnabled = true` or with the `DEBUG=proxmox-ve:error` environment variable. The call still rejects with the same error
-- `NaN`, `Infinity`, a function and a `Symbol` are refused with a `TypeError` also inside an array or an object of a parameter: they were sent as `null` or dropped. A circular reference is refused with a `TypeError` also in GET and DELETE requests
-
-- `responseType` refuses a value that is not `json` or `png` with a `RangeError`: any value was accepted and went in the path of the request
-- `responseInError` is `false` for an answer with `errors` set to `null`
+- The error of a request (no answer, timeout, an answer that is not JSON) is no longer printed on standard error by default: the `proxmox-ve:error` log is off in a new client, as the `proxmox-ve:debug` one. Turn it on with `client.logEnabled = true` or with the `DEBUG=proxmox-ve:error` environment variable. The call still rejects with the same error ([#27](https://github.com/Corsinvest/cv4pve-api-javascript/pull/27))
+- `NaN`, `Infinity`, a function and a `Symbol` are refused with a `TypeError` also inside an array or an object of a parameter: they were sent as `null` or dropped. A circular reference is refused with a `TypeError` also in GET and DELETE requests ([#27](https://github.com/Corsinvest/cv4pve-api-javascript/pull/27))
+- `responseType` refuses a value that is not `json` or `png` with a `RangeError`: any value was accepted and went in the path of the request ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
+- `responseInError` is `false` for an answer with `errors` set to `null` ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
 
 ### Changed
-- `README.md` rewritten, with links to the documentation site
+- `README.md` rewritten, with links to the documentation site ([#26](https://github.com/Corsinvest/cv4pve-api-javascript/pull/26))
 - The Publish workflow puts the section of the released version of `CHANGELOG.md` in the release notes ([#25](https://github.com/Corsinvest/cv4pve-api-javascript/pull/25))
 
 ### Fixed
-- The values of the path were not encoded: with `pools.get("a#b")` the request went to the pool `a`, with a `?` the rest became the query string, a space rejected with `ERR_UNESCAPED_CHARACTERS` and a non-ASCII character was corrupted. Every value given to a `get(...)` of the tree is now encoded
-- TypeScript typings: every parameter of the generated methods was required, so a call such as `snapshot("name")` or `vmStart()` did not compile. The optional parameters are now optional
-- A timeout was logged twice, the second time as `socket hang up`
-- Debug log and `Result.toString()`: a password or a token inside an array or an object of a parameter was shown
-- `logEnabled` of a new client was `undefined` instead of `false`
-- The examples of the old `docs/` and `README.md` called generated methods with an object of parameters, as in `updateVm({memory: 4096})`: the generated methods take their parameters by position, so the object was sent as the value of the first parameter. The new pages use raw calls for the configuration of a VM
+- The values of the path were not encoded: with `pools.get("a#b")` the request went to the pool `a`, with a `?` the rest became the query string, a space rejected with `ERR_UNESCAPED_CHARACTERS` and a non-ASCII character was corrupted. Every value given to a `get(...)` of the tree is now encoded ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
+- TypeScript typings: every parameter of the generated methods was required, so a call such as `snapshot("name")` or `vmStart()` did not compile. The optional parameters are now optional ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
+- A timeout was logged twice, the second time as `socket hang up` ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
+- Debug log and `Result.toString()`: a password or a token inside an array or an object of a parameter was shown ([#28](https://github.com/Corsinvest/cv4pve-api-javascript/pull/28))
+- `logEnabled` of a new client was `undefined` instead of `false` ([#27](https://github.com/Corsinvest/cv4pve-api-javascript/pull/27))
+- The examples of the old `docs/` and `README.md` called generated methods with an object of parameters, as in `updateVm({memory: 4096})`: the generated methods take their parameters by position, so the object was sent as the value of the first parameter. The new pages use raw calls for the configuration of a VM ([#26](https://github.com/Corsinvest/cv4pve-api-javascript/pull/26))
 
 ## [9.2.1] - 2026-10-05
 
