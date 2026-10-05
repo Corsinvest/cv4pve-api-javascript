@@ -29,11 +29,12 @@ Only a request that gets **no answer** rejects: see
 |---|---|
 | `isSuccessStatusCode` | The HTTP status is 200: Proxmox VE accepted the request |
 | `responseInError` | The answer has an `errors` member: one or more parameters were refused. The status is 400 |
-| `response.errors` | Those errors, as an object: the name of each refused parameter with its message |
+| `error` | Text of those errors, one parameter per line as `name : message`. Empty when `responseInError` is `false` |
+| `response.errors` | The same errors as an object: the name of each refused parameter with its message |
 | `reasonPhrase` | The reason of any failure: Proxmox VE writes its error message here |
 
 `isSuccessStatusCode` is the one to test: it is `false` for every failure, including those that have
-`responseInError`. Use `response.errors` to show which parameter was wrong:
+`responseInError`. Use `error` to show which parameter was wrong:
 
 ```js
 const result = await client.set("/nodes/pve01/qemu/100/config", { memory: "abc" });
@@ -41,9 +42,7 @@ const result = await client.set("/nodes/pve01/qemu/100/config", { memory: "abc" 
 if (!result.isSuccessStatusCode) {
   console.log(result.reasonPhrase);   // Parameter verification failed.
   if (result.responseInError) {
-    for (const [name, message] of Object.entries(result.response.errors)) {
-      console.log(`${name} : ${message}`);   // memory : invalid format - ...
-    }
+    console.log(result.error);        // memory : invalid format - ...
   }
 }
 ```
@@ -78,7 +77,7 @@ try {
 }
 ```
 
-The error is also written to the log: see
+With the log enabled the error is also written to the log: see
 [Troubleshooting](/cv4pve-api-javascript/troubleshooting/#logging).
 
 ## What does throw
@@ -86,7 +85,7 @@ The error is also written to the log: see
 | Call | Error | When |
 |---|---|---|
 | Any call | The error of Node.js, with a `code` | The request got no answer: see above |
-| `waitForTaskToFinish`, `taskIsRunning`, `getExitStatusTask` | `PveResultException` | The status of the task cannot be read, or the value is not a UPID |
+| `waitForTaskToFinish`, `taskIsRunning`, `getExitStatusTask`, `PveClient.getNodeFromTask` | `PveResultException` | The status of the task cannot be read, or the value is not a UPID |
 | `login` | `PveResultException` | The user needs a second factor and none was given |
 | Setting `timeout` | `RangeError` | The value is negative or not a number |
 | Any call | `TypeError` | A parameter cannot be encoded: `NaN`, `Infinity`, a function, a `Symbol`, a `BigInt`, a circular reference. No request is sent |
@@ -112,9 +111,7 @@ function ensureSuccess(result) {
   if (!result.isSuccessStatusCode) {
     throw new PveResultException(
       result,
-      result.responseInError
-        ? JSON.stringify(result.response.errors)
-        : `${result.statusCode} ${result.reasonPhrase}`
+      result.responseInError ? result.error : `${result.statusCode} ${result.reasonPhrase}`
     );
   }
   return result;

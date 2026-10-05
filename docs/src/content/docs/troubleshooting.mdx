@@ -17,10 +17,9 @@ client.logEnabled = true;
 | `proxmox-ve:debug` | Every request: method, host, path without the query string, headers and parameters. Every answer: status code, reason and the JSON received |
 | `proxmox-ve:error` | The error of a request that got no answer (connection, certificate) or timed out, and of an answer that is not JSON |
 
-`logEnabled` turns both on or off. A new client has `proxmox-ve:debug` off and `proxmox-ve:error`
-on, so the error of a request without an answer is printed also when you catch it: set
-`client.logEnabled = false` to print nothing. The `DEBUG` environment variable of the debug package
-turns the first one on without changing the code: `DEBUG=proxmox-ve:debug node app.js`.
+`logEnabled` turns both on or off. A new client has both off: nothing is printed unless you ask.
+The `DEBUG` environment variable of the debug package turns them on without changing the code:
+`DEBUG=proxmox-ve:* node app.js`, or `DEBUG=proxmox-ve:error` for the errors only.
 
 Compare the path and the parameters with the endpoint in the
 [Proxmox VE API viewer](https://pve.proxmox.com/pve-docs/api-viewer/): most problems are a parameter
@@ -50,7 +49,7 @@ An answer with an error status does not throw: the call returns a `Result` with
 
 | Status | Meaning | What to do |
 |---|---|---|
-| 400 | Proxmox VE refused the parameters. `responseInError` is `true` and `response.errors` has each parameter with its problem | Fix the parameter named in the errors |
+| 400 | Proxmox VE refused the parameters. `responseInError` is `true` and `error` lists each parameter with its problem | Fix the parameter named in the errors |
 | 401 | The token or the ticket was refused: the token is wrong or revoked, or the ticket is older than two hours | Check the token, or log in again |
 | 403 | Authenticated, but without the privilege the endpoint requires on that path | Check the roles of the user and, with privilege separation, of the token: [Permissions](/cv4pve-api-javascript/permissions/) |
 | 500 | Proxmox VE could not do what was asked. The reason is in `reasonPhrase`, for example `Configuration file 'nodes/pve01/qemu-server/999.conf' does not exist` for a VM id that does not exist | Read the reason |

@@ -10,14 +10,21 @@ Versions before 9.2.1 are described in the [GitHub releases](https://github.com/
 ## [Unreleased]
 
 ### Added
+- `Result.error`: the parameters refused by Proxmox VE as text, one per line as `name : message`; an empty string when the response has no errors
+- `PveClient.getNodeFromTask(upid)`, static: the node of a task, read from its identifier
 - Documentation site at [corsinvest.github.io/cv4pve-api-javascript](https://corsinvest.github.io/cv4pve-api-javascript/), built with Astro Starlight and published by the new `Docs` workflow; the pages are rewritten on the current client and replace the Markdown files of `docs/`
 - Icon of the project (`icon.svg`)
+
+### Changed (breaking)
+- The error of a request (no answer, timeout, an answer that is not JSON) is no longer printed on standard error by default: the `proxmox-ve:error` log is off in a new client, as the `proxmox-ve:debug` one. Turn it on with `client.logEnabled = true` or with the `DEBUG=proxmox-ve:error` environment variable. The call still rejects with the same error
+- `NaN`, `Infinity`, a function and a `Symbol` are refused with a `TypeError` also inside an array or an object of a parameter: they were sent as `null` or dropped. A circular reference is refused with a `TypeError` also in GET and DELETE requests
 
 ### Changed
 - `README.md` rewritten, with links to the documentation site
 - The Publish workflow puts the section of the released version of `CHANGELOG.md` in the release notes ([#25](https://github.com/Corsinvest/cv4pve-api-javascript/pull/25))
 
 ### Fixed
+- `logEnabled` of a new client was `undefined` instead of `false`
 - The examples of the old `docs/` and `README.md` called generated methods with an object of parameters, as in `updateVm({memory: 4096})`: the generated methods take their parameters by position, so the object was sent as the value of the first parameter. The new pages use raw calls for the configuration of a VM
 
 ## [9.2.1] - 2026-10-05

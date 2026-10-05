@@ -25,7 +25,8 @@ if (result.isSuccessStatusCode) {
 | `response` | The JSON answer, parsed; `null` when there is none |
 | `response.data` | The `data` member of the answer: what the API returns |
 | `responseInError` | `true` when the answer has an `errors` member: Proxmox VE refused one or more parameters |
-| `response.errors` | The refused parameters, as an object: the name of each parameter with its message |
+| `error` | The refused parameters, one per line, as `name : message`; an empty string when there are none |
+| `response.errors` | The same refused parameters as an object: the name of each parameter with its message |
 | `requestResource`, `requestParameters`, `methodType` | What was asked: path, parameters, and `GET`, `POST`, `PUT` or `DELETE` |
 | `responseType` | `json` or `png` |
 | `toString()` | The request and its outcome as text, with passwords and tokens masked |
