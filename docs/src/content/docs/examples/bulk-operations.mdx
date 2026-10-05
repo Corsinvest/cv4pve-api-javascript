@@ -1,0 +1,138 @@
+---
+title: Bulk operations
+description: "Act on many VMs and containers at once from JavaScript: select them by tag, start the tasks, wait for all of them and report which failed."
+---
+
+The same action on many guests: a snapshot of every production VM before an update, a shutdown of a
+lab every evening. The pattern is always select, start, wait, report.
+
+## Select
+
+`/cluster/resources` returns every guest with its node and type, so the rest of the code needs no
+lookup:
+
+```js
+async function select(client, tag) {
+  const result = await client.cluster.resources.resources("vm");
+  if (!result.isSuccessStatusCode) {
+    throw new Error(`${result.statusCode} ${result.reasonPhrase}`);
+  }
+
+  return result.response.data.filter(
+    (vm) => (vm.tags ?? "").split(";").includes(tag) && vm.template !== 1
+  );
+}
+```
+
+```js
+// every guest with the tag "production", except the templates
+const guests = await select(client, "production");
+
+console.log(`${guests.length} guests selected`);
+```
+
+Each guest has `vmid`, `name`, `node`, `type` (`qemu` or `lxc`) and `status`.
+
+The cluster resources come from the status daemon of each node,
+[pvestatd](https://pve.proxmox.com/pve-docs/pvestatd.8.html), which updates them every 10 seconds: a
+guest created or changed a moment before can still show its old status, or a name such as `VM 108` in
+place of its own.
+
+The examples below use this helper for the outcome of a task: `OK`, the reason of the failure, or that
+it is still running.
+
+```js
+async function outcome(client, result, timeout) {
+  if (!result.isSuccessStatusCode) {
+    return `${result.statusCode} ${result.reasonPhrase}`;
+  }
+
+  const upid = result.response.data;
+  return (await client.waitForTaskToFinish(upid, 2000, timeout))
+    ? await client.getExitStatusTask(upid)
+    : `still running after ${timeout / 60000} minutes`;
+}
+```
+
+## One at a time
+
+The simplest form, and the right one when the operations should not load the storage together: a
+snapshot of each guest, waiting for one before starting the next. The property of the client has the
+name of the type, `qemu` or `lxc`, so one line covers both.
+
+```js
+const name = "auto" + new Date().toISOString().replace(/\D/g, "").substring(2, 12);
+const failed = [];
+
+for (const guest of guests) {
+  const result = await client.nodes.get(guest.node)[guest.type].get(guest.vmid)
+    .snapshot.snapshot(name, "Before the update");
+
+  const how = await outcome(client, result, 300000);
+
+  console.log(`${guest.vmid} ${guest.name}: ${how}`);
+  if (how !== "OK" && !how.startsWith("WARNINGS")) {
+    failed.push(`${guest.vmid} ${guest.name}`);
+  }
+}
+
+if (failed.length > 0) {
+  console.log(`Failed: ${failed.join(", ")}`);
+}
+```
+
+## All together
+
+To shut down many guests the waiting can overlap: start every task, then wait for all of them. The
+path is the same for a VM and a container except for the type, so a raw call covers both.
+
+```js
+const running = guests.filter((guest) => guest.status === "running");
+
+// start: each call returns as soon as its task is accepted
+const started = await Promise.all(
+  running.map((guest) =>
+    client.create(`/nodes/${guest.node}/${guest.type}/${guest.vmid}/status/shutdown`)
+  )
+);
+
+// wait: the tasks are already running together, so the total time is the longest one
+for (const [index, guest] of running.entries()) {
+  console.log(`${guest.vmid} ${guest.name}: ${await outcome(client, started[index], 300000)}`);
+}
+```
+
+The tasks run on the nodes, not in the application: once started they go on together, and waiting for
+them one after the other takes as long as the slowest.
+
+`Promise.all` rejects if one of the requests gets no answer: see
+[Errors](/cv4pve-api-javascript/concepts/errors/#failures-without-an-answer). Use
+`Promise.allSettled` to go on with the others.
+
+## How many at once
+
+Proxmox VE accepts every task you start. To limit how many run at the same time (a rolling reboot, or
+operations that are heavy on disk and network) work in batches, and wait for a batch before starting
+the next:
+
+```js
+for (let from = 0; from < running.length; from += 4) {
+  const batch = running.slice(from, from + 4);
+
+  // start the batch
+  const rebooting = await Promise.all(
+    batch.map((guest) =>
+      client.create(`/nodes/${guest.node}/${guest.type}/${guest.vmid}/status/reboot`)
+    )
+  );
+
+  // wait for it, up to 10 minutes each
+  for (const [index, guest] of batch.entries()) {
+    console.log(`${guest.vmid}: ${await outcome(client, rebooting[index], 600000)}`);
+  }
+}
+```
+
+Backups need no batches: a node runs one backup at a time and the others wait for it. For backups on a
+schedule, a backup job of Proxmox VE itself is the better tool. For snapshots with retention see
+[cv4pve-autosnap](https://corsinvest.github.io/cv4pve-autosnap/).

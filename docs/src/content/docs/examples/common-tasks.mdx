@@ -1,0 +1,214 @@
+---
+title: Common tasks
+description: "Short JavaScript recipes for Proxmox VE: list VMs and containers, read a configuration, start and stop, snapshots, backup, nodes, storage and metrics."
+---
+
+Short recipes to copy. They assume a connected `client` (see
+[Connection](/cv4pve-api-javascript/connection/)) and run inside an `async` function, or in an ES
+module, where `await` works at the top level.
+
+The recipes that start a task use this helper: it checks the call, waits for the task and returns how
+it ended, `OK` or the reason of the failure. Why each step is needed is in
+[Errors](/cv4pve-api-javascript/concepts/errors/) and [Tasks](/cv4pve-api-javascript/concepts/tasks/).
+
+```js
+async function run(client, result, timeout) {
+  if (!result.isSuccessStatusCode) {
+    return `${result.statusCode} ${result.reasonPhrase}`;
+  }
+
+  const upid = result.response.data;
+  return (await client.waitForTaskToFinish(upid, 1000, timeout))
+    ? await client.getExitStatusTask(upid)
+    : "still running";
+}
+```
+
+## List VMs and containers
+
+One call for the whole cluster, whatever the node:
+
+```js
+const result = await client.cluster.resources.resources("vm");
+for (const vm of result.response.data) {
+  console.log(vm.vmid, vm.type, vm.name, vm.node, vm.status);
+}
+```
+
+`type` is `qemu` for a VM and `lxc` for a container. Only the running ones with a tag:
+
+```js
+const production = result.response.data.filter(
+  (vm) => vm.status === "running" && (vm.tags ?? "").split(";").includes("production")
+);
+
+console.table(production, ["vmid", "name", "node"]);
+```
+
+## Find a VM by name
+
+The API addresses a guest by node and id. The cluster resources give both from the name:
+
+```js
+const resources = (await client.cluster.resources.resources("vm")).response.data;
+const found = resources.find((vm) => vm.name === "web01");
+
+if (found) {
+  console.log(`web01 is ${found.type} ${found.vmid} on ${found.node}`);
+}
+```
+
+## Read the configuration of a VM
+
+```js
+const config = (await client.nodes.get("pve01").qemu.get(100).config.vmConfig()).response.data;
+
+console.log(`${config.name}: ${config.cores ?? 1} cores, ${config.memory ?? 512} MB`);
+
+// disks and network devices
+for (const [key, value] of Object.entries(config)) {
+  if (/^(scsi|virtio|sata|ide|net)\d+$/.test(key)) {
+    console.log(`${key}: ${value}`);
+  }
+}
+```
+
+Proxmox VE leaves out the settings that have their default value, so read them with `??`. For a
+container use `client.nodes.get("pve01").lxc.get(200).config.vmConfig()`.
+
+## Change the configuration
+
+```js
+const result = await client.set("/nodes/pve01/qemu/100/config", {
+  cores: 4,
+  memory: 8192,
+  description: "Web server",
+});
+
+if (!result.isSuccessStatusCode) {
+  console.log(result.reasonPhrase);
+}
+```
+
+Only the parameters you send change. To remove a setting, name it in `delete`:
+`client.set("/nodes/pve01/qemu/100/config", { delete: "description" })`. The configuration is
+changed with a [raw call](/cv4pve-api-javascript/concepts/api-structure/#raw-calls) because the
+generated `updateVm` takes all its parameters by position.
+
+## Start, stop, reboot
+
+Each of these starts a task: wait for it and read how it ended.
+
+```js
+const vm = client.nodes.get("pve01").qemu.get(100);
+
+console.log(await run(client, await vm.status.start.vmStart(), 60000));
+```
+
+| Action | Call |
+|---|---|
+| Start | `vm.status.start.vmStart()` |
+| Shut down from inside the guest, waiting up to 120 seconds | `vm.status.shutdown.vmShutdown(undefined, undefined, undefined, 120)` |
+| Stop at once, like pulling the plug | `vm.status.stop.vmStop()` |
+| Reboot | `vm.status.reboot.vmReboot()` |
+| Suspend, resume | `vm.status.suspend.vmSuspend()`, `vm.status.resume.vmResume()` |
+
+## Current status of a VM
+
+```js
+const status = (await vm.status.current.vmStatus()).response.data;
+
+const cpu = ((status.cpu ?? 0) * 100).toFixed(1);
+const memory = (((status.mem ?? 0) * 100) / (status.maxmem || 1)).toFixed(1);
+
+console.log(`${status.status}, CPU ${cpu}%, memory ${memory}%, up ${status.uptime ?? 0} s`);
+```
+
+## Snapshots
+
+```js
+// take: snapname, description, vmstate
+let outcome = await run(client, await vm.snapshot.snapshot("before-update", "Before the update"), 120000);
+
+// list
+for (const snapshot of (await vm.snapshot.snapshotList()).response.data) {
+  console.log(snapshot.name, snapshot.description ?? "");
+}
+
+// roll back
+outcome = await run(client, await vm.snapshot.get("before-update").rollback.rollback(), 300000);
+
+// remove
+outcome = await run(client, await vm.snapshot.get("before-update").delsnapshot(), 120000);
+```
+
+The list includes an entry named `current`, which is the present state of the VM, not a snapshot.
+
+## Back up a VM
+
+```js
+const backup = await client.create("/nodes/pve01/vzdump", {
+  vmid: "100",
+  storage: "backup",
+  mode: "snapshot",
+  compress: "zstd",
+});
+
+console.log(await run(client, backup, 3600000));
+```
+
+The token needs `VM.Backup` on the guest and `Datastore.AllocateSpace` on the storage. A node runs one
+backup at a time: a backup started while another is running waits for it, so allow for that in the
+timeout.
+
+## Nodes and their load
+
+```js
+for (const node of (await client.nodes.index()).response.data) {
+  const cpu = ((node.cpu ?? 0) * 100).toFixed(1);
+  const memory = (((node.mem ?? 0) * 100) / (node.maxmem || 1)).toFixed(1);
+
+  console.log(`${node.node} ${node.status} CPU ${cpu}% memory ${memory}%`);
+}
+```
+
+## Cluster status
+
+```js
+for (const item of (await client.cluster.status.getStatus()).response.data) {
+  console.log(item.type, item.name, item.online === 1 ? "online" : "");
+}
+```
+
+## Storage of a node
+
+```js
+const GiB = 1024 ** 3;
+
+for (const storage of (await client.nodes.get("pve01").storage.index()).response.data) {
+  if (storage.active === 1) {
+    const used = Math.round((storage.used ?? 0) / GiB);
+    const total = Math.round((storage.total ?? 0) / GiB);
+
+    console.log(`${storage.storage} ${storage.type} ${used} of ${total} GiB`);
+  }
+}
+```
+
+## Metrics of a VM
+
+The data behind the charts of the web interface, as numbers:
+
+```js
+const data = (await client.nodes.get("pve01").qemu.get(100).rrddata.rrddata("day", "AVERAGE")).response.data;
+
+for (const item of data) {
+  console.log(new Date(item.time * 1000).toISOString(), `CPU ${((item.cpu ?? 0) * 100).toFixed(1)}%`);
+}
+```
+
+## The next free id
+
+```js
+const vmId = Number((await client.cluster.nextid.nextid()).response.data);
+```

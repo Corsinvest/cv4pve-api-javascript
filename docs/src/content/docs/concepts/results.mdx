@@ -1,0 +1,133 @@
+---
+title: Results
+description: "Every call resolves with a Result: the HTTP outcome and the Proxmox VE answer as plain JavaScript objects. Reading objects, lists, optional members, and charts as PNG."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Every method of the client returns a promise that resolves with a `Result`. It holds two things: how
+the HTTP request went, and what Proxmox VE answered.
+
+```js
+const result = await client.nodes.get("pve01").qemu.get(100).status.current.vmStatus();
+
+if (result.isSuccessStatusCode) {
+  console.log(result.response.data.status);
+}
+```
+
+## The Result
+
+| Property | What it is |
+|---|---|
+| `isSuccessStatusCode` | `true` when the HTTP status is 200 |
+| `statusCode`, `reasonPhrase` | HTTP status and its text. On a failure Proxmox VE puts the reason here |
+| `response` | The JSON answer, parsed; `null` when there is none |
+| `response.data` | The `data` member of the answer: what the API returns |
+| `responseInError` | `true` when the answer has an `errors` member: Proxmox VE refused one or more parameters |
+| `response.errors` | The refused parameters, as an object: the name of each parameter with its message |
+| `requestResource`, `requestParameters`, `methodType` | What was asked: path, parameters, and `GET`, `POST`, `PUT` or `DELETE` |
+| `responseType` | `json` or `png` |
+| `toString()` | The request and its outcome as text, with passwords and tokens masked |
+
+An answer with an error status does not throw:
+[Errors](/cv4pve-api-javascript/concepts/errors/) explains what to check.
+
+## Reading the data
+
+`response.data` is what the API viewer shows under *Returns*: an object, a list or a single value,
+as plain JavaScript values.
+
+```js
+// an object: its members by name
+const status = result.response.data;
+console.log(`VM ${status.vmid}: ${status.status}, ${status.cpus} CPUs`);
+
+// a list: an array
+const vms = (await client.nodes.get("pve01").qemu.vmlist()).response.data;
+for (const vm of vms.filter((vm) => vm.status === "running")) {
+  console.log(vm.vmid, vm.name);
+}
+
+// a single value, for example the id of a task
+const upid = (await client.nodes.get("pve01").qemu.get(100).status.start.vmStart()).response.data;
+```
+
+<Aside type="caution">
+A member that Proxmox VE leaves out is `undefined`, and many are optional: for example `name`, `cores`
+and `description` in the configuration of a VM, which are not returned when they have no value or the
+default one. On a failed call there is no data: `response` is `null` when the answer had no body, and
+`response.data` is `null` when Proxmox VE answered with an error. Check `isSuccessStatusCode` first.
+</Aside>
+
+### Optional members
+
+`??` gives a default for a member that is not there, `in` tells whether it is there:
+
+```js
+const config = (await client.nodes.get("pve01").qemu.get(100).config.vmConfig()).response.data;
+
+const name = config.name ?? "(no name)";
+const cores = config.cores ?? 1;
+
+if ("net0" in config) {
+  console.log(config.net0);
+}
+```
+
+### Every member
+
+```js
+for (const [key, value] of Object.entries(config)) {
+  console.log(`${key} = ${value}`);
+}
+```
+
+### Types
+
+The data is what Proxmox VE sends, so the typings of the package give it as `any`. In TypeScript,
+declare the members you read: Proxmox VE returns more than you need and adds new ones over time.
+
+```ts
+interface Vm {
+  vmid: number;
+  name?: string;
+  status: string;
+}
+
+const vms: Vm[] = (await client.nodes.get("pve01").qemu.vmlist()).response.data;
+```
+
+## Charts as PNG
+
+Proxmox VE can answer the `rrd` endpoints with a chart instead of data. Set the response type to
+`png` before the call: `response` is then a string with the image as a data URI, ready for the `src`
+of an `img` tag.
+
+```js
+const fs = require("node:fs");
+const { ResponseType } = require("@corsinvest/cv4pve-api-javascript");
+
+client.responseType = ResponseType.PNG;
+let chart;
+try {
+  chart = await client.nodes.get("pve01").rrd.rrd("cpu", "day");
+} finally {
+  client.responseType = ResponseType.JSON;
+}
+
+if (chart.isSuccessStatusCode) {
+  const dataUri = chart.response;   // data:image/png;base64,...
+
+  fs.writeFileSync("cpu.png", Buffer.from(dataUri.substring(dataUri.indexOf(",") + 1), "base64"));
+}
+```
+
+The response type belongs to the client, not to the call: set it back to `json`, the default, before
+the other calls. A PNG call that fails has the status and the errors of any other failed call, with
+the JSON answer in `response`. `login` and the methods that read a task always ask for JSON.
+
+## The last result
+
+`client.lastResult` is the `Result` of the last request, also when a helper made the call for you: a
+failed `login` resolves with `false`, and the reason is in `client.lastResult.reasonPhrase`.

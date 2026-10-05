@@ -1,0 +1,150 @@
+---
+title: Create a VM
+description: "Create a VM from JavaScript: an empty VM with an installer ISO, or a clone of a cloud-init template with its network and SSH key, waiting for each task."
+---
+
+Two complete ways to get a new VM. Both use a small helper that waits for a task and throws if the
+call or the task failed, so the steps read in sequence:
+
+```js
+async function ensureDone(client, result, timeoutSeconds) {
+  if (!result.isSuccessStatusCode) {
+    throw new Error(
+      result.responseInError
+        ? JSON.stringify(result.response.errors)
+        : `${result.statusCode} ${result.reasonPhrase}`
+    );
+  }
+
+  // calls that finish at once return no task
+  const upid = result.response?.data;
+  if (typeof upid !== "string" || !upid.startsWith("UPID:")) {
+    return;
+  }
+
+  if (!(await client.waitForTaskToFinish(upid, 1000, timeoutSeconds * 1000))) {
+    throw new Error(`Task still running after ${timeoutSeconds} seconds: ${upid}`);
+  }
+
+  const exitStatus = await client.getExitStatusTask(upid);
+  if (exitStatus !== "OK" && !exitStatus.startsWith("WARNINGS")) {
+    throw new Error(`Task failed: ${exitStatus}`);
+  }
+}
+```
+
+Why both checks are needed is in [Tasks](/cv4pve-api-javascript/concepts/tasks/).
+
+The parameters of a VM go in an object, sent with a
+[raw call](/cv4pve-api-javascript/concepts/api-structure/#raw-calls): the generated `createVm` and
+`updateVm` take about a hundred parameters by position.
+
+## An empty VM with an installer
+
+A VM with a new disk, a network card and the installer ISO in the CD-ROM drive, ready to be installed
+from the console.
+
+```js
+const node = "pve01";
+
+const vmId = Number((await client.cluster.nextid.nextid()).response.data);
+
+await ensureDone(
+  client,
+  await client.create(`/nodes/${node}/qemu`, {
+    vmid: vmId,
+    name: "debian13",
+    ostype: "l26",
+    memory: 4096,
+    cores: 2,
+    cpu: "x86-64-v2-AES",
+    scsihw: "virtio-scsi-single",
+    scsi0: "local-lvm:32,discard=on,iothread=1",
+    ide2: "local:iso/debian-13.1.0-amd64-netinst.iso,media=cdrom",
+    net0: "model=virtio,bridge=vmbr0,firewall=1",
+    boot: "order=scsi0;ide2",
+    agent: "1",
+  }),
+  60
+);
+
+await ensureDone(client, await client.nodes.get(node).qemu.get(vmId).status.start.vmStart(), 60);
+
+console.log(`VM ${vmId} created and started`);
+```
+
+The format of disks and network is in
+[Indexed parameters](/cv4pve-api-javascript/concepts/indexed-parameters/). The storage names
+(`local-lvm`, `local`), the bridge and the ISO are those of your node.
+
+## A clone of a cloud-init template
+
+The fast way to a working system: a template made once from a cloud image, with a cloud-init drive,
+cloned for each new VM. The template is prepared as described in
+[Cloud-Init Support](https://pve.proxmox.com/pve-docs/chapter-qm.html#qm_cloud_init); here it is VM
+9000.
+
+```js
+const fs = require("node:fs");
+
+const node = "pve01";
+const templateId = 9000;
+
+const vmId = Number((await client.cluster.nextid.nextid()).response.data);
+const publicKey = fs.readFileSync("id_ed25519.pub", "utf8").trim();
+
+// 1. clone: a full copy can take minutes
+//    newid, bwlimit, description, format, full, name
+const result = await client.nodes.get(node).qemu.get(templateId).clone
+  .cloneVm(vmId, undefined, undefined, undefined, true, "web02");
+await ensureDone(client, result, 900);
+
+const vm = client.nodes.get(node).qemu.get(vmId);
+
+// 2. resources and cloud-init: user, key, address
+await ensureDone(
+  client,
+  await client.set(`/nodes/${node}/qemu/${vmId}/config`, {
+    cores: 2,
+    memory: 4096,
+    ciuser: "admin",
+    sshkeys: encodeURIComponent(publicKey),
+    ipconfig0: "ip=192.168.1.102/24,gw=192.168.1.1",
+    nameserver: "192.168.1.1",
+  }),
+  60
+);
+
+// 3. grow the disk of the image to 32 GiB
+await ensureDone(client, await vm.resize.resizeVm("scsi0", "32G"), 60);
+
+// 4. start
+await ensureDone(client, await vm.status.start.vmStart(), 60);
+
+console.log(`VM ${vmId} is starting at 192.168.1.102`);
+```
+
+The source here is a template, so with `full` as `false` or left out the clone is a linked clone: it
+is created at once and shares the disk of the template, which then cannot be removed. A VM that is
+not a template is always cloned in full.
+
+## Remove a VM
+
+```js
+const vm = client.nodes.get("pve01").qemu.get(121);
+
+await ensureDone(client, await vm.status.stop.vmStop(), 60);
+
+// destroy_unreferenced_disks, purge, skiplock
+await ensureDone(client, await vm.destroyVm(undefined, true), 60);
+```
+
+`purge` also removes the VM from backup jobs, replication and HA. There is no confirmation: the disks
+are deleted.
+
+## Permissions
+
+Creating and cloning need `VM.Allocate` on `/vms` (or on the pool), `Datastore.AllocateSpace` on the
+storage, `SDN.Use` on the bridge, and `VM.Clone` on the template for a clone. The options given when
+creating, and the configuration changes after it, need the matching `VM.Config.*` privileges: see
+[Permissions](/cv4pve-api-javascript/permissions/).
