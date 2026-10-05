@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "prepare": "npx tsc",
-    "test": "node --test test/base.test.js test/generated.test.js",
+    "test": "node --test test/base.test.js test/generated.test.js test/typings.test.js",
     "test:live": "node --test test/live.test.js",
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\""
