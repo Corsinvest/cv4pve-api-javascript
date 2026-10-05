@@ -58,6 +58,28 @@ if (!result.isSuccessStatusCode) {
 }
 ```
 
+### **Invalid Arguments**
+
+Values that cannot be sent are refused before any request is made.
+
+```javascript
+// The timeout is a number of milliseconds, 0 for no limit.
+// A negative value or a value that is not a number throws a RangeError.
+try {
+    client.timeout = -1;
+} catch (error) {
+    console.log(error instanceof RangeError); // true
+}
+
+// A parameter that JSON cannot encode rejects with a TypeError:
+// NaN, Infinity, a function, a Symbol, a BigInt, a circular reference.
+try {
+    await client.nodes.get("pve1").qemu.get(100).config.updateVm({ memory: NaN });
+} catch (error) {
+    console.log(error instanceof TypeError); // true
+}
+```
+
 ## Error Handling Patterns
 
 ### **Basic Pattern**

@@ -423,6 +423,32 @@ const name = result.response.data?.name || "Unnamed";
 
 ---
 
+## Testing
+
+```bash
+# Offline tests: https.request is replaced by a fake, no cluster is needed
+npm test
+
+# Tests on a real Proxmox VE
+npm run test:live
+```
+
+The live tests read the connection from the environment:
+
+| Variable | Description |
+|----------|-------------|
+| `PVE_HOST` | Host name or IP address of a node |
+| `PVE_PORT` | Port, default 8006 |
+| `PVE_API_TOKEN` | API token, `user@realm!name=uuid` |
+| `PVE_TEST_VMID` | ID of a QEMU VM used for the tests that write |
+
+Without `PVE_HOST` and `PVE_API_TOKEN` every live test is skipped. The live tests only read,
+except on the VM `PVE_TEST_VMID`: there they change and restore the description, set and remove
+a cloud-init `ipconfig` entry, and create and delete a snapshot. Without `PVE_TEST_VMID` those
+tests are skipped.
+
+---
+
 ## Support
 
 Professional support and consulting available through [Corsinvest](https://www.corsinvest.it/cv4pve).
