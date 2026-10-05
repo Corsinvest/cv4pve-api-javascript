@@ -112,6 +112,24 @@ class Result {
   }
 
   /**
+   * Get the parameters refused by Proxmox VE, one per line as 'name : message'.
+   * Empty string when the response has no errors.
+   * @returns {string}
+   */
+  get error() {
+    if (!this.responseInError) {
+      return "";
+    }
+    const errors = this.#response.errors;
+    if (errors === null || typeof errors !== "object") {
+      return "";
+    }
+    return Object.entries(errors)
+      .map(([name, message]) => `${name} : ${String(message).trim()}`)
+      .join("\n");
+  }
+
+  /**
    * Mask sensitive parameter values (password, token, ticket, otp, apitoken)
    * for safe logging. Returns a shallow copy; does not mutate the original.
    *
@@ -189,7 +207,6 @@ class PveClientBase {
   constructor(hostname, port = 8006) {
     this.#hostname = hostname;
     this.#port = port;
-    this.#error.enabled = true;
   }
 
   // @ts-ignore
@@ -288,13 +305,16 @@ class PveClientBase {
   }
 
   /**
-   * Log enabled
+   * Get if the log is enabled (default false). The log is written with the
+   * 'debug' package: 'proxmox-ve:debug' for requests and answers,
+   * 'proxmox-ve:error' for the errors of a request.
+   * @returns {boolean}
    */
   get logEnabled() {
-    return this.#log.enabled;
+    return this.#log.enabled === true;
   }
   /**
-   * Set Api token
+   * Set if the log is enabled
    */
   set logEnabled(value) {
     this.#log.enabled = value;
@@ -361,6 +381,46 @@ class PveClientBase {
   }
 
   /**
+   * Refuse a value that JSON would drop or send as null (NaN, Infinity, a function,
+   * a Symbol), also inside an array or an object, and a circular reference.
+   *
+   * @param {string} name Name of the parameter
+   * @param {any} value
+   * @param {any[]} parents Arrays and objects that contain the value
+   * @throws {TypeError} The value cannot be encoded.
+   */
+  static #ensureEncodable(name, value, parents) {
+    if (
+      typeof value === "function" ||
+      typeof value === "symbol" ||
+      (typeof value === "number" && !Number.isFinite(value))
+    ) {
+      throw new TypeError(
+        `Parameter '${name}' cannot be encoded: ${typeof value === "number" ? value : typeof value}`
+      );
+    }
+
+    if (value === null || typeof value !== "object") {
+      return;
+    }
+    // only what JSON reads member by member: an array or a plain object
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) {
+      return;
+    }
+    if (parents.includes(value)) {
+      throw new TypeError(
+        `Parameters cannot be encoded as JSON: circular reference in parameter '${name}'`
+      );
+    }
+    parents.push(value);
+    for (const member of Object.values(value)) {
+      PveClientBase.#ensureEncodable(name, member, parents);
+    }
+    parents.pop();
+  }
+
+  /**
    * Parameters as the JSON body of a request.
    *
    * @param {object} parameters
@@ -400,16 +460,8 @@ class PveClientBase {
       if (value !== null && value !== undefined) {
         if (typeof value === "boolean") {
           tmpParameters[key] = value ? 1 : 0;
-        } else if (
-          typeof value === "function" ||
-          typeof value === "symbol" ||
-          (typeof value === "number" && !Number.isFinite(value))
-        ) {
-          // JSON would drop it or send null in its place
-          throw new TypeError(
-            `Parameter '${key}' cannot be encoded: ${typeof value === "number" ? value : typeof value}`
-          );
         } else {
+          PveClientBase.#ensureEncodable(key, value, []);
           tmpParameters[key] = value;
         }
       }
@@ -663,11 +715,13 @@ class PveClientBase {
   }
 
   /**
-   * Return node from task
-   * @param {string} task Task identifier
-   * @return {string} Node name
+   * Get node from task
+   *
+   * @param {string} task Task identifier (UPID)
+   * @return {string} Node of the task
+   * @throws {PveResultException} The task identifier is not valid.
    */
-  #getNodeFromTask(task) {
+  static getNodeFromTask(task) {
     if (typeof task !== "string" || !/^UPID:[^:]+:/.test(task)) {
       throw new PveResultException(null, `'${task}' is not a valid task identifier (UPID)`);
     }
@@ -738,7 +792,7 @@ class PveClientBase {
   async readTaskStatus(task) {
     return this.#execute(
       "GET",
-      "/nodes/" + this.#getNodeFromTask(task) + "/tasks/" + task + "/status",
+      "/nodes/" + PveClientBase.getNodeFromTask(task) + "/tasks/" + task + "/status",
       {},
       ResponseType.JSON
     );

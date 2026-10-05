@@ -48,8 +48,8 @@ task, and no data to read the UPID from.
 
 To check without waiting, `taskIsRunning(upid)` resolves with `true` while the task runs.
 
-The node of the task is read from the UPID, so none of these needs the node. It is the second part
-of the UPID: `upid.split(":")[1]`.
+The node of the task is read from the UPID, so none of these needs the node:
+`PveClient.getNodeFromTask(upid)` returns it.
 
 ## Did it succeed?
 
@@ -78,7 +78,7 @@ The log, the same text the web interface shows, comes from the `log` endpoint of
 has the line number in `n` and the text in `t`:
 
 ```js
-const node = upid.split(":")[1];
+const node = PveClient.getNodeFromTask(upid);
 
 // download, limit, start
 const log = await client.nodes.get(node).tasks.get(upid).log.readTaskLog(undefined, 1000);

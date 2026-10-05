@@ -381,6 +381,95 @@ test("parameters that cannot be encoded are refused, not sent changed", async (t
   assert.equal(calls.length, 0, "requests sent");
 });
 
+test("a value that cannot be encoded is refused also inside an array or an object", async (t) => {
+  const calls = fakeHttps(t, () => json(200, { data: null }));
+  const client = new PveClient("pve01");
+  const circular = { list: [] };
+  circular.list.push(circular);
+
+  for (const method of ["get", "delete", "set", "create"]) {
+    for (const value of [{ size: NaN }, [1, Infinity], { deep: [{ fn: () => 1 }] }]) {
+      await assert.rejects(
+        () => client[method]("/nodes/pve01/qemu/100/config", { memory: value }),
+        (error) => error instanceof TypeError && /Parameter 'memory' cannot be encoded/.test(error.message)
+      );
+    }
+    await assert.rejects(
+      () => client[method]("/nodes/pve01/qemu/100/config", { memory: circular }),
+      (error) => error instanceof TypeError && /cannot be encoded as JSON: circular/.test(error.message)
+    );
+  }
+  assert.equal(calls.length, 0, "requests sent");
+
+  // the same object twice is not a circular reference; a Date is encoded by JSON
+  const shared = { a: 1 };
+  await client.create("/nodes/pve01/execute", { commands: [shared, shared], when: new Date(0) });
+  assert.deepEqual(sent(calls[0]).body, {
+    commands: [{ a: 1 }, { a: 1 }],
+    when: "1970-01-01T00:00:00.000Z",
+  });
+});
+
+test("the log is off unless asked, also for the error of a request", async (t) => {
+  fakeHttps(t, () => Object.assign(new Error("connect ECONNREFUSED"), { code: "ECONNREFUSED" }));
+  const debug = require("debug");
+  const lines = [];
+  const original = debug.log;
+  debug.log = (...args) => lines.push(require("util").format(...args));
+  t.after(() => (debug.log = original));
+  const client = new PveClient("pve01");
+
+  assert.equal(client.logEnabled, false);
+  await assert.rejects(() => client.get("/version"));
+  assert.equal(lines.length, 0, "an error was logged with the log off");
+
+  client.logEnabled = true;
+  assert.equal(client.logEnabled, true);
+  await assert.rejects(() => client.get("/version"));
+  assert.ok(lines.join("\n").includes("ECONNREFUSED"), "the error is not logged with the log on");
+
+  client.logEnabled = false;
+  assert.equal(client.logEnabled, false);
+});
+
+test("the node is read from the task identifier", () => {
+  assert.equal(PveClient.getNodeFromTask(UPID), "pve01");
+  assert.equal(PveClient.getNodeFromTask("UPID:cc01:0012A3F4:05C1B2D3:6720F1A0:qmstart:100:root@pam:"), "cc01");
+
+  for (const task of [null, undefined, "", "abc", 100, "UPID:"]) {
+    assert.throws(
+      () => PveClient.getNodeFromTask(task),
+      (error) => error instanceof PveResultException && /not a valid task/.test(error.message)
+    );
+  }
+});
+
+test("error of a result lists the refused parameters, one per line", async (t) => {
+  let answer = json(
+    400,
+    { data: null, errors: { vmid: "invalid format - value does not look like a valid VM ID\n", name: "too long" } },
+    "Parameter verification failed."
+  );
+  fakeHttps(t, () => answer);
+  const client = new PveClient("pve01");
+
+  let result = await client.get("/nodes/pve01/qemu/abc/config");
+  assert.equal(result.responseInError, true);
+  assert.equal(
+    result.error,
+    "vmid : invalid format - value does not look like a valid VM ID\nname : too long"
+  );
+
+  // without errors, and without an answer, the text is empty
+  answer = json(500, { data: null }, "does not exist");
+  result = await client.get("/nodes/pve01/qemu/999999/config");
+  assert.equal(result.error, "");
+
+  answer = { statusCode: 401, statusMessage: "authentication failure", body: "" };
+  result = await client.get("/version");
+  assert.equal(result.error, "");
+});
+
 test("get and delete send the parameters in the query string", async (t) => {
   const calls = fakeHttps(t, () => json(200, { data: {} }));
   const client = new PveClient("pve01");

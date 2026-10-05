@@ -10,9 +10,7 @@ call or the task failed, so the steps read in sequence:
 async function ensureDone(client, result, timeoutSeconds) {
   if (!result.isSuccessStatusCode) {
     throw new Error(
-      result.responseInError
-        ? JSON.stringify(result.response.errors)
-        : `${result.statusCode} ${result.reasonPhrase}`
+      result.responseInError ? result.error : `${result.statusCode} ${result.reasonPhrase}`
     );
   }
 
