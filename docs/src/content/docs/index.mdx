@@ -28,21 +28,48 @@ hero:
 ---
 
 import { Image } from 'astro:assets';
-import { LinkCard } from '@astrojs/starlight/components';
+import { LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 import FeatureGrid from '@corsinvest/cv4pve-docs-theme/components/FeatureGrid.astro';
 import CtaBand from '@corsinvest/cv4pve-docs-theme/components/CtaBand.astro';
+import Motto from '@corsinvest/cv4pve-docs-theme/components/Motto.astro';
 import proxmoxLogo from '../../assets/proxmox-logo.svg';
 import javascriptLogo from '../../assets/javascript.svg';
 import typescriptLogo from '../../assets/typescript.svg';
 
 export const features = [
-  { title: 'The whole API', text: 'A method for every endpoint and HTTP method, generated from the Proxmox VE API schema, placed where the API has it: the path of an endpoint is the path in the code.', href: 'concepts/api-structure/' },
-  { title: 'One Result for every call', text: 'The HTTP outcome and the Proxmox VE answer together, as plain JavaScript objects. An answer with an error status does not throw.', href: 'concepts/results/' },
-  { title: 'API token or password', text: 'Connect with an API token or a user and password, with two-factor authentication, certificate validation and timeout.', href: 'connection/' },
-  { title: 'Tasks', text: 'Start a backup, a clone or a migration, wait for its task to finish and read whether it succeeded.', href: 'concepts/tasks/' },
-  { title: 'Raw calls', text: 'GET, POST, PUT and DELETE on any path with an object of parameters: for the calls with many options and for endpoints newer than the library.', href: 'concepts/api-structure/#raw-calls' },
-  { title: 'Promises and typings', text: 'Every call returns a promise, for async and await. The TypeScript typings are in the package. One small dependency.', href: 'getting-started/' },
+  { icon: 'mdi:api', title: 'The whole API', text: 'A method for every endpoint and HTTP method, generated from the Proxmox VE API schema, placed where the API has it: the path of an endpoint is the path in the code.', href: 'concepts/api-structure/' },
+  { icon: 'mdi:code-braces-box', title: 'One Result for every call', text: 'The HTTP outcome and the Proxmox VE answer together, as plain JavaScript objects. An answer with an error status does not throw.', href: 'concepts/results/' },
+  { icon: 'mdi:key-outline', title: 'API token or password', text: 'Connect with an API token or a user and password, with two-factor authentication, certificate validation and timeout.', href: 'connection/' },
+  { icon: 'mdi:timer-sand', title: 'Tasks', text: 'Start a backup, a clone or a migration, wait for its task to finish and read whether it succeeded.', href: 'concepts/tasks/' },
+  { icon: 'mdi:code-json', title: 'Raw calls', text: 'GET, POST, PUT and DELETE on any path with an object of parameters: for the calls with many options and for endpoints newer than the library.', href: 'concepts/api-structure/#raw-calls' },
+  { icon: 'mdi:language-typescript', title: 'Promises and typings', text: 'Every call returns a promise, for async and await. The TypeScript typings are in the package. One small dependency.', href: 'getting-started/' },
 ];
+
+<Motto />
+
+<Tabs>
+  <TabItem label="npm">
+
+```bash
+npm install @corsinvest/cv4pve-api-javascript
+```
+
+  </TabItem>
+  <TabItem label="Yarn">
+
+```bash
+yarn add @corsinvest/cv4pve-api-javascript
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```bash
+pnpm add @corsinvest/cv4pve-api-javascript
+```
+
+  </TabItem>
+</Tabs>
 
 <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem">
   <Image src={javascriptLogo} alt="JavaScript logo" width={90} style="margin: 0" />
