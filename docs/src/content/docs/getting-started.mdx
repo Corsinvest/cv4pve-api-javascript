@@ -22,7 +22,9 @@ The client uses the `https` module of Node.js: it is made for Node.js, not for t
 
 <Steps>
 
-1. Add the package from
+1. **Add the package**
+
+   Add the package from
    [npm](https://www.npmjs.com/package/@corsinvest/cv4pve-api-javascript):
 
    <Tabs>
@@ -46,7 +48,9 @@ The client uses the `https` module of Node.js: it is made for Node.js, not for t
    The only dependency it brings is [debug](https://github.com/debug-js/debug), used for the log.
    The TypeScript typings are in the package.
 
-2. Create the client with an API token. With a token there is no login call:
+2. **Create the client**
+
+   Create the client with an API token. With a token there is no login call:
 
    <Tabs>
    <TabItem label="CommonJS">
@@ -71,7 +75,9 @@ The client uses the `https` module of Node.js: it is made for Node.js, not for t
    is not validated unless you ask for it, so a new installation with its self-signed certificate
    works as it is. All the ways to connect are in [Connection](/cv4pve-api-javascript/connection/).
 
-3. Make the first call and check its outcome. Every call returns a promise:
+3. **Make the first call**
+
+   Make the first call and check its outcome. Every call returns a promise:
 
    ```js
    const result = await client.version.version();
@@ -83,7 +89,9 @@ The client uses the `https` module of Node.js: it is made for Node.js, not for t
    }
    ```
 
-4. Read some data. The path of the API is the path in the code:
+4. **Read some data**
+
+   Read some data. The path of the API is the path in the code:
 
    ```js
    // GET /nodes/{node}/qemu/{vmid}/status/current
